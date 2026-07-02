@@ -7,6 +7,9 @@ import dograi    from './dograi.js';
 import longewala from './longewala.js';
 import siachen   from './siachen.js';
 import tololing  from './tololing.js';
+import point5140  from './point-5140.js';
+import khalubar   from './khalubar.js';
+import tigerHill  from './tiger-hill.js';
 import sindoor   from './operation-sindoor.js';
 
 export const BATTLE_DATA = {
@@ -19,6 +22,9 @@ export const BATTLE_DATA = {
   'Longewala':        longewala,
   'Siachen':          siachen,
   'Tololing':         tololing,
+  'Point 5140':       point5140,
+  'Khalubar':         khalubar,
+  'Tiger Hill':       tigerHill,
   'Operation Sindoor':sindoor,
 };
 
@@ -238,6 +244,54 @@ export const BATTLES = [
       <line x1="40" y1="52" x2="40" y2="60" stroke="${c}" stroke-width="1.4" opacity="0.6"/>
       <path d="M26,88 L40,82 L54,88" stroke="${c}" stroke-width="1.6" stroke-linecap="round" opacity="0.6"/>
     </svg>`,
+  },
+  {
+    name: 'Point 5140', year: 1999,
+    regiment: '13 JAK RIF',
+    regimentFull: '13th Battalion, Jammu & Kashmir Rifles · Drass Sector',
+    color: '#4a88c8', regimentColor: '#3a70a8',
+    colorName: 'Blue & White',
+    motto: 'Prashikshit, Sashakt aur Satark', mottoEng: 'Trained, Empowered and Alert',
+    warCry: 'Durga Mata Ki Jai!',
+    insignia: 'Crossed rifles on midnight blue',
+    regimentBio: 'The 13th Battalion, Jammu & Kashmir Rifles captured Point 5140 in the Drass sector on 20 June 1999. Capt Vikram Batra led the assault and became the most celebrated soldier of the Kargil War. His words — "Yeh Dil Maange More" — became Operation Vijay\'s defining phrase.',
+    debriefLegacy: '"Yeh Dil Maange More." Four words that defined a generation.',
+    insigniaSvg: (c) => `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="${c}" stroke-width="2"/><text x="40" y="46" text-anchor="middle" font-size="22" fill="${c}" font-family="serif">5140</text></svg>`,
+    insigniaFile: 'assets/insignia/jak-rif.svg',
+    unlocked: true,
+    sub: '19–20 June 1999. Drass sector. Night assault up the ice face. Capt Vikram Batra — call sign "Sher Shah." "Yeh Dil Maange More."',
+  },
+  {
+    name: 'Khalubar', year: 1999,
+    regiment: '1/11 Gorkha Rifles',
+    regimentFull: '1st Battalion, 11th Gorkha Rifles · Batalik Sector',
+    color: '#3a7a40', regimentColor: '#2a6a30',
+    colorName: 'Rifle Green & Black',
+    motto: 'Jai Mahakali, Ayo Gorkhali', mottoEng: 'Glory to Mahakali, the Gorkhas are here',
+    warCry: 'Jai Mahakali! Ayo Gorkhali!',
+    insignia: 'Crossed khukris on rifle green',
+    regimentBio: 'The 1st Battalion, 11th Gorkha Rifles captured Khalubar (Point 4812) in the Batalik sector on 4 July 1999. Capt Manoj Kumar Pandey cleared four enemy bunkers single-handed before being killed at the fifth. He was 25 years old. He received the Param Vir Chakra — the last PVC of the Kargil War.',
+    debriefLegacy: '"Na Chodnu." Do not spare them. The last words of a Param Vir Chakra.',
+    insigniaSvg: (c) => `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="${c}" stroke-width="2"/><path d="M25 55 L50 25 L55 30 L30 60 Z" fill="${c}"/><path d="M55 55 L30 25 L25 30 L50 60 Z" fill="${c}"/></svg>`,
+    insigniaFile: 'assets/insignia/kumaon.svg',
+    unlocked: true,
+    sub: '3–4 July 1999. Batalik sector. Five bunker lines. Capt Manoj Pandey cleared four alone. "Na Chodnu." He did not stop.',
+  },
+  {
+    name: 'Tiger Hill', year: 1999,
+    regiment: '8 Sikh & 18 Grenadiers',
+    regimentFull: '8th Battalion, Sikh Regiment & 18 Grenadiers · Drass Sector',
+    color: '#c87030', regimentColor: '#b86020',
+    colorName: 'Saffron & Olive',
+    motto: 'Deg Tegh Fateh', mottoEng: 'Victory to Charity and Power',
+    warCry: 'Jo Bole So Nihaal, Sat Sri Akal!',
+    insignia: 'Tiger on saffron and olive',
+    regimentBio: 'Tiger Hill (Point 5060m), the highest fortified position in the Kargil War, was captured by 8 Sikh, 18 Grenadiers, and Garhwal Rifles on 4 July 1999. Hav Yogendra Singh Yadav climbed a 1,500-foot cliff under fire to clear the first bunkers. He received the Param Vir Chakra — and survived.',
+    debriefLegacy: 'India holds the sky. Tiger Hill is ours.',
+    insigniaSvg: (c) => `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="${c}" stroke-width="2"/><polygon points="40,10 48,32 72,32 52,48 60,70 40,56 20,70 28,48 8,32 32,32" fill="none" stroke="${c}" stroke-width="2"/></svg>`,
+    insigniaFile: 'assets/insignia/sikh.svg',
+    unlocked: true,
+    sub: '3–4 July 1999. Tiger Hill, 5060m. Three columns. Bofors artillery. Hav Yogendra Singh Yadav climbed a 1,500-ft cliff on a rope under fire. Param Vir Chakra (living).',
   },
   {
     name:         'Operation Sindoor',
