@@ -1,0 +1,84 @@
+// Battle of Saragarhi — 12 September 1897
+// 36th Sikh Infantry | 21 soldiers vs ~10,000 Orakzai and Afridi Pashtun fighters
+export default {
+  terrain: {
+    'P': {color:0x8B7355,height:3.2,def:2.5,mov:4},  // rampart wall — passable, enemy mov:2 can't climb
+    'R': {color:0x6a5535,height:2.6,def:3.5,mov:5},  // corner tower — essentially one-way
+    'g': {color:0xb8985a,height:0.8,def:0.7,mov:1},
+    't': {color:0x8a7a50,height:1.4,def:2.0,mov:2},
+    'r': {color:0x7a6a50,height:1.2,def:1.4,mov:2},
+    '.': {color:0xc4a882,height:0.8,def:1.0,mov:1},
+    's': {color:0xd4b892,height:0.5,def:0.8,mov:1},
+  },
+  map: [
+    ['s','s','s','s','s','s','s','s','s','s','s'],
+    ['s','s','s','s','s','s','s','s','s','s','s'],
+    ['s','R','P','P','P','g','P','P','P','R','s'],
+    ['s','P','.','.','.','.','.','.','.',  'P','s'],
+    ['s','P','.','r','.','.','.',  'r','.','P','s'],
+    ['s','P','.','.','.','t','.','.','.',  'P','s'],
+    ['s','P','.','r','.','.','.',  'r','.','P','s'],
+    ['s','P','.','.','.','.','.','.','.',  'P','s'],
+    ['s','R','P','P','P','P','P','P','P','R','s'],
+    ['s','s','s','s','s','s','s','s','s','s','s'],
+  ],
+  structures: {
+    '5,5':{type:'sangar',label:'Signal Tower',  atkMul:1.0,defMul:2.2,rngBonus:1},
+    '1,2':{type:'sangar',label:'NW Tower',      atkMul:1.2,defMul:3.0,rngBonus:1},
+    '9,2':{type:'sangar',label:'NE Tower',      atkMul:1.2,defMul:3.0,rngBonus:1},
+    '4,2':{type:'lmg',   label:'North Rampart', atkMul:1.5,defMul:2.0,rngBonus:1},
+    '7,2':{type:'lmg',   label:'North Rampart', atkMul:1.5,defMul:2.0,rngBonus:1},
+  },
+  indStarts: [
+    {col:4,row:2,type:'hero',       name:'Hav Ishar Singh',   platoon:0,bio:'Commanded from the north rampart above the gate. Refused all offers of surrender. Held the 21-man garrison for over 7 hours.'},
+    {col:2,row:2,type:'section_cdr',name:'Hav Bhagwan Singh', platoon:9,bio:'North-west wall. First section in the line of fire as the Pashtun mass approached.'},
+    {col:7,row:2,type:'section_cdr',name:'Hav Nand Singh',    platoon:9,bio:'North-east rampart. Wounded early but held his position on the wall.'},
+    {col:1,row:4,type:'rifleman',   name:'Sep Jiwa Singh',    platoon:7,bio:'West wall. Covered the flank. Fought until ammunition was exhausted.'},
+    {col:9,row:4,type:'rifleman',   name:'Sep Sundar Singh',  platoon:7,bio:'East wall. Known for extraordinary calmness under fire.'},
+    {col:4,row:8,type:'rifleman',   name:'Sep Ram Singh',     platoon:8,bio:'South wall. Last line. Held the rampart as the north walls were breached.'},
+    {col:5,row:5,type:'rifleman',   name:'Sep Gurmukh Singh', platoon:8,bio:'Signaller at the heliograph tower. Kept Fort Lockhart informed throughout. Last to fight. Last to signal.'},
+  ],
+  plaWaves: [
+    [{col:3,type:'pla'},{col:5,type:'pla'},{col:7,type:'pla'}],
+    [{col:2,type:'pla'},{col:4,type:'pla_cdr'},{col:5,type:'pla'},{col:6,type:'pla'},{col:8,type:'pla'}],
+    [{col:2,type:'pla'},{col:3,type:'pla'},{col:5,type:'pla_cdr'},{col:7,type:'pla'},{col:8,type:'pla'}],
+    [{col:2,type:'pla_cdr'},{col:3,type:'pla'},{col:4,type:'pla'},{col:6,type:'pla'},{col:7,type:'pla'},{col:8,type:'pla_cdr'}],
+    [{col:2,type:'pla'},{col:3,type:'pla'},{col:4,type:'pla'},{col:5,type:'pla_cdr'},{col:6,type:'pla'},{col:7,type:'pla'},{col:8,type:'pla'}],
+  ],
+  initialEnemies: [],
+  narratives: {
+    1:  '12 Sep 1897 · 09:00 hrs — Orakzai tribesmen mass outside the walls.',
+    4:  'A section of the outer wall is breached. Fighting at the gap. Every man holds his post.',
+    7:  'Gurmukh Singh heliographs Fort Lockhart: "We will fight to the last."',
+    10: 'Ishar Singh leads the final stand. Ammunition exhausted. Bayonets drawn.',
+    12: '21 soldiers fell. None retreated. Parliament observed a moment of silence.',
+  },
+  histCards: {
+    1: {
+      name:  'Havildar Ishar Singh',
+      rank:  'Company Havildar Major, 36th Sikh Infantry',
+      medal: 'Indian Order of Merit (Posthumous)',
+      body:  'When offered terms of surrender by the Pashtun commander, he replied: "We will fight." He held Saragarhi\'s 21-man garrison for over 7 hours before the fort walls were breached. His stand allowed Fort Lockhart and Fort Gulistan to be reinforced.',
+    },
+    4: {
+      name:  'Battle of Saragarhi',
+      rank:  '12 September 1897 · Historical Context',
+      body:  '21 soldiers of the 36th Sikh Infantry (now 4 Sikh) vs ~10,000 Orakzai and Afridi Pashtun fighters. The British Parliament observed a minute\'s silence. All 21 were posthumously awarded the Indian Order of Merit — the highest gallantry award available to Indian soldiers at the time.',
+    },
+    8: {
+      name:  'Sepoy Gurmukh Singh',
+      rank:  'Signaller, 36th Sikh Infantry',
+      medal: 'Indian Order of Merit (Posthumous)',
+      body:  'The last man standing. He operated the heliograph throughout, keeping Fort Lockhart informed in real-time. His final heliograph message: "I am now about to fight the enemy. Give my salaams to all." He then picked up his rifle.',
+    },
+  },
+  winCondition:  {type:'rounds',n:12},
+  defensiveAI:   false,
+  enemyLabels:   {pla:'Pashtun Warrior', pla_cdr:'Orakzai Commander'},
+  enemyBio:      'Orakzai and Afridi Pashtun tribesmen. Estimated 10,000 fighters.',
+  introMeta:     '1897 · KHYBER PAKHTUNKHWA · NORTHWEST FRONTIER',
+  introText:     `36th Sikh Infantry — 21 soldiers defending the Saragarhi signal post.<br>10,000 Pashtun warriors mass outside the walls.<br><br><strong style="color:#c8a96e;">OBJECTIVE</strong><br>Hold the fort for 12 rounds — long enough to send the final signal.<br><br><strong style="color:#c8a96e;">HOW TO PLAY</strong><br>Click a unit to select it. <span style="color:#4488ff;">Blue</span> = move. <span style="color:#ff5555;">Red</span> = attack.<br>The Signal Tower at center gives +range and strong defense.`,
+  debriefWin:    'SARAGARHI SIGNAL SENT',
+  debriefLoss:   'THE GARRISON HAS FALLEN',
+  debriefHistory:'All 21 soldiers were awarded the Indian Order of Merit — the highest gallantry award available. The British Parliament observed a minute\'s silence. Queen Victoria sent a personal message of condolence.',
+};

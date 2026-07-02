@@ -1,0 +1,2557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Regiment</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
+canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; }
+
+/* ── Overlay screens ─────────────────────────────────────────── */
+.screen {
+  position:fixed; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:rgba(4,4,16,0.97);
+  font-family:'Courier New',monospace; color:#c8a96e; z-index:20;
+}
+.screen.hidden { display:none; }
+
+/* ── Battle panel ────────────────────────────────────────────── */
+#panel {
+  position:fixed; right:0; top:0; width:236px; height:100vh;
+  background:linear-gradient(180deg,#06061a 0%,#04040e 100%);
+  border-left:1px solid #1e1e3a;
+  font-family:'Courier New',monospace; color:#c8d8b8;
+  display:flex; flex-direction:column; z-index:10;
+  /* gold top accent */
+  box-shadow:-1px 0 0 0 #1e1e3a, inset 1px 0 0 0 #0e0e22;
+}
+.panel-accent-bar { height:3px; flex-shrink:0; background:linear-gradient(90deg,transparent,#c8a96e,transparent); transition:background 0.6s ease; }
+#panel.hidden { display:none; }
+
+.panel-header {
+  padding:12px 14px 10px;
+  border-bottom:1px solid #14142a;
+}
+.panel-title {
+  font-size:14px; font-weight:bold; text-align:center;
+  letter-spacing:3px; color:#c8a96e;
+  text-shadow:0 0 20px rgba(200,169,110,0.4);
+}
+.panel-battle {
+  font-size:8px; color:#7a9a7a; text-align:center;
+  letter-spacing:2px; margin-top:3px;
+}
+
+.panel-phase {
+  padding:8px 14px;
+  border-bottom:1px solid #14142a;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.phase-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:#3a7a48; flex-shrink:0;
+  box-shadow:0 0 6px #3a7a48;
+}
+.phase-dot.enemy { background:#cc3333; box-shadow:0 0 6px #cc3333; }
+#phase-display {
+  font-size:9px; font-weight:bold; letter-spacing:2px;
+  color:#4aaa58; flex:1; text-align:center;
+}
+#phase-display.enemy-phase { color:#cc4444; }
+#round-display {
+  font-size:8px; color:#8a9a8a; letter-spacing:0.5px;
+  white-space:nowrap;
+}
+
+.panel-unit {
+  padding:10px 14px;
+  border-bottom:1px solid #14142a;
+  flex:1; overflow:hidden; display:flex; flex-direction:column;
+}
+#unit-info { flex:1; overflow:hidden; }
+.unit-placeholder {
+  text-align:center; margin-top:20px;
+  color:#6a7a8a; font-size:9px; letter-spacing:1px;
+}
+
+/* HP bar */
+.hp-row { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.hp-label { font-size:8px; color:#7a8a7a; letter-spacing:1px; min-width:14px; }
+.hp-bar-wrap { flex:1; height:5px; background:#0e0e1e; border-radius:3px; overflow:hidden; }
+.hp-bar-fill { height:100%; border-radius:3px; transition:width 0.3s ease; }
+.hp-val { font-size:9px; font-weight:bold; min-width:28px; text-align:right; }
+
+/* Stat chips */
+.stat-row { display:flex; gap:4px; margin-bottom:10px; }
+.stat-chip {
+  flex:1; background:#0a0a18; border:1px solid #18182e;
+  border-radius:3px; padding:5px 4px; text-align:center;
+}
+.stat-chip .slabel { font-size:9px; color:#7a8a7a; letter-spacing:1px; display:block; }
+.stat-chip .sval { font-size:13px; font-weight:bold; display:block; margin-top:1px; }
+.stat-chip .sval.done { opacity:0.35; }
+
+.unit-bio {
+  font-size:9px; color:#8a9a8a; line-height:1.7;
+  border-top:1px solid #14142a; padding-top:8px;
+  overflow:hidden;
+}
+
+/* Last action */
+.panel-last {
+  padding:7px 14px;
+  border-bottom:1px solid #14142a;
+  min-height:46px;
+}
+.section-label {
+  font-size:9px; letter-spacing:2px; color:#7a8a7a; margin-bottom:4px;
+}
+#last-action { font-size:9px; line-height:1.7; }
+
+/* Combat log */
+.panel-log {
+  padding:7px 14px;
+  border-bottom:1px solid #14142a;
+  min-height:52px; overflow:hidden;
+}
+#combat-log { font-size:9px; line-height:1.75; overflow:hidden; }
+
+/* End turn button */
+#end-turn-btn {
+  margin:10px 14px 12px;
+  background:linear-gradient(180deg,#141230 0%,#0e0e24 100%);
+  border:1px solid #4a3a88;
+  color:#aa99ff;
+  font-family:'Courier New',monospace; font-size:11px; font-weight:bold;
+  padding:13px; cursor:pointer; letter-spacing:2px;
+  border-radius:3px;
+  transition:background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  position:relative; overflow:hidden; touch-action:manipulation;
+}
+#end-turn-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(180deg,rgba(120,100,220,0.08) 0%,transparent 100%);
+}
+#end-turn-btn:hover {
+  background:linear-gradient(180deg,#1e1840 0%,#16123a 100%);
+  border-color:#7766cc;
+  box-shadow:0 0 18px rgba(100,80,180,0.3), inset 0 0 12px rgba(100,80,180,0.05);
+}
+
+/* ── Narrative bar ───────────────────────────────────────────── */
+#narrative {
+  position:fixed; bottom:28px;
+  left:50%; transform:translateX(calc(-50% - 118px));
+  background:rgba(4,4,12,0.96);
+  color:#d8c888; border:1px solid #2e2a10;
+  font-family:'Courier New',monospace; font-size:11px;
+  padding:10px 32px; border-radius:3px;
+  opacity:0; transition:opacity 0.4s ease;
+  z-index:10; pointer-events:none; white-space:nowrap;
+  box-shadow:0 0 30px rgba(200,180,80,0.12), 0 2px 12px rgba(0,0,0,0.6);
+}
+#narrative::before, #narrative::after {
+  content:'✦'; position:absolute; top:50%; transform:translateY(-50%);
+  color:#5a4a20; font-size:8px;
+}
+#narrative::before { left:10px; }
+#narrative::after  { right:10px; }
+
+/* ── Camera compass ──────────────────────────────────────────── */
+#cam-compass {
+  position:fixed; bottom:14px; right:250px;
+  font-family:'Courier New',monospace; font-size:8px;
+  color:#6a6a80; letter-spacing:1px;
+  pointer-events:none; z-index:10;
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+}
+#cam-compass .cc-arrow { font-size:14px; color:#7a7a98; line-height:1; }
+#cam-compass .cc-keys  { font-size:7px; color:#5a5a78; }
+
+/* ── Battle select screen ────────────────────────────────────── */
+#battle-grid { display:flex; gap:16px; margin-top:28px; flex-wrap:wrap; justify-content:center; }
+.card { width:185px; border-radius:6px; overflow:hidden; background:#0e0e1c; border:1px solid #1e1e30; transition:border-color 0.15s, box-shadow 0.15s; }
+.card.unlocked { cursor:pointer; }
+.card.unlocked:hover { border-color:#3a7a48; box-shadow:0 0 22px rgba(58,122,72,0.18); }
+.card-accent { height:3px; }
+.card-body { padding:14px 14px 16px; }
+.card-chapter { font-size:8px;letter-spacing:2px;color:#c8a96e;margin-bottom:6px;opacity:0.7; }
+.card-title { font-size:13px; font-weight:bold; letter-spacing:1px; margin-bottom:4px; }
+.card-meta { font-size:9px; color:#7a7a8a; margin-bottom:10px; }
+.card-sub { font-size:10px; color:#9a9aaa; line-height:1.6; min-height:50px; }
+.card-btn { margin-top:12px; width:100%; padding:9px 0; font-family:'Courier New',monospace; font-size:10px; font-weight:bold; border:none; border-radius:3px; cursor:default; letter-spacing:1px; touch-action:manipulation; }
+.card.unlocked .card-btn { cursor:pointer; }
+
+/* ── Intro screen ────────────────────────────────────────────── */
+#intro-title { font-size:28px; font-weight:bold; letter-spacing:4px; }
+#intro-meta  { font-size:9px; color:#7a7a8a; letter-spacing:3px; margin-top:8px; }
+#intro-hr    { width:340px; border:none; border-top:1px solid #1e1e30; margin:18px 0; }
+#intro-lines { font-size:12px; color:#b0b0c8; line-height:2.4; text-align:center; }
+#begin-btn { margin-top:32px; padding:13px 52px; background:transparent; border:1px solid #c8a96e; color:#c8a96e; font-family:'Courier New',monospace; font-size:11px; font-weight:bold; cursor:pointer; letter-spacing:2px; transition:background 0.15s, box-shadow 0.15s; touch-action:manipulation; }
+#begin-btn:hover { background:rgba(200,169,110,0.07); box-shadow:0 0 24px rgba(200,169,110,0.15); }
+
+/* ── Debrief screen ──────────────────────────────────────────── */
+#debrief-title { font-size:26px; font-weight:bold; letter-spacing:3px; }
+#debrief-stats { font-size:11px; color:#9a9a9a; margin-top:18px; line-height:2.6; text-align:center; }
+#debrief-epitaph { font-size:12px; color:#9a9aaa; margin-top:28px; font-style:italic; }
+#back-btn { margin-top:36px; padding:11px 38px; background:transparent; border:1px solid #3a3a50; color:#999; font-family:'Courier New',monospace; font-size:10px; cursor:pointer; letter-spacing:1px; transition:border-color 0.15s, color 0.15s; }
+#back-btn:hover { border-color:#666; color:#999; }
+
+/* ── Select screen polish ────────────────────────────────────── */
+.select-bg { position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 15% 85%,rgba(58,122,72,0.10) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 15%,rgba(200,169,110,0.08) 0%,transparent 55%); }
+.select-header { display:flex;align-items:center;gap:18px;margin-bottom:10px; }
+.select-decorline { width:70px;height:1px;background:linear-gradient(90deg,transparent,#3a3a50,transparent); }
+.select-emblem { font-size:20px;color:#c8a96e;opacity:0.7; }
+.select-title { font-size:46px;font-weight:bold;letter-spacing:12px;color:#c8a96e;text-shadow:0 0 60px rgba(200,169,110,0.2); }
+.select-subtitle { font-size:11px;letter-spacing:6px;color:#5aaa68;margin-top:6px;margin-bottom:12px; }
+.select-quote { font-size:11px;color:#aaaabb;font-style:italic;margin-bottom:24px;letter-spacing:0.4px;max-width:480px;text-align:center;line-height:1.9; }
+.select-label { font-size:9px;color:#5a6a7a;letter-spacing:4px;margin-bottom:8px; }
+.select-footer { font-size:8px;color:#5a5a6a;letter-spacing:1px;margin-top:20px;padding-bottom:4px; }
+#screen-select{overflow-y:auto;justify-content:flex-start;padding-top:40px;}
+
+/* ── Ability button ──────────────────────────────────────────── */
+.ability-btn {
+  display:block; width:100%; margin-top:10px; padding:8px;
+  background:rgba(200,169,110,0.12); border:1px solid #c8a96e;
+  color:#c8a96e; font-family:'Courier New',monospace; font-size:9px;
+  letter-spacing:0.15em; cursor:pointer; transition:background 0.15s;
+}
+.ability-btn:hover:not(:disabled) { background:rgba(200,169,110,0.22); }
+.ability-btn.ability-used { opacity:0.3; cursor:default; border-color:#3a3a5a; color:#3a3a5a; }
+
+/* ── Damage floats ───────────────────────────────────────────── */
+.dmg-float { position:fixed;font-family:'Courier New',monospace;font-weight:bold;pointer-events:none;z-index:30;text-shadow:0 0 8px rgba(0,0,0,0.9);transform:translateX(-50%); }
+
+/* ── Historical card ─────────────────────────────────────────── */
+#hist-card {
+  position:fixed; left:14px; top:50%; width:286px;
+  transform:translateY(-50%) translateX(-330px);
+  transition:transform 0.45s cubic-bezier(0.22,1,0.36,1);
+  background:#06060f; border:1px solid #24243a;
+  border-top:2px solid #6a5020;
+  border-radius:6px; padding:22px 24px;
+  font-family:'Courier New',monospace; z-index:25;
+  box-shadow:4px 0 32px rgba(0,0,0,0.7);
+}
+#hist-card.visible { transform:translateY(-50%) translateX(0); }
+#hist-card.hidden { display:none; }
+.hc-tag { font-size:9px;letter-spacing:3px;color:#5aaa58;margin-bottom:12px; }
+.hc-name { font-size:14px;font-weight:bold;color:#d8c888;margin-bottom:4px; }
+.hc-rank { font-size:9px;color:#9a9aaa;margin-bottom:10px;line-height:1.7; }
+.hc-body { font-size:10px;color:#aaaabb;line-height:1.85;margin-bottom:12px; }
+.hc-medal { font-size:9px;color:#c89030;margin-bottom:14px;letter-spacing:0.5px; }
+.hc-close { font-family:'Courier New',monospace;font-size:8px;color:#7a9a7a;background:transparent;border:1px solid #2a3a2a;padding:6px 14px;cursor:pointer;letter-spacing:2px;border-radius:2px; }
+.hc-close:hover { color:#888;border-color:#444; }
+
+/* ── Structure badge ─────────────────────────────────────────── */
+.struct-badge { display:inline-block;font-size:8px;letter-spacing:1px;padding:2px 5px;border-radius:2px;margin-left:4px;vertical-align:middle; }
+
+/* ── Settings ────────────────────────────────────────────────── */
+#settings-btn {
+  position:fixed;top:14px;left:14px;z-index:40;
+  background:rgba(4,4,16,0.9);border:1px solid #1e1e30;
+  color:#3a3a50;font-size:14px;width:30px;height:30px;cursor:pointer;
+  border-radius:3px;transition:color 0.15s,border-color 0.15s;
+}
+#settings-btn:hover { color:#c8a96e;border-color:#3a3a50; }
+#settings-overlay {
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.75);
+}
+#settings-overlay.hidden { display:none; }
+#settings-panel {
+  background:#06060f;border:1px solid #1e1e30;border-radius:6px;
+  padding:28px 32px;min-width:300px;
+  font-family:'Courier New',monospace;color:#c8a96e;
+}
+.s-title { font-size:11px;font-weight:bold;letter-spacing:4px;margin-bottom:24px;text-align:center; }
+.s-section { font-size:9px;letter-spacing:2px;color:#7a7a8a;margin-bottom:8px;margin-top:20px; }
+.s-section:first-of-type { margin-top:0; }
+.s-row { display:flex;align-items:center;gap:8px;margin-bottom:6px; }
+.s-toggle { display:flex;gap:0; }
+.s-btn {
+  font-family:'Courier New',monospace;font-size:8px;font-weight:bold;letter-spacing:1px;
+  padding:5px 12px;border:1px solid #1e1e2e;background:#06060f;color:#7a7a8a;cursor:pointer;
+}
+.s-btn:first-child { border-radius:3px 0 0 3px; }
+.s-btn:last-child  { border-radius:0 3px 3px 0; }
+.s-btn.active { background:#0e1e0e;border-color:#2a5a2a;color:#4a8a4a; }
+.s-btn-speed { padding:5px 10px; }
+.s-slider {
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:3px;border-radius:2px;background:#12121e;outline:none;cursor:pointer;
+}
+.s-slider::-webkit-slider-thumb {
+  -webkit-appearance:none;appearance:none;
+  width:11px;height:11px;border-radius:50%;background:#c8a96e;cursor:pointer;
+}
+.s-close {
+  margin-top:24px;width:100%;padding:10px 0;
+  font-family:'Courier New',monospace;font-size:9px;font-weight:bold;letter-spacing:2px;
+  background:transparent;border:1px solid #1e1e30;color:#8a8a9a;cursor:pointer;border-radius:3px;
+}
+.s-close:hover { border-color:#444;color:#777; }
+
+/* Regiment identity strip on intro screen */
+.intro-regiment {
+  width:340px; border:1px solid #1e1e30; border-radius:4px;
+  overflow:hidden; margin-bottom:0;
+  font-family:'Courier New',monospace;
+}
+.ir-colour-bar { height:3px; width:100%; }
+.ir-body { padding:14px 18px; }
+.ir-regiment-name { font-size:11px; font-weight:bold; letter-spacing:2px; color:#c8a96e; margin-bottom:10px; }
+.ir-label { font-size:7px; letter-spacing:2px; color:#7a8a7a; min-width:60px; display:inline-block; }
+.ir-val { font-size:10px; color:#aaaaa0; font-style:italic; }
+.ir-eng { font-size:8px; color:#7a7a8a; margin-top:2px; margin-bottom:8px; padding-left:64px; }
+.ir-row { margin-bottom:4px; }
+.ir-cry { font-size:11px; color:#c8a96e; font-weight:bold; letter-spacing:0.5px; }
+
+/* ── Mobile layout ───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  /* Panel becomes a bottom drawer */
+  #panel {
+    width:100vw; height:auto; max-height:50vh;
+    top:auto; bottom:0; right:0;
+    border-left:none; border-top:1px solid #1e1e3a;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  #panel::before { display:none; } /* hide pseudo-element top bar on mobile */
+  .panel-accent-bar { display:none; }  /* already shown via border-top */
+
+  /* Collapse unit bio on mobile to save space */
+  .unit-bio { display:none; }
+
+  /* End turn button fixed size */
+  #end-turn-btn { margin:8px 10px; padding:14px; font-size:12px; }
+
+  /* Canvas adjusts so bottom panel doesn't overlap */
+  canvas { height:calc(100vh - 0px); } /* panel overlays, that's OK */
+
+  /* Phase and round in one line */
+  .panel-phase { padding:6px 12px; }
+  #phase-display { font-size:8px; }
+  #round-display { font-size:8px; }
+
+  /* Stat chips larger touch targets */
+  .stat-chip { padding:7px 4px; }
+  .stat-chip .sval { font-size:15px; }
+
+  /* Narrative bar full-width on mobile */
+  #narrative {
+    left:0; right:0; bottom:0;
+    transform:none;
+    border-radius:0; white-space:normal;
+    text-align:center;
+    bottom:calc(50vh + 2px); /* above the panel */
+  }
+
+  /* Historical card full-width on mobile */
+  #hist-card {
+    left:0; right:0; top:auto; bottom:calc(50vh + 4px);
+    width:100%; border-radius:0;
+    transform:translateY(110%) translateX(0);
+  }
+  #hist-card.visible { transform:translateY(0) translateX(0); }
+
+  /* Settings button */
+  #settings-btn { width:36px; height:36px; font-size:16px; }
+
+  /* Compass */
+  #cam-compass { bottom:calc(50vh + 8px); right:8px; }
+
+  /* Select screen cards smaller */
+  .card { width:155px; }
+  .card-sub { font-size:9px; }
+
+  /* Intro screen padding */
+  .intro-regiment { width:90vw; }
+  #intro-hr, #intro-hr2 { width:90vw; }
+  #intro-lines { font-size:11px; padding:0 16px; }
+  #begin-btn { padding:14px 36px; }
+
+  /* Regiment screen: stack insignia above text on mobile */
+  .rgt-layout{flex-direction:column;align-items:center;gap:24px;padding:28px 20px;}
+  .rgt-insignia-col{width:100%;display:flex;justify-content:center;}
+  .rgt-insignia{width:100px;height:120px;}
+}
+
+@media (max-width: 700px) and (orientation: landscape) {
+  /* Landscape mobile: panel goes back to right side but narrower */
+  #panel {
+    width:200px; height:100vh; max-height:none;
+    top:0; bottom:auto; right:0;
+    border-top:none; border-left:1px solid #1e1e3a;
+    overflow-y:auto;
+  }
+  .panel-accent-bar { display:block; }
+  .unit-bio { display:block; font-size:8px; }
+  #narrative { left:50%; bottom:28px; transform:translateX(calc(-50% - 100px)); white-space:nowrap; }
+  #hist-card { left:14px; top:50%; bottom:auto; width:260px; transform:translateY(-50%) translateX(-300px); }
+  #hist-card.visible { transform:translateY(-50%) translateX(0); }
+  #cam-compass { bottom:14px; right:210px; }
+}
+
+.card-icon { padding:12px 14px 0; opacity:0.75; }
+.card.unlocked:hover .card-icon { opacity:1; transition:opacity 0.2s; }
+
+/* ── Debrief redesign ────────────────────────────────────────── */
+.debrief-regiment-label { font-size:9px; letter-spacing:3px; color:#5a6a5a; margin-top:8px; margin-bottom:4px; }
+.debrief-stat-row { display:flex; gap:40px; justify-content:center; margin:24px 0 20px; }
+.debrief-stat { text-align:center; }
+.debrief-stat-val { font-size:40px; font-weight:bold; line-height:1; font-family:'Courier New',monospace; }
+.debrief-stat-label { font-size:8px; letter-spacing:3px; color:#4a5a4a; margin-top:6px; }
+.debrief-history { font-size:10px; color:#7a7a8a; max-width:460px; line-height:1.9; text-align:center; margin-top:16px; padding:0 20px; }
+
+/* ── LIGHT THEME ─────────────────────────────────────────── */
+body.light{background:#f0ebe0;color:#1a1505;}
+body.light .screen{background:#f0ebe0;}
+body.light .select-bg{background:none;}
+body.light .select-decorline{background:linear-gradient(90deg,transparent,#c0b090,transparent);}
+body.light .select-emblem{color:#6a5030 !important;opacity:1;}
+body.light .select-title{color:#1a1505 !important;text-shadow:none;}
+body.light .select-subtitle{color:#4a6a30 !important;letter-spacing:0.35em;}
+body.light .select-quote{color:#5a4a30 !important;}
+body.light .select-label{color:#7a6040 !important;}
+body.light .select-footer{color:#a09080;}
+body.light .card{background:#ffffff;border-color:#d0c8b8;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+body.light .card.unlocked:hover{background:#f8f4ee;border-color:#b8a888;box-shadow:0 4px 16px rgba(0,0,0,0.12);}
+body.light .card-chapter{color:#9a8060 !important;}
+body.light .card-meta{color:#6a5840 !important;}
+body.light .card-sub{color:#4a3820 !important;}
+body.light .card-btn{color:#ffffff !important;}
+body.light #screen-regiment{background:#ece6d8;}
+body.light .rgt-bg{opacity:0.08;}
+body.light .rgt-chapter{color:#9a8060 !important;}
+body.light .rgt-full{color:#7a6a50 !important;}
+body.light .rgt-divider{background:#c8baa0;}
+body.light .rgt-label{color:#9a8060 !important;}
+body.light .rgt-val{color:#2a1a0a !important;}
+body.light .rgt-bio{color:#4a3820 !important;}
+body.light .rgt-btn{background:transparent;}
+body.light .rgt-insignia{opacity:0.75;filter:drop-shadow(0 0 10px currentColor);}
+body.light #screen-intro{background:#ece6d8;}
+body.light #intro-title{color:#1a1505;}
+body.light #intro-meta{color:#8a7860;}
+body.light #intro-hr,body.light #intro-hr2{border-top-color:#d8d0c0;}
+body.light .intro-regiment{background:#e0d8c8;border-color:#c8bfaa;}
+body.light .ir-regiment-name{color:#1a1505;}
+body.light .ir-label{color:#9a8870;}
+body.light .ir-val{color:#2a1a0a;}
+body.light .ir-eng{color:#6a5a40;}
+body.light #intro-lines{color:#2a1a0a;}
+body.light #begin-btn{background:#2a1a0a;color:#f0ebe0;border-color:#2a1a0a;}
+body.light #screen-debrief{background:#ece6d8;}
+body.light #debrief-title{color:#1a1505;}
+body.light .debrief-regiment-label{color:#8a7860;}
+body.light .debrief-stat-label{color:#8a7860;}
+body.light #debrief-epitaph{color:#5a4a30;}
+body.light .debrief-history{color:#5a4a30;border-top-color:#d8d0c0;}
+body.light .debrief-legacy{color:#6a5a40;border-top-color:#d8d0c0;}
+body.light #back-btn{border-color:#c8bfaa;color:#5a4a30;}
+body.light #back-btn:hover{background:#e0d8c8;}
+body.light #panel{background:#e8e2d4;border-right-color:#c8bfaa;}
+body.light #panel .panel-name{color:#1a1505;}
+body.light #panel .panel-bio{color:#5a4a30;}
+body.light #panel .stat-label{color:#8a7860;}
+body.light #panel .stat-val{color:#1a1505;}
+body.light #narrative{background:rgba(236,230,216,0.95);color:#2a1a0a;border-color:#c8bfaa;}
+body.light #hist-card{background:#e8e2d4;border-color:#c8bfaa;}
+body.light .hc-name{color:#1a1505;}
+body.light .hc-rank{color:#8a7860;}
+body.light .hc-medal{color:#c8a030;}
+body.light .hc-body{color:#3a2a10;}
+body.light #hist-close{color:#8a7860;}
+/* ── CINEMATIC OPENING ───────────────────────────────────── */
+#screen-opening { background:#000; justify-content:center; align-items:center; }
+.opening-card {
+  font-family:'Courier New',monospace; font-size:clamp(1em,2.5vw,1.4em);
+  color:#c8a96e; letter-spacing:0.05em; text-align:center; line-height:1.8;
+  max-width:560px; padding:0 24px; opacity:0; transition:opacity 0.6s;
+  position:absolute; white-space:pre-line;
+}
+.opening-title {
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  opacity:0; transition:opacity 0.8s;
+}
+.opening-title.hidden { display:none; }
+.opening-regiment-name {
+  font-size:clamp(2.5em,8vw,5em); font-weight:700; letter-spacing:0.3em;
+  color:#c8a96e; text-shadow:0 0 80px rgba(200,169,110,0.4);
+}
+.opening-sub { font-size:0.75em; letter-spacing:0.3em; color:#5a5a6a; }
+.opening-begin-btn {
+  margin-top:24px; background:transparent; border:1px solid #c8a96e;
+  color:#c8a96e; font-family:'Courier New',monospace; font-size:0.75em;
+  letter-spacing:0.2em; padding:14px 36px; cursor:pointer;
+  transition:background 0.2s;
+}
+.opening-begin-btn:hover { background:rgba(200,169,110,0.08); }
+.opening-skip-btn {
+  position:absolute; top:20px; right:24px; background:transparent;
+  border:none; color:#3a3a5a; font-family:'Courier New',monospace;
+  font-size:0.65em; letter-spacing:0.2em; cursor:pointer;
+}
+.opening-skip-btn.hidden { display:none; }
+.opening-skip-btn:hover { color:#c8a96e; }
+body.light #settings-overlay{background:rgba(236,230,216,0.92);}
+body.light #settings-panel{background:#e8e2d4;border-color:#c8bfaa;}
+body.light .s-title{color:#1a1505;}
+body.light .s-section{color:#8a7860;}
+body.light .s-btn{background:#ddd8c8;color:#2a1a0a;border-color:#c8bfaa;}
+body.light .s-btn.active{background:#2a1a0a;color:#f0ebe0;}
+body.light .s-close{background:#2a1a0a;color:#f0ebe0;}
+body.light #war-cry-overlay{background:rgba(240,235,224,0.85);}
+body.light .wc-text{color:#2a1a0a;text-shadow:0 0 40px rgba(42,26,10,0.2);}
+body.light #settings-btn{background:#e8e2d4;color:#2a1a0a;border-color:#c8bfaa;}
+
+/* ── REGIMENT INTRO SCREEN ───────────────────────────────── */
+#screen-regiment{background:#080810;overflow-y:auto;}
+.rgt-bg{position:absolute;inset:0;pointer-events:none;opacity:0.07;}
+.rgt-layout{position:relative;display:flex;align-items:center;gap:48px;max-width:860px;width:100%;padding:40px 32px;}
+.rgt-insignia-col{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:160px;}
+.rgt-insignia{width:140px;height:168px;opacity:0.88;filter:drop-shadow(0 0 18px currentColor);transition:opacity 0.4s;}
+.rgt-insignia svg{width:100%;height:100%;}
+.rgt-content{flex:1;display:flex;flex-direction:column;min-width:0;}
+.rgt-chapter{font-size:0.60em;letter-spacing:0.35em;color:#3a3a5a;margin-bottom:10px;}
+.rgt-name{font-size:clamp(1.5em,4vw,2.2em);letter-spacing:0.06em;margin-bottom:4px;font-weight:700;}
+.rgt-full{font-size:0.68em;letter-spacing:0.14em;color:#5a5a7a;margin-bottom:22px;}
+.rgt-divider{height:1px;background:#1a1a2c;margin:4px 0 20px;}
+.rgt-identity{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+.rgt-item{display:flex;align-items:baseline;gap:18px;}
+.rgt-label{font-size:0.52em;letter-spacing:0.28em;color:#3a3a5a;min-width:72px;flex-shrink:0;}
+.rgt-val{font-size:0.80em;color:#b0b0c8;line-height:1.5;}
+.rgt-warcry{color:#c8a96e !important;font-size:0.90em !important;}
+.rgt-bio{font-size:0.76em;line-height:1.85;color:#7a7a96;margin-bottom:36px;}
+.rgt-btn{background:transparent;border:1px solid;padding:13px 36px;letter-spacing:0.22em;font-size:0.65em;cursor:pointer;align-self:flex-start;transition:background 0.2s;}
+.rgt-btn:hover{background:rgba(200,169,110,0.08);}
+.rgt-btn-auto { margin-top:10px; opacity:0.75; }
+.rgt-btn-auto:hover { opacity:1; }
+#auto-pause-btn {
+  display:none; width:calc(100% - 20px); margin:0 10px 8px;
+  padding:11px; background:rgba(200,169,110,0.12); border:1px solid #c8a96e;
+  color:#c8a96e; font-family:'Courier New',monospace; font-size:10px;
+  letter-spacing:0.15em; cursor:pointer;
+}
+#auto-pause-btn:hover { background:rgba(200,169,110,0.2); }
+
+/* ── WAR CRY OVERLAY ─────────────────────────────────────── */
+#war-cry-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:500;opacity:0;transition:opacity 0.35s;pointer-events:none;}
+.wc-text{font-size:clamp(1.6em,5vw,3em);color:#c8a96e;letter-spacing:0.18em;text-align:center;text-transform:uppercase;text-shadow:0 0 50px rgba(200,169,110,0.55),0 0 20px rgba(200,169,110,0.3);padding:0 24px;}
+
+/* ── DEBRIEF LEGACY ──────────────────────────────────────── */
+.debrief-legacy{font-size:0.72em;line-height:1.85;color:#6a6a86;margin:16px 28px 0;padding-top:16px;border-top:1px solid #1a1a2c;max-width:560px;text-align:left;}
+</style>
+</head>
+<body>
+<div id="screen-opening" class="screen hidden">
+  <div id="opening-card" class="opening-card"></div>
+  <div id="opening-title" class="opening-title hidden">
+    <div class="opening-regiment-name">REGIMENT</div>
+    <div class="opening-sub">A journey through Indian military history</div>
+    <button id="opening-begin-btn" class="opening-begin-btn">BEGIN THE JOURNEY →</button>
+  </div>
+  <button id="opening-skip-btn" class="opening-skip-btn hidden">SKIP ›</button>
+</div>
+<div id="screen-select" class="screen">
+  <div class="select-bg"></div>
+  <div class="select-header">
+    <div class="select-decorline"></div>
+    <div class="select-emblem">✦</div>
+    <div class="select-decorline"></div>
+  </div>
+  <div class="select-title">REGIMENT</div>
+  <div class="select-subtitle">INDIA'S FINEST HOURS</div>
+  <div class="select-quote">"How can a man die better than facing fearful odds, for the ashes of his fathers, and the temples of his gods."</div>
+  <div class="select-label">— SELECT A BATTLE —</div>
+  <div id="battle-grid"></div>
+  <div class="select-footer">A tactical game of Indian Army historical battles · Educational · Non-commercial</div>
+</div>
+<div id="screen-regiment" class="screen hidden">
+  <div class="rgt-bg" id="rgt-bg"></div>
+  <div class="rgt-layout">
+    <div class="rgt-insignia-col">
+      <div class="rgt-insignia" id="rgt-insignia"></div>
+    </div>
+    <div class="rgt-content">
+      <div class="rgt-chapter" id="rgt-chapter"></div>
+      <div class="rgt-name" id="rgt-name"></div>
+      <div class="rgt-full" id="rgt-full"></div>
+      <div class="rgt-divider"></div>
+      <div class="rgt-identity">
+        <div class="rgt-item"><span class="rgt-label">MOTTO</span><span class="rgt-val" id="rgt-motto"></span></div>
+        <div class="rgt-item"><span class="rgt-label">WAR CRY</span><span class="rgt-val rgt-warcry" id="rgt-warcry"></span></div>
+        <div class="rgt-item"><span class="rgt-label">COLOURS</span><span class="rgt-val" id="rgt-colors"></span></div>
+      </div>
+      <div class="rgt-bio" id="rgt-bio"></div>
+      <button class="rgt-btn" id="rgt-btn">READ THE MISSION →</button>
+      <button class="rgt-btn rgt-btn-auto" id="rgt-btn-auto">▶ AUTO-PLAY</button>
+    </div>
+  </div>
+</div>
+<div id="war-cry-overlay">
+  <div class="wc-text" id="wc-text"></div>
+</div>
+<div id="screen-intro" class="screen hidden">
+  <div id="intro-title"></div>
+  <div id="intro-meta"></div>
+  <hr id="intro-hr">
+  <div id="intro-regiment" class="intro-regiment">
+    <div class="ir-colour-bar" id="ir-colour-bar"></div>
+    <div class="ir-body">
+      <div class="ir-regiment-name" id="ir-regiment-name"></div>
+      <div class="ir-row">
+        <span class="ir-label">MOTTO</span>
+        <span class="ir-val" id="ir-motto"></span>
+      </div>
+      <div class="ir-eng" id="ir-motto-eng"></div>
+      <div class="ir-row ir-row-cry">
+        <span class="ir-label">WAR CRY</span>
+        <span class="ir-cry" id="ir-warcry"></span>
+      </div>
+    </div>
+  </div>
+  <hr id="intro-hr2" style="width:340px;border:none;border-top:1px solid #1e1e30;margin:16px 0;">
+  <div id="intro-lines"></div>
+  <button id="begin-btn">BEGIN BATTLE</button>
+</div>
+<div id="screen-debrief" class="screen hidden">
+  <div id="debrief-title"></div>
+  <div id="debrief-regiment-label" class="debrief-regiment-label"></div>
+  <div id="debrief-stat-row" class="debrief-stat-row">
+    <div class="debrief-stat">
+      <div class="debrief-stat-val" id="db-fallen">—</div>
+      <div class="debrief-stat-label">FALLEN</div>
+    </div>
+    <div class="debrief-stat">
+      <div class="debrief-stat-val" id="db-rounds">—</div>
+      <div class="debrief-stat-label">ROUNDS</div>
+    </div>
+    <div class="debrief-stat">
+      <div class="debrief-stat-val" id="db-eliminated">—</div>
+      <div class="debrief-stat-label">ELIMINATED</div>
+    </div>
+  </div>
+  <div id="debrief-epitaph"></div>
+  <div id="debrief-history" class="debrief-history"></div>
+  <div id="debrief-legacy" class="debrief-legacy"></div>
+  <button id="back-btn">← RETURN TO MAP</button>
+</div>
+<canvas id="c"></canvas>
+<div id="panel" class="hidden">
+  <div id="panel-accent-bar" class="panel-accent-bar"></div>
+  <div class="panel-header">
+    <div class="panel-title">REGIMENT</div>
+    <div class="panel-battle" id="panel-battle-label">· · ·</div>
+  </div>
+  <div class="panel-phase">
+    <div class="phase-dot" id="phase-dot"></div>
+    <div id="phase-display">YOUR TURN</div>
+    <div id="round-display">R1</div>
+  </div>
+  <div class="panel-unit">
+    <div id="unit-info"><div class="unit-placeholder">SELECT A UNIT</div></div>
+  </div>
+  <div class="panel-last">
+    <div class="section-label">LAST ATTACK</div>
+    <div id="last-action"></div>
+  </div>
+  <div class="panel-log">
+    <div class="section-label">COMBAT LOG</div>
+    <div id="combat-log"></div>
+  </div>
+  <button id="auto-pause-btn">⏸ PAUSE AUTO-PLAY</button>
+  <button id="end-turn-btn">END TURN →</button>
+</div>
+<div id="narrative"></div>
+
+<div id="hist-card" class="hidden">
+  <div class="hc-tag">✦ HISTORICAL RECORD</div>
+  <div class="hc-name" id="hc-name"></div>
+  <div class="hc-rank" id="hc-rank"></div>
+  <div class="hc-body" id="hc-body"></div>
+  <div class="hc-medal" id="hc-medal"></div>
+  <button class="hc-close" id="hc-close">DISMISS ×</button>
+</div>
+
+<div id="cam-compass">
+  <div class="cc-arrow" id="cc-arrow">↖</div>
+  <div class="cc-keys">Q · E</div>
+</div>
+<button id="settings-btn" title="Settings">⚙</button>
+<div id="settings-overlay" class="hidden">
+  <div id="settings-panel">
+    <div class="s-title">⚙ SETTINGS</div>
+
+    <div class="s-section">MUSIC</div>
+    <div class="s-row">
+      <div class="s-toggle">
+        <button class="s-btn" id="s-music-on">ON</button>
+        <button class="s-btn" id="s-music-off">OFF</button>
+      </div>
+    </div>
+
+    <div class="s-section">VOLUME</div>
+    <div class="s-row">
+      <input type="range" class="s-slider" id="s-vol" min="0" max="100" value="35">
+      <span id="s-vol-label" style="font-size:8px;color:#555;min-width:26px;">35%</span>
+    </div>
+
+    <div class="s-section">ANIMATION SPEED</div>
+    <div class="s-row">
+      <div class="s-toggle">
+        <button class="s-btn s-btn-speed" id="s-anim-slow">SLOW</button>
+        <button class="s-btn s-btn-speed" id="s-anim-norm">NORMAL</button>
+        <button class="s-btn s-btn-speed" id="s-anim-fast">FAST</button>
+      </div>
+    </div>
+
+    <div class="s-section">DAMAGE NUMBERS</div>
+    <div class="s-row">
+      <div class="s-toggle">
+        <button class="s-btn" id="s-dmg-on">ON</button>
+        <button class="s-btn" id="s-dmg-off">OFF</button>
+      </div>
+    </div>
+
+    <div class="s-section">THEME</div>
+    <div class="s-row">
+      <div class="s-toggle">
+        <button class="s-btn" id="s-theme-dark">DARK</button>
+        <button class="s-btn" id="s-theme-light">LIGHT</button>
+      </div>
+    </div>
+
+    <button class="s-close" id="s-close-btn">CLOSE</button>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { BATTLE_DATA, BATTLES } from './battles/index.js';
+
+// Settings — persisted to localStorage
+const gameSettings = { musicOn:true, musicVol:35, animSpeed:1.0, showDmg:true, theme:'dark', autoPlay:false };
+
+function loadInsigniaImg(battle, sizePx){
+  const img = document.createElement('img');
+  img.width = sizePx; img.height = sizePx;
+  img.style.objectFit = 'contain';
+  img.alt = battle.regiment + ' insignia';
+  if(battle.insigniaFile){
+    img.src = battle.insigniaFile;
+    img.onerror = ()=>{
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = `width:${sizePx}px;height:${sizePx}px;display:flex;align-items:center;justify-content:center;`;
+      wrapper.innerHTML = battle.insigniaSvg?.(battle.color) || '';
+      img.replaceWith(wrapper);
+    };
+  } else {
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = `width:${sizePx}px;height:${sizePx}px;display:flex;align-items:center;justify-content:center;`;
+    wrapper.innerHTML = battle.insigniaSvg?.(battle.color) || '';
+    return wrapper;
+  }
+  return img;
+}
+
+function loadSettings(){
+  try{ const s=JSON.parse(localStorage.getItem('regiment_settings')||'{}'); Object.assign(gameSettings,s); }catch(e){}
+}
+function saveSettings(){ localStorage.setItem('regiment_settings',JSON.stringify(gameSettings)); }
+function applySettings(){
+  // Music volume / on-off
+  if(masterGain){
+    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    masterGain.gain.setValueAtTime(gameSettings.musicOn?gameSettings.musicVol/100:0, audioCtx.currentTime);
+  }
+  // Sync UI buttons
+  ['s-music-on','s-music-off'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  document.getElementById(gameSettings.musicOn?'s-music-on':'s-music-off')?.classList.add('active');
+  ['s-anim-slow','s-anim-norm','s-anim-fast'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  const animId=gameSettings.animSpeed===0.5?'s-anim-slow':gameSettings.animSpeed===2.0?'s-anim-fast':'s-anim-norm';
+  document.getElementById(animId)?.classList.add('active');
+  ['s-dmg-on','s-dmg-off'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  document.getElementById(gameSettings.showDmg?'s-dmg-on':'s-dmg-off')?.classList.add('active');
+  const volSlider=document.getElementById('s-vol');
+  if(volSlider) volSlider.value=gameSettings.musicVol;
+  const volLabel=document.getElementById('s-vol-label');
+  if(volLabel) volLabel.textContent=gameSettings.musicVol+'%';
+  // Theme
+  ['s-theme-dark','s-theme-light'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  document.getElementById(gameSettings.theme==='light'?'s-theme-light':'s-theme-dark')?.classList.add('active');
+  applyTheme();
+}
+function applyTheme(){
+  const isLight = gameSettings.theme==='light';
+  document.body.classList.toggle('light', isLight);
+  const bgCol = isLight ? 0xd8d0c2 : 0x0a0a14;
+  scene.background = new THREE.Color(bgCol);
+  scene.fog = new THREE.FogExp2(bgCol, 0.022);
+}
+// Shorthand: animation duration scaled by speed
+function ad(ms){ return ms/gameSettings.animSpeed; }
+loadSettings();
+
+const HEX_R = 1.0, SQ3 = Math.sqrt(3), MC = 11, MR = 10;
+
+let TERRAIN = {
+  'P': { color:0x1e1e30, height:3.8, block:true  },
+  'R': { color:0x2c2c42, height:3.0, block:true  },
+  'r': { color:0x5a5a6e, height:1.5, def:1.3, mov:2 },
+  's': { color:0x4a78b0, height:1.2, def:1.0, mov:1 },
+  'i': { color:0x8ac8e0, height:0.9, def:0.75,mov:2 },
+  '.': { color:0x7a6a52, height:1.0, def:1.0, mov:1 },
+};
+
+let MAP = [
+  ['P','P','P','P','P','P','P','P','P','P','P'],
+  ['P','P','R','s','s','s','s','R','P','P','P'],
+  ['P','R','r','s','s','s','s','r','R','P','P'],
+  ['P','R','r','.','s','.','s','.','r','R','P'],
+  ['P','R','r','i','i','i','i','i','r','R','P'],
+  ['P','R','r','.','i','.','i','.','r','R','P'],
+  ['P','R','r','r','.','.','.','r','r','R','P'],
+  ['P','R','r','r','.','.','.','r','r','R','P'],
+  ['P','P','R','r','.','.','.','r','R','P','P'],
+  ['P','P','P','P','.','.',  'P','P','P','P','P'],
+];
+
+const STATS = {
+  rifleman:    { hp:2, atk:2, mov:2, rng:2, morale:100, ability:'dig_in' },
+  section_cdr: { hp:3, atk:2, mov:2, rng:2, morale:100, ability:'covering_fire' },
+  hero:        { hp:4, atk:3, mov:3, rng:3, morale:100, ability:'rally' },
+  pla:         { hp:2, atk:2, mov:2, rng:1, morale:100, ability:null },
+  pla_cdr:     { hp:3, atk:3, mov:2, rng:1, morale:100, ability:'coordinated_assault' },
+  pla_tank:    { hp:6, atk:4, mov:1, rng:2, morale:100, ability:'suppress' },
+  // Operation Sindoor — aerial enemies
+  drone:       { hp:1, atk:2, mov:3, rng:1, morale:100, ability:'swarm' },
+  missile:     { hp:2, atk:4, mov:3, rng:1, morale:100, ability:null },
+  aircraft:    { hp:3, atk:3, mov:2, rng:3, morale:100, ability:null },
+};
+
+const PLT_COLOR = { 9:0x3a7a48, 7:0x2e6e40, 8:0x2e6e40, 0:0xc8a030 };
+
+let IND_STARTS = [
+  {col:4,row:6,type:'section_cdr',name:'Nb Sub Dharam Paul',platoon:9,bio:'Commanded 9 Platoon forward. First to engage PLA at dawn.'},
+  {col:5,row:6,type:'rifleman',   name:'Rfn Mool Singh',    platoon:9,bio:'Held center of the forward line. Fought until rounds were exhausted.'},
+  {col:4,row:7,type:'section_cdr',name:'Hav Khem Chand',    platoon:9,bio:'Vir Chakra. Led close combat after ammo ran out.'},
+  {col:3,row:7,type:'section_cdr',name:'Hav Bhanwar Singh', platoon:7,bio:'7 Platoon, western flank. Held ground under sustained fire.'},
+  {col:3,row:8,type:'rifleman',   name:'Rfn Ram Kishan',    platoon:7,bio:'Left flank throughout. Never retreated.'},
+  {col:6,row:7,type:'section_cdr',name:'Nb Sub Ram Kumar',  platoon:8,bio:'8 Platoon, eastern flank. Coordinated with HQ under fire.'},
+  {col:6,row:8,type:'rifleman',   name:'Hav Hari Ram',      platoon:8,bio:'Continued firing after being wounded.'},
+  {col:4,row:9,type:'hero',       name:'Maj Shaitan Singh', platoon:0,bio:'Param Vir Chakra — Posthumous. Led counter-attack up the crest, wounded, refused evacuation.'},
+  {col:5,row:9,type:'rifleman',   name:'Rfn Chuni Lal',     platoon:0,bio:'Sena Medal. Signaller. Kept radio contact with battalion HQ until the last.'},
+];
+
+let PLA_WAVES = [
+  [{col:3,type:'pla'},{col:5,type:'pla'},{col:6,type:'pla'}],
+  [{col:3,type:'pla'},{col:4,type:'pla_cdr'},{col:5,type:'pla'},{col:6,type:'pla'}],
+  [{col:3,type:'pla'},{col:4,type:'pla'},{col:5,type:'pla_cdr'},{col:6,type:'pla'},{col:3,type:'pla'}],
+  [{col:3,type:'pla_cdr'},{col:4,type:'pla'},{col:5,type:'pla'},{col:6,type:'pla'},{col:4,type:'pla'},{col:6,type:'pla_cdr'}],
+  [{col:3,type:'pla'},{col:4,type:'pla'},{col:5,type:'pla'},{col:6,type:'pla'},{col:3,type:'pla_cdr'},{col:5,type:'pla_cdr'},{col:6,type:'pla'}],
+];
+
+let NARRATIVES = {
+  1: '18 Nov 1962 · 04:30 hrs — First contact. C Company stands to.',
+  3: 'PLA artillery opens up. The pass shakes.',
+  5: 'Maj Shaitan Singh orders a counter-attack up the crest.',
+  8: 'Ammunition running low. Soldiers fight with bare hands.',
+  10:'The last signal: "They shall not pass."',
+};
+
+// Historically accurate field fortifications at Rezang La
+let STRUCTURES = {
+  '4,6': { type:'lmg',    label:'LMG Nest',  atkMul:1.6, defMul:1.4, rngBonus:1 },
+  '6,6': { type:'lmg',    label:'LMG Nest',  atkMul:1.6, defMul:1.4, rngBonus:1 },
+  '5,8': { type:'mortar', label:'Mortar Pit', atkMul:2.0, defMul:1.0, rngBonus:2, noRetaliate:true },
+  '3,7': { type:'sangar', label:'Sangar',     atkMul:1.0, defMul:1.8, rngBonus:0 },
+  '6,7': { type:'sangar', label:'Sangar',     atkMul:1.0, defMul:1.8, rngBonus:0 },
+};
+function getStructure(col,row) { return STRUCTURES[`${col},${row}`]; }
+
+let activeBattleData = null; // set by startBattle(name)
+let structureMeshes = []; // tracked for clearing on battle restart
+
+
+// Three.js
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a14);
+scene.fog = new THREE.FogExp2(0x0a0a14, 0.022);
+
+const FRUSTUM = 11;
+let aspect = window.innerWidth / window.innerHeight;
+const camera = new THREE.OrthographicCamera(-FRUSTUM*aspect, FRUSTUM*aspect, FRUSTUM, -FRUSTUM, 0.1, 200);
+
+const MAP_CENTER = new THREE.Vector3(9.5, 1, 6.75);
+const CAM_RADIUS = 12 * Math.SQRT2; // orbit radius in xz
+const CAM_Y = 13;
+let cameraAngle = Math.PI / 4; // 45° = SE view (default)
+
+function updateCameraPosition(){
+  camera.position.set(
+    MAP_CENTER.x + CAM_RADIUS * Math.cos(cameraAngle),
+    CAM_Y,
+    MAP_CENTER.z + CAM_RADIUS * Math.sin(cameraAngle)
+  );
+  camera.lookAt(MAP_CENTER);
+}
+function rotateCamera(dir){ // dir: +1 = clockwise, -1 = counter-clockwise
+  cameraAngle += dir * Math.PI / 2;
+  updateCameraPosition();
+  updateCompass();
+}
+function updateCompass(){
+  const arrows=['↖','↗','↘','↙'];
+  const idx=Math.round(((cameraAngle%(Math.PI*2))+Math.PI*2)%(Math.PI*2)/(Math.PI/2))%4;
+  const el=document.getElementById('cc-arrow');
+  if(el) el.textContent=arrows[idx];
+}
+updateCameraPosition();
+
+scene.add(new THREE.AmbientLight(0x334466, 0.9));
+const sun = new THREE.DirectionalLight(0xffd4a0, 1.3);
+sun.position.set(-8,18,8); sun.castShadow=true;
+sun.shadow.camera.left=-22; sun.shadow.camera.right=26;
+sun.shadow.camera.top=22;  sun.shadow.camera.bottom=-6;
+sun.shadow.mapSize.set(1024,1024);
+scene.add(sun);
+
+window.addEventListener('resize', () => {
+  aspect = window.innerWidth/window.innerHeight;
+  camera.left=-FRUSTUM*aspect; camera.right=FRUSTUM*aspect;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+function hexWorldPos(col,row) {
+  return new THREE.Vector3(HEX_R*SQ3*(col+(row&1)*0.5), 0, HEX_R*1.5*row);
+}
+function tileTopY(col,row) { return TERRAIN[MAP[row]?.[col]]?.height ?? 0; }
+
+function toAxial(c,r)  { return {q:c-(r-(r&1))/2,r}; }
+function toOffset(q,r) { return {col:q+(r-(r&1))/2,row:r}; }
+function axDist(q1,r1,q2,r2) { return (Math.abs(q1-q2)+Math.abs(q1+r1-q2-r2)+Math.abs(r1-r2))/2; }
+const DIRS = [{q:1,r:0},{q:1,r:-1},{q:0,r:-1},{q:-1,r:0},{q:-1,r:1},{q:0,r:1}];
+function unitAt(col,row) { return gameState.units.find(u=>u.alive&&u.col===col&&u.row===row); }
+
+// Terrain
+let tileMeshes = [];
+function buildTerrain(){
+  tileMeshes.forEach(m=>scene.remove(m)); tileMeshes=[];
+  for(let row=0;row<MR;row++) for(let col=0;col<MC;col++){
+    const type=MAP[row][col]; const td=TERRAIN[type]; if(!td) continue;
+    const geo=new THREE.CylinderGeometry(HEX_R-0.08,HEX_R-0.08,td.height,6,1);
+    const mat=new THREE.MeshLambertMaterial({color:td.color});
+    const mesh=new THREE.Mesh(geo,mat);
+    const pos=hexWorldPos(col,row);
+    mesh.position.set(pos.x,td.height/2,pos.z);
+    mesh.receiveShadow=true; if(td.block||td.height>=2.0) mesh.castShadow=true;
+    mesh.userData={type:'tile',col,row,terrainType:type};
+    scene.add(mesh); tileMeshes.push(mesh);
+  }
+}
+buildTerrain(); // initial build for select screen background
+
+// Structures
+function buildStructures(){
+  structureMeshes.forEach(m=>scene.remove(m)); structureMeshes=[];
+  Object.entries(STRUCTURES).forEach(([key,s])=>{
+    const [col,row]=key.split(',').map(Number);
+    const p=hexWorldPos(col,row), ty=tileTopY(col,row);
+    const sm=m=>{ scene.add(m); structureMeshes.push(m); return m; };
+    if(s.type==='lmg'){
+      const base=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.14,6),new THREE.MeshLambertMaterial({color:0x6b5a3e}));
+      base.position.set(p.x,ty+0.07,p.z); sm(base);
+      for(let i=0;i<5;i++){const a=(i/5)*Math.PI*2;
+        const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.16,0.13,0.2),new THREE.MeshLambertMaterial({color:0x7a6a44})));
+        sb.position.set(p.x+Math.cos(a)*0.28,ty+0.21,p.z+Math.sin(a)*0.28); sb.rotation.y=a;}
+      const brl=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,0.52,6),new THREE.MeshLambertMaterial({color:0x1a1a1a})));
+      brl.rotation.z=Math.PI/2; brl.position.set(p.x+0.18,ty+0.27,p.z);
+    } else if(s.type==='mortar'){
+      const pit=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.38,0.09,8),new THREE.MeshLambertMaterial({color:0x2a2820})));
+      pit.position.set(p.x,ty+0.045,p.z);
+      const pl=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.04,6),new THREE.MeshLambertMaterial({color:0x555544})));
+      pl.position.set(p.x,ty+0.11,p.z);
+      const tb=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.07,0.42,6),new THREE.MeshLambertMaterial({color:0x1a1a1a})));
+      tb.rotation.x=-0.35; tb.position.set(p.x,ty+0.32,p.z+0.05);
+    } else if(s.type==='sangar'){
+      for(let i=0;i<7;i++){const a=(i/7)*Math.PI*2;
+        const st=sm(new THREE.Mesh(new THREE.BoxGeometry(0.17,0.2,0.14),new THREE.MeshLambertMaterial({color:i%2?0x5a4a38:0x4e4030})));
+        st.position.set(p.x+Math.cos(a)*0.3,ty+0.1,p.z+Math.sin(a)*0.3); st.rotation.y=a+0.2;}
+    }
+  });
+}
+
+// Background music via Web Audio API — per-battle Indian military themes
+let audioCtx=null, masterGain=null, _musicGen=0;
+
+function unlockAudio(){
+  if(!audioCtx){
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    masterGain=audioCtx.createGain(); masterGain.gain.value=0;
+    masterGain.connect(audioCtx.destination);
+  }
+  if(audioCtx.state==='suspended') audioCtx.resume();
+}
+
+function startBattleMusic(battleName){
+  unlockAudio();
+  _musicGen++;
+  const gen=_musicGen;
+  masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime+0.5);
+  setTimeout(()=>{
+    if(_musicGen!==gen) return;
+    const vol=gameSettings.musicOn?gameSettings.musicVol/100:0;
+    masterGain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime+1.5);
+    const themes={'Saragarhi':playPipeMarch,'Longewala':playDesertMarch,'Rezang La':playMountainLament,'Tololing':playRajputAssault,'Siachen':playGlacierAmbient,'Operation Sindoor':playSindoorPulse};
+    (themes[battleName]||playPipeMarch)(gen);
+  }, 550);
+}
+
+// Legacy alias so settings panel code that calls startMusic() still works
+function startMusic(){ unlockAudio(); }
+
+// ── Shared helpers ───────────────────────────────────────────
+function _mkKick(when,f1=130,f2=38,dur=0.22,vol=0.55){
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.frequency.setValueAtTime(f1,when); o.frequency.exponentialRampToValueAtTime(f2,when+0.07);
+  g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(0.001,when+dur);
+  o.connect(g);g.connect(masterGain);o.start(when);o.stop(when+dur+0.03);
+}
+function _mkSnare(when,vol=0.28,dur=0.13){
+  const sr=audioCtx.sampleRate;
+  const buf=audioCtx.createBuffer(1,Math.floor(sr*Math.max(dur,0.04)),sr);
+  const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  const src=audioCtx.createBufferSource();
+  const f=audioCtx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1600; f.Q.value=0.7;
+  const g=audioCtx.createGain();
+  src.buffer=buf; g.gain.setValueAtTime(vol,when); g.gain.exponentialRampToValueAtTime(0.001,when+dur);
+  src.connect(f);f.connect(g);g.connect(masterGain);src.start(when);
+}
+function _mkDrone(freq,vol=0.038){
+  const o=audioCtx.createOscillator(),f=audioCtx.createBiquadFilter(),g=audioCtx.createGain();
+  o.type='sawtooth'; o.frequency.value=freq;
+  f.type='lowpass'; f.frequency.value=600;
+  g.gain.value=vol;
+  o.connect(f);f.connect(g);g.connect(masterGain);o.start();
+  return o;
+}
+function _mkNote(when,freq,dur,vol=0.10,vibDepth=0){
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  const filt=audioCtx.createBiquadFilter();
+  o.type='sawtooth'; o.frequency.value=freq;
+  filt.type='bandpass'; filt.frequency.value=2000; filt.Q.value=1.2;
+  if(vibDepth>0){
+    const lfo=audioCtx.createOscillator(),lg=audioCtx.createGain();
+    lfo.frequency.value=6.5; lg.gain.value=freq*vibDepth;
+    lfo.connect(lg);lg.connect(o.frequency);lfo.start(when);lfo.stop(when+dur+0.02);
+  }
+  g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(vol,when+0.025);
+  g.gain.setValueAtTime(vol,when+dur-0.04);g.gain.linearRampToValueAtTime(0,when+dur);
+  o.connect(filt);filt.connect(g);g.connect(masterGain);o.start(when);o.stop(when+dur+0.02);
+}
+function _mkBell(when,freq,dur,vol=0.08){
+  [1,2].forEach((mult,i)=>{
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type='sine'; o.frequency.value=freq*mult;
+    const v=vol*(i===0?1:0.32);
+    g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(v,when+0.03);
+    g.gain.exponentialRampToValueAtTime(0.001,when+dur*(i===0?1:0.55));
+    o.connect(g);g.connect(masterGain);o.start(when);o.stop(when+dur+0.02);
+  });
+}
+
+// ── SARAGARHI — Sikh pipe and drum march (80 BPM, D major) ──
+function playPipeMarch(gen){
+  const bpm=80,beat=60/bpm,bar=beat*4;
+  const droneOscs=[110,164.81,220].map(f=>_mkDrone(f,0.036));
+  const D4=293.66,E4=329.63,Fs4=369.99,G4=392,A4=440,B4=493.88;
+  const phrase=[
+    {f:D4,d:0.5},{f:D4,d:0.5},{f:Fs4,d:1},{f:A4,d:1},{f:G4,d:0.5},{f:E4,d:0.5},{f:D4,d:2},
+    {f:Fs4,d:0.5},{f:A4,d:0.5},{f:B4,d:1},{f:A4,d:0.5},{f:Fs4,d:0.5},{f:E4,d:0.5},{f:D4,d:1.5}
+  ].map(n=>({...n,d:n.d*beat}));
+  const phraseLen=phrase.reduce((s,n)=>s+n.d,0);
+  let nt=audioCtx.currentTime+0.5,mt=audioCtx.currentTime+0.5;
+  function drumLoop(){
+    if(_musicGen!==gen){droneOscs.forEach(o=>{try{o.stop();}catch(e){}});return;}
+    _mkKick(nt,120,40,0.20,0.50);_mkKick(nt+beat*2,120,40,0.20,0.48);
+    _mkSnare(nt+beat,0.30,0.12);_mkSnare(nt+beat*3,0.30,0.12);
+    for(let i=0;i<8;i++) if(i%2!==0) _mkSnare(nt+beat*i*0.5,0.04,0.03);
+    nt+=bar; setTimeout(drumLoop,(bar-0.06)*1000);
+  }
+  function melodyLoop(){
+    if(_musicGen!==gen) return;
+    let t=mt; phrase.forEach(n=>{_mkNote(t,n.f,n.d*0.80,0.11,0.012);t+=n.d;});
+    mt+=phraseLen; setTimeout(melodyLoop,(phraseLen-0.25)*1000);
+  }
+  drumLoop();melodyLoop();
+}
+
+// ── LONGEWALA — Desert night tension (96 BPM, D minor) ──────
+function playDesertMarch(gen){
+  const bpm=96,beat=60/bpm,bar=beat*4;
+  const bassSeq=[73.42,110,73.42,65.41]; let bt=audioCtx.currentTime+0.5,bi=0;
+  function bassLoop(){
+    if(_musicGen!==gen) return;
+    const fr=bassSeq[bi%bassSeq.length];
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain(),filt=audioCtx.createBiquadFilter();
+    o.type='sawtooth'; o.frequency.value=fr;
+    filt.type='lowpass'; filt.frequency.value=280; filt.Q.value=1.5;
+    g.gain.setValueAtTime(0,bt);g.gain.linearRampToValueAtTime(0.16,bt+0.015);
+    g.gain.setValueAtTime(0.16,bt+beat*0.72);g.gain.linearRampToValueAtTime(0,bt+beat*0.88);
+    o.connect(filt);filt.connect(g);g.connect(masterGain);o.start(bt);o.stop(bt+beat);
+    bi++;bt+=beat; setTimeout(bassLoop,(beat-0.04)*1000);
+  }
+  const A4=440,G4=392,F4=349.23,E4=329.63,D4=293.66;
+  const phrase=[
+    {f:A4,d:beat*0.5},{f:G4,d:beat*0.5},{f:F4,d:beat},
+    {f:E4,d:beat*0.5},{f:D4,d:beat*1.5},{f:0,d:beat*4},
+    {f:F4,d:beat*0.5},{f:A4,d:beat*0.5},{f:G4,d:beat*0.75},{f:F4,d:beat*0.25},
+    {f:E4,d:beat*0.5},{f:D4,d:beat},{f:0,d:beat*4.5}
+  ];
+  const phraseLen=phrase.reduce((s,n)=>s+n.d,0);
+  let mt=audioCtx.currentTime+2.0,nt=audioCtx.currentTime+0.5;
+  function drumLoop(){
+    if(_musicGen!==gen) return;
+    _mkKick(nt,100,35,0.25,0.60);
+    _mkSnare(nt+beat*0.75,0.15,0.08);
+    _mkKick(nt+beat,90,35,0.22,0.45);
+    _mkSnare(nt+beat*2,0.28,0.12);
+    _mkKick(nt+beat*2.5,90,35,0.20,0.40);
+    _mkSnare(nt+beat*3,0.22,0.10);_mkSnare(nt+beat*3.5,0.18,0.08);
+    nt+=bar; setTimeout(drumLoop,(bar-0.06)*1000);
+  }
+  function melodyLoop(){
+    if(_musicGen!==gen) return;
+    let t=mt; phrase.forEach(n=>{if(n.f>0)_mkNote(t,n.f,n.d*0.75,0.09,0);t+=n.d;});
+    mt+=phraseLen; setTimeout(melodyLoop,(phraseLen-0.3)*1000);
+  }
+  drumLoop();bassLoop();melodyLoop();
+}
+
+// ── REZANG LA — Bhairav raga lament (52 BPM, cold + haunting) ──
+function playMountainLament(gen){
+  const bpm=52,beat=60/bpm,bar=beat*4;
+  const C4=261.63,Db4=277.18,E4=329.63,F4=349.23,G4=392,Ab4=415.30,B4=493.88;
+  const drone=_mkDrone(65.41,0.022);
+  let nt=audioCtx.currentTime+0.5;
+  function drumLoop(){
+    if(_musicGen!==gen){try{drone.stop();}catch(e){}return;}
+    _mkKick(nt,78,28,0.36,0.65);
+    _mkKick(nt+beat*0.5,68,25,0.28,0.32);
+    _mkSnare(nt+beat*2,0.16,0.16);
+    _mkKick(nt+beat*3,74,26,0.30,0.50);
+    nt+=bar; setTimeout(drumLoop,(bar-0.06)*1000);
+  }
+  // Bhairav motif: Sa—Ga—Pa—komalDha—Pa—Ga—Sa
+  const phrase=[
+    {f:C4,d:beat*2},{f:E4,d:beat*1.5},{f:G4,d:beat*2},{f:0,d:beat},
+    {f:Ab4,d:beat*1.5},{f:G4,d:beat},{f:E4,d:beat*2},{f:0,d:beat*2},
+    {f:C4,d:beat*3},{f:0,d:beat*3},
+    {f:E4,d:beat*1.5},{f:G4,d:beat},{f:B4,d:beat*2.5},{f:0,d:beat*4}
+  ];
+  const phraseLen=phrase.reduce((s,n)=>s+n.d,0);
+  let mt=audioCtx.currentTime+beat*3;
+  function melodyLoop(){
+    if(_musicGen!==gen) return;
+    let t=mt; phrase.forEach(n=>{if(n.f>0)_mkBell(t,n.f,n.d*1.2,0.09);t+=n.d;});
+    mt+=phraseLen; setTimeout(melodyLoop,(phraseLen-0.4)*1000);
+  }
+  drumLoop();melodyLoop();
+}
+
+// ── TOLOLING — Rajputana Rifles brass assault (108 BPM, F major) ──
+function playRajputAssault(gen){
+  const bpm=108,beat=60/bpm,bar=beat*4;
+  const F4=349.23,G4=392,A4=440,Bb4=466.16,C5=523.25,D5=587.33;
+  const call=[
+    {f:F4,d:0.5},{f:G4,d:0.5},{f:A4,d:1},{f:C5,d:0.5},{f:Bb4,d:0.5},{f:A4,d:1},
+    {f:C5,d:0.5},{f:D5,d:0.5},{f:C5,d:1},{f:A4,d:0.5},{f:G4,d:0.5},{f:F4,d:2}
+  ].map(n=>({...n,d:n.d*beat}));
+  const resp=[
+    {f:G4,d:0.5},{f:A4,d:0.5},{f:Bb4,d:1},{f:A4,d:0.5},{f:G4,d:0.5},{f:F4,d:1},
+    {f:G4,d:0.5},{f:F4,d:0.5},{f:G4,d:1},{f:F4,d:0.5},{f:C5,d:0.5},{f:F4,d:2}
+  ].map(n=>({...n,d:n.d*beat}));
+  const phrase=[...call,...resp];
+  const phraseLen=phrase.reduce((s,n)=>s+n.d,0);
+  function mkBrass(when,freq,dur){
+    const mg=audioCtx.createGain(),filt=audioCtx.createBiquadFilter(),g=audioCtx.createGain();
+    mg.gain.value=0.5; filt.type='lowpass'; filt.frequency.value=1800;
+    [freq,freq*1.007].forEach(f=>{
+      const o=audioCtx.createOscillator();o.type='sawtooth';o.frequency.value=f;
+      o.connect(mg);o.start(when);o.stop(when+dur+0.03);
+    });
+    g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(0.12,when+0.025);
+    g.gain.setValueAtTime(0.12,when+dur-0.04);g.gain.linearRampToValueAtTime(0,when+dur);
+    mg.connect(filt);filt.connect(g);g.connect(masterGain);
+  }
+  let nt=audioCtx.currentTime+0.5,mt=audioCtx.currentTime+0.5,bc=0;
+  function drumLoop(){
+    if(_musicGen!==gen) return;
+    _mkKick(nt,130,40,0.22,0.55);_mkKick(nt+beat*2,120,38,0.20,0.50);
+    _mkSnare(nt+beat,0.32,0.13);_mkSnare(nt+beat*3,0.32,0.13);
+    if(bc%2===1) for(let i=0;i<4;i++) _mkSnare(nt+bar-0.16+i*0.04,0.16,0.05);
+    bc++;nt+=bar; setTimeout(drumLoop,(bar-0.06)*1000);
+  }
+  function melodyLoop(){
+    if(_musicGen!==gen) return;
+    let t=mt; phrase.forEach(n=>{mkBrass(t,n.f,n.d*0.80);t+=n.d;});
+    mt+=phraseLen; setTimeout(melodyLoop,(phraseLen-0.3)*1000);
+  }
+  drumLoop();melodyLoop();
+}
+
+// ── SIACHEN — Glacier ambient (44 BPM, minimalist cold) ──────
+function playGlacierAmbient(gen){
+  const bar=60/44*4;
+  const drone=_mkDrone(36.71,0.016);
+  function mkWind(){
+    if(_musicGen!==gen){try{drone.stop();}catch(e){}return;}
+    const sr=audioCtx.sampleRate,dur=4.0;
+    const buf=audioCtx.createBuffer(1,Math.floor(sr*dur),sr);
+    const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    const src=audioCtx.createBufferSource();
+    const f=audioCtx.createBiquadFilter(); f.type='bandpass';
+    f.frequency.value=280+Math.random()*140; f.Q.value=2.5;
+    const g=audioCtx.createGain();
+    const vol=0.065+Math.random()*0.055;
+    g.gain.setValueAtTime(0,audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(vol,audioCtx.currentTime+1.5);
+    g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+dur);
+    src.buffer=buf;src.connect(f);f.connect(g);g.connect(masterGain);src.start();
+    setTimeout(mkWind,(dur-0.5)*1000);
+  }
+  const bellNotes=[293.66,440,349.23,587.33,220];
+  let bt=audioCtx.currentTime+1.5;
+  function bellLoop(){
+    if(_musicGen!==gen) return;
+    _mkBell(bt,bellNotes[Math.floor(Math.random()*bellNotes.length)],5.0,0.07);
+    const delay=(bar*0.8+Math.random()*bar*0.8)*1000;
+    bt+=delay/1000; setTimeout(bellLoop,delay);
+  }
+  mkWind();bellLoop();
+}
+
+function playSindoorPulse(gen){
+  // 72 BPM tense electronic — 2025 night-strike atmosphere
+  // D1 sub drone, 16th-note hi-hat pulse, sparse piano hits
+  const bpm=72, beat=60/bpm, bar=beat*4;
+  const drone=_mkDrone(36.71,0.022); // D1
+  function pulse(t){
+    if(_musicGen!==gen) return;
+    // hi-hat tick every 16th note
+    for(let i=0;i<16;i++){
+      const src=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      src.type='sawtooth'; src.frequency.value=6000+Math.random()*2000;
+      g.gain.setValueAtTime(0,t+i*beat/4);
+      g.gain.linearRampToValueAtTime(i%4===0?0.04:0.018,t+i*beat/4+0.004);
+      g.gain.linearRampToValueAtTime(0,t+i*beat/4+0.025);
+      const hp=audioCtx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=5000;
+      src.connect(hp); hp.connect(g); g.connect(masterGain);
+      src.start(t+i*beat/4); src.stop(t+i*beat/4+0.03);
+    }
+    // sparse piano-like notes (D minor: D, F, A, C)
+    const noteHz=[146.83,174.61,220,261.63];
+    [0,1.5,2.5,3.25].forEach((offset,idx)=>{
+      if(Math.random()<0.55){
+        const n=audioCtx.createOscillator(), g2=audioCtx.createGain();
+        n.type='triangle'; n.frequency.value=noteHz[idx%noteHz.length];
+        const at=t+offset*beat;
+        g2.gain.setValueAtTime(0,at);
+        g2.gain.linearRampToValueAtTime(0.06,at+0.02);
+        g2.gain.exponentialRampToValueAtTime(0.001,at+0.7);
+        n.connect(g2); g2.connect(masterGain);
+        n.start(at); n.stop(at+0.75);
+      }
+    });
+    setTimeout(()=>pulse(audioCtx.currentTime),bar*1000);
+  }
+  pulse(audioCtx.currentTime+0.3);
+}
+
+// Units
+const unitGroups=[]; const unitGroupMap=new Map();
+function placeUnitGroup(group,col,row) {
+  const pos=hexWorldPos(col,row);
+  group.position.set(pos.x,tileTopY(col,row)+0.03,pos.z);
+}
+// Per-battle uniform + headgear identities
+const UNIT_VISUALS = {
+  'Saragarhi': {
+    indBody:    0x7a6a48, // Victorian British India khaki
+    indHG:      {type:'pagri',    col:0xc87a18, h:0.17, r:0.205, accent:0xffd060}, // Saffron pagri
+    heroHG:     {type:'pagri',    col:0xffd700, h:0.19, r:0.215, accent:0xffffff}, // Gold pagri
+    skinInd:    0xd4a870,
+    eneBody:    0x5a3820, // Brown Pashtun homespun
+    eneHG:      {type:'turban',   col:0x3a2010, h:0.09, r:0.225}, // Dark Pashtun lungi
+    ene_cdrHG:  {type:'turban',   col:0x8a1810, h:0.11, r:0.235}, // Red-black Orakzai commander
+    skinEne:    0xb88860,
+    rifleLen:   0.60, // Long Martini-Henry
+  },
+  'Rezang La': {
+    indBody:    0x4a5a36, // Indian Army olive 1962
+    indHG:      {type:'helmet',   col:0x5a6848, h:0.08, r:0.26}, // Steel khaki helmet
+    heroHG:     {type:'helmet',   col:0x8a7020, h:0.09, r:0.27}, // Brass-toned officer
+    skinInd:    0xd4a870,
+    eneBody:    0x556040, // PLA grey-green
+    eneHG:      {type:'cap',      col:0x485840, h:0.07, r:0.19}, // PLA khaki cap
+    ene_cdrHG:  {type:'cap',      col:0x3a4a30, h:0.08, r:0.20}, // PLA officer cap
+    skinEne:    0xc09060,
+    rifleLen:   0.46,
+  },
+  'Longewala': {
+    indBody:    0x4a5a36,
+    indHG:      {type:'helmet',   col:0x4a5a36, h:0.08, r:0.26},
+    heroHG:     {type:'helmet',   col:0x6a5020, h:0.09, r:0.27},
+    skinInd:    0xd4a870,
+    eneBody:    0x4a5638, // Pakistani olive
+    eneHG:      {type:'helmet',   col:0x3a4830, h:0.08, r:0.26},
+    ene_cdrHG:  {type:'helmet',   col:0x2a3820, h:0.09, r:0.27},
+    skinEne:    0xc09060,
+    rifleLen:   0.46,
+  },
+  'Tololing': {
+    indBody:    0x3d4a2a, // Kargil dark olive
+    indHG:      {type:'helmet',   col:0x343e22, h:0.09, r:0.27}, // Modern combat
+    heroHG:     {type:'helmet',   col:0x5a4a18, h:0.10, r:0.28}, // Bronze officer
+    skinInd:    0xd4a870,
+    eneBody:    0x7a6a4a, // Pakistani NLI mountain tan
+    eneHG:      {type:'helmet',   col:0x6a5a3a, h:0.08, r:0.26},
+    ene_cdrHG:  {type:'helmet',   col:0x5a4a2a, h:0.09, r:0.27},
+    skinEne:    0xc09868,
+    rifleLen:   0.44,
+  },
+  'Siachen': {
+    indBody:    0xcacec2, // White arctic over-whites
+    indHG:      {type:'balaclava',col:0xd8dcd0, h:0.12, r:0.23},
+    heroHG:     {type:'balaclava',col:0xe8d070, h:0.13, r:0.24},
+    skinInd:    0xd8dcd0, // Head is balaclava color
+    eneBody:    0xb8bcb0, // Pakistani arctic (greyer)
+    eneHG:      {type:'balaclava',col:0xa8acaa, h:0.11, r:0.22},
+    ene_cdrHG:  {type:'balaclava',col:0xa0a8a0, h:0.12, r:0.23},
+    skinEne:    0xa8acaa,
+    rifleLen:   0.44,
+  },
+  'Operation Sindoor': {
+    indBody:    0x1a3a5a,  // AADA air defence blue
+    indHG:      {type:'helmet', col:0x1e3a60, h:0.09, r:0.27},  // combat helmet (crew)
+    heroHG:     {type:'cap',    col:0x3a7ab8, h:0.08, r:0.24},  // officer service cap (Battery Commander)
+    skinInd:    0xd4a870,
+    // Enemy units (drone/missile/aircraft) have their own mesh paths — these fields unused
+    eneBody:    0x1a1a22,
+    eneHG:      {type:'helmet', col:0x111118, h:0.09, r:0.27},
+    ene_cdrHG:  {type:'helmet', col:0x111118, h:0.09, r:0.27},
+    skinEne:    0x1a1a22,
+    rifleLen:   0.30, // unused for Sindoor — weapon dispatch overrides
+  },
+};
+const _UV_DEF = UNIT_VISUALS['Tololing'];
+
+function createUnitMesh(unit) {
+  const g = new THREE.Group();
+  const isInd = unit.side === 'ind';
+  const bname = _currentBattleName || 'Tololing';
+  const vis = UNIT_VISUALS[bname] || _UV_DEF;
+
+  // ── TANK — special flat mesh ──────────────────────────────────
+  if(unit.type === 'pla_tank'){
+    const hullMat = new THREE.MeshLambertMaterial({color:0x887744});
+    const darkMat = new THREE.MeshLambertMaterial({color:0x6a5a30});
+    const trackMat = new THREE.MeshLambertMaterial({color:0x3a3028});
+    const hull = new THREE.Mesh(new THREE.BoxGeometry(0.72,0.22,0.54), hullMat);
+    hull.position.y = 0.22; g.add(hull);
+    const turret = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.15,0.28), darkMat);
+    turret.position.set(-0.05,0.40,0); g.add(turret);
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.024,0.024,0.40,6), darkMat);
+    barrel.rotation.z = Math.PI/2; barrel.position.set(0.28,0.41,0); g.add(barrel);
+    const track1 = new THREE.Mesh(new THREE.BoxGeometry(0.68,0.10,0.11), trackMat);
+    track1.position.set(0,0.10, 0.26); g.add(track1);
+    const track2 = new THREE.Mesh(new THREE.BoxGeometry(0.68,0.10,0.11), trackMat);
+    track2.position.set(0,0.10,-0.26); g.add(track2);
+    const hpBg = new THREE.Mesh(new THREE.BoxGeometry(0.68,0.06,0.08),new THREE.MeshBasicMaterial({color:0x111111}));
+    hpBg.position.y = 0.88; g.add(hpBg);
+    const hpMat = new THREE.MeshBasicMaterial({color:0x44cc44});
+    const hpBar = new THREE.Mesh(new THREE.BoxGeometry(0.68,0.07,0.09),hpMat);
+    hpBar.position.y = 0.88; g.add(hpBar);
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.52,0.1,8),new THREE.MeshBasicMaterial({visible:false}));
+    disc.userData = {type:'unit', unitRef:unit}; g.add(disc);
+    g.userData = {unit, hpBar, hpMat}; return g;
+  }
+
+  // ── SONGAR DRONE ──────────────────────────────────────────────
+  if(unit.type === 'drone'){
+    const dkMat=new THREE.MeshLambertMaterial({color:0x111118});
+    const disc=new THREE.Mesh(new THREE.CylinderGeometry(0.20,0.20,0.07,8),new THREE.MeshLambertMaterial({color:0x1a1a22}));
+    disc.position.y=0.55; g.add(disc);
+    for(let i=0;i<4;i++){
+      const arm=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.03,0.04),dkMat);
+      arm.rotation.y=i*Math.PI/2;
+      arm.position.set(Math.cos(i*Math.PI/2)*0.14,0.55,Math.sin(i*Math.PI/2)*0.14);
+      g.add(arm);
+      const rotor=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,0.02,6),dkMat);
+      rotor.position.set(Math.cos(i*Math.PI/2)*0.28,0.58,Math.sin(i*Math.PI/2)*0.28);
+      g.add(rotor);
+    }
+    const led=new THREE.Mesh(new THREE.SphereGeometry(0.04,4,4),new THREE.MeshLambertMaterial({color:0xff1010,emissive:0xff0000,emissiveIntensity:0.8}));
+    led.position.y=0.62; g.add(led);
+    const hpBg=new THREE.Mesh(new THREE.BoxGeometry(0.60,0.05,0.06),new THREE.MeshBasicMaterial({color:0x111111}));
+    hpBg.position.y=0.88; g.add(hpBg);
+    const hpMat=new THREE.MeshBasicMaterial({color:0x44cc44});
+    const hpBar=new THREE.Mesh(new THREE.BoxGeometry(0.60,0.06,0.08),hpMat);
+    hpBar.position.y=0.88; g.add(hpBar);
+    const clk=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.1,8),new THREE.MeshBasicMaterial({visible:false}));
+    clk.userData={type:'unit',unitRef:unit}; g.add(clk);
+    g.userData={unit,hpBar,hpMat}; return g;
+  }
+
+  // ── FATAH-II MISSILE ──────────────────────────────────────────
+  if(unit.type === 'missile'){
+    const bMat=new THREE.MeshLambertMaterial({color:0x505868});
+    const mBody=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.58,8),bMat);
+    mBody.position.y=0.55; g.add(mBody);
+    const nose=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.18,8),new THREE.MeshLambertMaterial({color:0x686878}));
+    nose.position.y=0.94; g.add(nose);
+    for(let i=0;i<4;i++){
+      const fin=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.14,0.022),new THREE.MeshLambertMaterial({color:0x404050}));
+      fin.rotation.y=i*Math.PI/2;
+      fin.position.set(Math.cos(i*Math.PI/2)*0.07,0.34,Math.sin(i*Math.PI/2)*0.07);
+      g.add(fin);
+    }
+    const exhaust=new THREE.Mesh(new THREE.SphereGeometry(0.05,4,4),new THREE.MeshLambertMaterial({color:0xff6010,emissive:0xff4000,emissiveIntensity:0.9}));
+    exhaust.position.y=0.25; g.add(exhaust);
+    const hpBg=new THREE.Mesh(new THREE.BoxGeometry(0.60,0.05,0.06),new THREE.MeshBasicMaterial({color:0x111111}));
+    hpBg.position.y=1.20; g.add(hpBg);
+    const hpMat=new THREE.MeshBasicMaterial({color:0x44cc44});
+    const hpBar=new THREE.Mesh(new THREE.BoxGeometry(0.60,0.06,0.08),hpMat);
+    hpBar.position.y=1.20; g.add(hpBar);
+    const clk=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.1,8),new THREE.MeshBasicMaterial({visible:false}));
+    clk.userData={type:'unit',unitRef:unit}; g.add(clk);
+    g.userData={unit,hpBar,hpMat}; return g;
+  }
+
+  // ── JF-17 THUNDER ─────────────────────────────────────────────
+  if(unit.type === 'aircraft'){
+    const skinMat=new THREE.MeshLambertMaterial({color:0x909098});
+    const dkMat=new THREE.MeshLambertMaterial({color:0x707078});
+    const fuselage=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.04,0.64,8),skinMat);
+    fuselage.position.y=0.65; g.add(fuselage);
+    const noseC=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.16,8),dkMat);
+    noseC.position.y=1.02; g.add(noseC);
+    const wing=new THREE.Mesh(new THREE.BoxGeometry(0.80,0.028,0.30),skinMat);
+    wing.position.y=0.65; g.add(wing);
+    const vTail=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.22,0.14),dkMat);
+    vTail.position.set(0,0.50,0); g.add(vTail);
+    const glow=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.04,8),new THREE.MeshLambertMaterial({color:0xff8020,emissive:0xff5000,emissiveIntensity:0.7}));
+    glow.position.y=0.34; g.add(glow);
+    const hpBg=new THREE.Mesh(new THREE.BoxGeometry(0.70,0.05,0.06),new THREE.MeshBasicMaterial({color:0x111111}));
+    hpBg.position.y=1.30; g.add(hpBg);
+    const hpMat=new THREE.MeshBasicMaterial({color:0x44cc44});
+    const hpBar=new THREE.Mesh(new THREE.BoxGeometry(0.70,0.06,0.08),hpMat);
+    hpBar.position.y=1.30; g.add(hpBar);
+    const clk=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.1,8),new THREE.MeshBasicMaterial({visible:false}));
+    clk.userData={type:'unit',unitRef:unit}; g.add(clk);
+    g.userData={unit,hpBar,hpMat}; return g;
+  }
+
+  // ── BODY ──────────────────────────────────────────────────────
+  const bodyColor = isInd ? vis.indBody : vis.eneBody;
+  const bodyH = unit.type==='hero' ? 0.60 : unit.type==='section_cdr' ? 0.57 : 0.54;
+  const bodyR = unit.type==='hero' ? 0.265 : 0.235;
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(bodyR*0.84, bodyR, bodyH, 8),
+    new THREE.MeshLambertMaterial({color: bodyColor})
+  );
+  body.position.y = bodyH/2; body.castShadow = true; g.add(body);
+
+  // ── HEAD ──────────────────────────────────────────────────────
+  const hd = isInd
+    ? (unit.type==='hero' ? vis.heroHG : vis.indHG)
+    : (unit.type==='pla_cdr' ? vis.ene_cdrHG : vis.eneHG);
+  const headY = bodyH + 0.205;
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.192, 8, 6),
+    new THREE.MeshLambertMaterial({color: hd.type==='balaclava' ? hd.col : (isInd ? vis.skinInd : vis.skinEne)})
+  );
+  head.position.y = headY; g.add(head);
+
+  // ── HEADGEAR ──────────────────────────────────────────────────
+  const hdMat = new THREE.MeshLambertMaterial({color: hd.col});
+  if(hd.type === 'pagri'){
+    const pagri = new THREE.Mesh(
+      new THREE.CylinderGeometry(hd.r*0.80, hd.r, hd.h, 8), hdMat);
+    pagri.position.y = bodyH + 0.40 + hd.h*0.5; g.add(pagri);
+    const stripe = new THREE.Mesh(
+      new THREE.CylinderGeometry(hd.r+0.008,hd.r+0.008,0.018,8),
+      new THREE.MeshLambertMaterial({color: hd.accent||0xc8a040}));
+    stripe.position.y = bodyH + 0.40; g.add(stripe);
+  } else if(hd.type === 'turban'){
+    const turb = new THREE.Mesh(
+      new THREE.CylinderGeometry(hd.r, hd.r*0.90, hd.h, 8), hdMat);
+    turb.position.y = bodyH + 0.36 + hd.h*0.5; g.add(turb);
+  } else if(hd.type === 'helmet'){
+    const helm = new THREE.Mesh(
+      new THREE.CylinderGeometry(hd.r*1.10, hd.r, hd.h, 8), hdMat);
+    helm.position.y = bodyH + 0.28 + hd.h*0.5; g.add(helm);
+    const rim = new THREE.Mesh(
+      new THREE.CylinderGeometry(hd.r*1.13,hd.r*1.10,0.022,8), hdMat);
+    rim.position.y = bodyH + 0.27; g.add(rim);
+  } else if(hd.type === 'cap'){
+    const cap = new THREE.Mesh(
+      new THREE.CylinderGeometry(hd.r, hd.r, hd.h, 8), hdMat);
+    cap.position.y = bodyH + 0.32 + hd.h*0.5; g.add(cap);
+    const peak = new THREE.Mesh(
+      new THREE.BoxGeometry(0.13,0.022,0.07),
+      new THREE.MeshLambertMaterial({color:hd.col}));
+    peak.position.set(0.14, bodyH+0.29, 0); g.add(peak);
+  } else if(hd.type === 'balaclava'){
+    const gogg = new THREE.Mesh(
+      new THREE.BoxGeometry(0.22,0.052,0.04),
+      new THREE.MeshLambertMaterial({color:0x1a2030}));
+    gogg.position.set(0, headY+0.03, 0.17); g.add(gogg);
+  }
+
+  // ── RANK DETAIL ───────────────────────────────────────────────
+  if(unit.type === 'hero'){
+    const badge = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.055,0.055,0.022,6),
+      new THREE.MeshLambertMaterial({color:0xffd700}));
+    badge.rotation.x = Math.PI/2;
+    badge.position.set(0, bodyH*0.68, bodyR*0.88); g.add(badge);
+  } else if(unit.type === 'section_cdr'){
+    const chev = new THREE.Mesh(
+      new THREE.BoxGeometry(0.036,0.060,0.036),
+      new THREE.MeshLambertMaterial({color:0xc8a040}));
+    chev.position.set(bodyR*0.90, bodyH*0.62, 0); g.add(chev);
+  }
+
+  // ── WEAPON ────────────────────────────────────────────────────
+  if(bname === 'Operation Sindoor' && isInd){
+    if(unit.type === 'hero'){
+      // Battery Commander — binoculars at eye level
+      const binMat=new THREE.MeshLambertMaterial({color:0x1a1a22});
+      const b1=new THREE.Mesh(new THREE.CylinderGeometry(0.042,0.042,0.13,6),binMat);
+      const b2=new THREE.Mesh(new THREE.CylinderGeometry(0.042,0.042,0.13,6),binMat);
+      b1.rotation.x=Math.PI/2; b1.position.set( 0.068, bodyH+0.14, 0.15); g.add(b1);
+      b2.rotation.x=Math.PI/2; b2.position.set(-0.068, bodyH+0.14, 0.15); g.add(b2);
+    } else {
+      // MANPAD Igla-S — thick tube angled up on shoulder
+      const tubeMat=new THREE.MeshLambertMaterial({color:0x3a3830});
+      const tube=new THREE.Mesh(new THREE.CylinderGeometry(0.060,0.060,0.50,8),tubeMat);
+      tube.rotation.z=-Math.PI/5;
+      tube.position.set(0.22, bodyH*0.80, 0); g.add(tube);
+      const grip=new THREE.Mesh(new THREE.BoxGeometry(0.055,0.10,0.04),
+        new THREE.MeshLambertMaterial({color:0x282820}));
+      grip.position.set(0.17, bodyH*0.62, 0); g.add(grip);
+    }
+  } else {
+    const rl=vis.rifleLen||0.46;
+    const rifle=new THREE.Mesh(new THREE.BoxGeometry(0.038,rl,0.038),
+      new THREE.MeshLambertMaterial({color:0x3a2414}));
+    rifle.position.set(0.255,bodyH*0.50,0); rifle.rotation.z=-0.12; g.add(rifle);
+  }
+
+  // ── HP BAR ────────────────────────────────────────────────────
+  const hpY = bodyH + 0.62;
+  const hpBg = new THREE.Mesh(new THREE.BoxGeometry(0.60,0.05,0.06),
+    new THREE.MeshBasicMaterial({color:0x111111}));
+  hpBg.position.y = hpY; g.add(hpBg);
+  const hpMat = new THREE.MeshBasicMaterial({color:0x44cc44});
+  const hpBar = new THREE.Mesh(new THREE.BoxGeometry(0.60,0.06,0.08), hpMat);
+  hpBar.position.y = hpY; g.add(hpBar);
+
+  // ── CLICK DISC ────────────────────────────────────────────────
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.1,8),
+    new THREE.MeshBasicMaterial({visible:false}));
+  disc.userData = {type:'unit', unitRef:unit}; g.add(disc);
+
+  g.userData = {unit, hpBar, hpMat}; return g;
+}
+function updateHpBar(group) {
+  const{unit,hpBar,hpMat}=group.userData;
+  const r=Math.max(0,unit.hp/unit.maxHp);
+  hpBar.scale.x=Math.max(0.01,r); hpBar.position.x=(r-1)*0.3;
+  hpMat.color.setHex(r>0.5?0x44cc44:r>0.25?0xccaa22:0xcc2222);
+}
+function _addMoraleRing(g){
+  const mr=new THREE.Mesh(
+    new THREE.RingGeometry(0.38,0.44,24,1,0,Math.PI*2),
+    new THREE.MeshBasicMaterial({color:0x44cc44,side:THREE.DoubleSide,transparent:true,opacity:0.85})
+  );
+  mr.rotation.x=-Math.PI/2; mr.position.y=0.06; mr.name='moraleRing'; mr.visible=false;
+  g.add(mr);
+}
+function updateMoraleRing(unit){
+  const g=unitGroupMap.get(unit); if(!g) return;
+  const ring=g.getObjectByName('moraleRing'); if(!ring) return;
+  const m=unit.morale!=null?unit.morale:100;
+  const col=m>=70?0x44cc44:m>=40?0xffaa00:0xcc2222;
+  ring.material.color.setHex(col);
+  ring.geometry.dispose();
+  ring.geometry=new THREE.RingGeometry(0.38,0.44,24,1,0,(m/100)*Math.PI*2);
+  ring.visible=m<100;
+}
+function applyMoraleDamage(deadUnit,amount){
+  gameState.units.filter(u=>u.alive&&u.side===deadUnit.side).forEach(u=>{
+    const da=toAxial(deadUnit.col,deadUnit.row),ua=toAxial(u.col,u.row);
+    if(axDist(da.q,da.r,ua.q,ua.r)<=2){
+      u.morale=Math.max(0,(u.morale!=null?u.morale:100)-amount);
+      updateMoraleRing(u);
+    }
+  });
+}
+function applyWaveAtmosphere(wi){
+  if(gameSettings.theme==='light') return;
+  const phases=[
+    {fog:0.022,bg:0x0a0a14,lCol:0xffffff,lInt:1.0},
+    {fog:0.022,bg:0x0a0a14,lCol:0xffffff,lInt:1.0},
+    {fog:0.032,bg:0x0d0a10,lCol:0xfff4e0,lInt:0.9},
+    {fog:0.032,bg:0x0d0a10,lCol:0xfff4e0,lInt:0.9},
+    {fog:0.045,bg:0x100808,lCol:0xff9966,lInt:0.8},
+  ];
+  const p=phases[Math.min(wi,phases.length-1)];
+  scene.fog.density=p.fog;
+  scene.background=new THREE.Color(p.bg);
+  sun.color.setHex(p.lCol);
+  sun.intensity=p.lInt;
+}
+function triggerAbility(unit){
+  if(!unit.ability||unit.abilityUsed) return;
+  const isOncePerBattle=['rally','swarm'].includes(unit.ability);
+  const isOncePerRound=['covering_fire','dig_in','coordinated_assault','suppress'].includes(unit.ability);
+  if(isOncePerBattle&&unit.abilityUsed) return;
+  if(isOncePerRound&&unit.abilityRoundUsed===gameState.round) return;
+  if(unit.ability==='rally'){
+    const ua=toAxial(unit.col,unit.row);
+    gameState.units.filter(u=>u.alive&&u.side==='ind').forEach(u=>{
+      if(axDist(ua.q,ua.r,toAxial(u.col,u.row).q,toAxial(u.col,u.row).r)<=2){
+        u.morale=Math.min(100,u.morale+25); updateMoraleRing(u);
+      }
+    });
+    showNarrative(`${unit.name.split(' ').pop()} rallies nearby troops! +25 morale`);
+    unit.abilityUsed=true;
+  } else if(unit.ability==='dig_in'){
+    unit._diggingIn=true; unit.moved=true;
+    unit._defBonus=2;
+    showNarrative(`${unit.name.split(' ').pop()} digs in — +2 def this round`);
+    unit.abilityRoundUsed=gameState.round;
+  } else if(unit.ability==='covering_fire'){
+    unit._coveringFire=true;
+    showNarrative(`${unit.name.split(' ').pop()} sets covering fire`);
+    unit.abilityRoundUsed=gameState.round;
+  } else if(unit.ability==='coordinated_assault'){
+    const pa=toAxial(unit.col,unit.row);
+    gameState.units.filter(u=>u.alive&&u.side==='pla').forEach(u=>{
+      if(axDist(pa.q,pa.r,toAxial(u.col,u.row).q,toAxial(u.col,u.row).r)<=1){
+        u._atkBonus=(u._atkBonus||0)+1;
+      }
+    });
+    showNarrative('Coordinated assault! Adjacent enemies +1 atk this round');
+    unit.abilityRoundUsed=gameState.round;
+  } else if(unit.ability==='suppress'){
+    const ua=toAxial(unit.col,unit.row);
+    const nearestInd=gameState.units
+      .filter(u=>u.alive&&u.side==='ind')
+      .sort((a,b)=>{
+        const pa=toAxial(a.col,a.row), pb=toAxial(b.col,b.row);
+        return axDist(ua.q,ua.r,pa.q,pa.r)-axDist(ua.q,ua.r,pb.q,pb.r);
+      })[0];
+    if(!nearestInd){showNarrative('No Indian units in range.'); return;}
+    nearestInd._suppressed=true;
+    unit.abilityRoundUsed=gameState.round;
+    showNarrative(unit.name+' suppresses '+nearestInd.name+'!');
+  } else if(unit.ability==='swarm'){
+    const enemies=gameState.units.filter(u=>u.alive&&u.side==='ind');
+    const pa=toAxial(unit.col,unit.row);
+    const adj=enemies.filter(u=>axDist(pa.q,pa.r,toAxial(u.col,u.row).q,toAxial(u.col,u.row).r)<=1);
+    adj.slice(0,2).forEach(t=>executeAttack_pla(unit,t,()=>{}));
+    showNarrative('Drone swarm — attacking two targets!');
+    unit.abilityUsed=true;
+  }
+  updatePanel();
+}
+function buildUnits(list) {
+  list.forEach(unit=>{
+    const g=createUnitMesh(unit); _addMoraleRing(g); placeUnitGroup(g,unit.col,unit.row);
+    scene.add(g); unitGroups.push(g); unitGroupMap.set(unit,g);
+  });
+}
+
+// Game state
+const gameState={screen:'select',phase:'',units:[],selected:null,moveable:[],attackable:[],round:1,waveIndex:0,animating:false,log:[],casualties:{ind:0,pla:0},lastAction:null,autoPlaying:false};
+
+// Highlights
+let highlightMeshes=[];
+function clearHighlights() { highlightMeshes.forEach(h=>scene.remove(h)); highlightMeshes=[]; }
+function addHighlight(col,row,color,opacity) {
+  const td=TERRAIN[MAP[row]?.[col]]; if(!td) return;
+  const pos=hexWorldPos(col,row);
+  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false});
+  const mesh=new THREE.Mesh(new THREE.CylinderGeometry(HEX_R-0.1,HEX_R-0.1,0.05,6),mat);
+  mesh.position.set(pos.x,td.height+0.025,pos.z);
+  scene.add(mesh); highlightMeshes.push(mesh);
+}
+function reachable(col,row,mp) {
+  const a=toAxial(col,row);
+  const seen=new Map([[`${a.q},${a.r}`,mp]]); const queue=[{q:a.q,r:a.r,mp}]; const out=[];
+  while(queue.length){
+    const{q:aq,r:ar,mp:rem}=queue.shift();
+    const{col:c,row:r2}=toOffset(aq,ar);
+    if(c!==col||r2!==row) out.push({col:c,row:r2});
+    for(const d of DIRS){
+      const nq=aq+d.q,nr=ar+d.r;
+      const{col:nc,row:nr2}=toOffset(nq,nr);
+      if(nc<0||nc>=MC||nr2<0||nr2>=MR) continue;
+      const t=MAP[nr2][nc]; if(TERRAIN[t]?.block) continue;
+      if(unitAt(nc,nr2)) continue;
+      const left=rem-(TERRAIN[t]?.mov||1); if(left<0) continue;
+      const key=`${nq},${nr}`;
+      if(!seen.has(key)||seen.get(key)<left){seen.set(key,left);queue.push({q:nq,r:nr,mp:left});}
+    }
+  }
+  return out;
+}
+function inRange(col,row,range) {
+  const a=toAxial(col,row); const out=[];
+  for(let r=0;r<MR;r++) for(let c=0;c<MC;c++){
+    const b=toAxial(c,r),d=axDist(a.q,a.r,b.q,b.r);
+    if(d>=1&&d<=range) out.push({col:c,row:r});
+  }
+  return out;
+}
+function showMoveHighlights(unit) {
+  clearHighlights();
+  const struct=getStructure(unit.col,unit.row);
+  const effRng=unit.rng+(struct?.rngBonus||0);
+  gameState.moveable  =unit.moved   ?[]:reachable(unit.col,unit.row,unit.mov);
+  gameState.attackable=unit.attacked?[]:inRange(unit.col,unit.row,effRng);
+  gameState.moveable.forEach(h=>addHighlight(h.col,h.row,0x4488ff,0.40));
+  gameState.attackable.forEach(h=>{ const u=unitAt(h.col,h.row); if(u?.side==='pla') addHighlight(h.col,h.row,0xff3333,0.38); });
+}
+function selectUnit(unit){gameState.selected=unit;showMoveHighlights(unit);updatePanel();}
+function deselect(){gameState.selected=null;gameState.moveable=[];gameState.attackable=[];clearHighlights();updatePanel();}
+
+// Movement
+function executeMove(unit,tc,tr){
+  gameState.animating=true;
+  const g=unitGroupMap.get(unit);
+  const tp=hexWorldPos(tc,tr); tp.y=TERRAIN[MAP[tr][tc]].height+0.03;
+  const sp=g.position.clone(); const peakY=Math.max(sp.y,tp.y)+1.2;
+  const t0=performance.now(); const P1=ad(210),P2=ad(210);
+  function step(){
+    const el=performance.now()-t0;
+    if(el<P1){const t=el/P1,e=t*t;g.position.x=sp.x+(tp.x-sp.x)*e*0.5;g.position.y=sp.y+(peakY-sp.y)*e;g.position.z=sp.z+(tp.z-sp.z)*e*0.5;requestAnimationFrame(step);}
+    else if(el<P1+P2){const t=(el-P1)/P2,e=1-Math.pow(1-t,2);g.position.x=sp.x+(tp.x-sp.x)*(0.5+e*0.5);g.position.y=peakY+(tp.y-peakY)*e;g.position.z=sp.z+(tp.z-sp.z)*(0.5+e*0.5);requestAnimationFrame(step);}
+    else{g.position.copy(tp);unit.col=tc;unit.row=tr;unit.moved=true;gameState.animating=false;showMoveHighlights(unit);updatePanel();}
+  }
+  requestAnimationFrame(step);
+}
+function executeMove_pla(unit,tc,tr,cb){
+  const g=unitGroupMap.get(unit); if(!g){unit.col=tc;unit.row=tr;cb?.();return;}
+  const tp=hexWorldPos(tc,tr); tp.y=TERRAIN[MAP[tr][tc]].height+0.03;
+  const sp=g.position.clone(); const t0=performance.now();
+  function step(){const el=performance.now()-t0,t=Math.min(1,el/ad(250)),e=1-Math.pow(1-t,2);g.position.lerpVectors(sp,tp,e);if(t<1)requestAnimationFrame(step);else{g.position.copy(tp);unit.col=tc;unit.row=tr;cb?.();}}
+  requestAnimationFrame(step);
+}
+
+// Combat
+function doCombat(atk,def){
+  const tDef=TERRAIN[MAP[def.row][def.col]]?.def||1;
+  const tAtk=TERRAIN[MAP[atk.row][atk.col]]?.def||1;
+  const atkStruct=getStructure(atk.col,atk.row);
+  const defStruct=getStructure(def.col,def.row);
+  const aMul=atkStruct?.atkMul||1, dMul=defStruct?.defMul||1;
+  const noRet=atkStruct?.noRetaliate||false;
+  // Morale atk penalty
+  const moralePenalty=atk.morale!=null?(atk.morale>=70?0:atk.morale>=40?1:2):0;
+  const effAtk=Math.max(1,atk.atk-moralePenalty+(atk._atkBonus||0));
+  // defBonus from dig_in
+  const defBonus=def._defBonus||0;
+  const rawDmg=Math.max(1,Math.round(effAtk*(atk.hp/atk.maxHp)*aMul/tDef/dMul));
+  const dmg=Math.max(0,rawDmg-defBonus);
+  const ret=noRet?0:Math.max(0,Math.round(def.atk*(def.hp/def.maxHp)*0.4/tAtk));
+  // Large hit morale damage
+  if(dmg>def.maxHp*0.5){def.morale=Math.max(0,(def.morale!=null?def.morale:100)-20);updateMoraleRing(def);}
+  def.hp-=dmg; atk.hp-=ret;
+  if(def.hp<=0){def.alive=false;gameState.casualties[def.side]++;applyMoraleDamage(def,15);}
+  if(atk.hp<=0){atk.alive=false;gameState.casualties[atk.side]++;applyMoraleDamage(atk,15);}
+  // covering fire retaliation
+  if(atk.side==='pla'&&def.side==='ind'){
+    const defAx=toAxial(def.col,def.row);
+    gameState.units.filter(u=>u.alive&&u.side==='ind'&&u._coveringFire&&u!==def).forEach(ally=>{
+      const aAx=toAxial(ally.col,ally.row);
+      if(axDist(defAx.q,defAx.r,aAx.q,aAx.r)<=1){
+        const rDmg=Math.max(0,ally.atk-(atk._defBonus||0));
+        atk.hp=Math.max(0,atk.hp-rDmg);
+        if(atk.hp<=0){atk.hp=0;atk.alive=false;}
+        showNarrative(ally.name+' returns fire! ('+rDmg+' dmg)');
+      }
+    });
+  }
+  const al=atkStruct?` [${atkStruct.label}]`:'';
+  gameState.log.unshift(`${atk.name.split(' ').pop()}${al} → ${def.name.split(' ').pop()} (−${dmg}${ret>0?`, ret −${ret}`:''})`);
+  if(gameState.log.length>5) gameState.log.pop();
+  gameState.lastAction={atk,def,dmg,ret,atkStruct};
+}
+function showDamageNumber(worldPos,text,color){
+  const el=document.createElement('div'); el.className='dmg-float';
+  el.textContent=text; el.style.color=color; el.style.fontSize='13px';
+  document.body.appendChild(el);
+  const v=worldPos.clone(); v.project(camera);
+  const x=(v.x+1)/2*window.innerWidth, y=(-v.y+1)/2*window.innerHeight;
+  el.style.left=x+'px'; el.style.top=y+'px';
+  const t0=performance.now();
+  (function step(){const t=Math.min(1,(performance.now()-t0)/850);
+    el.style.transform=`translateX(-50%) translateY(${-t*38}px)`;
+    el.style.opacity=String(1-Math.max(0,t-0.45)/0.55);
+    if(t<1)requestAnimationFrame(step);else el.remove();
+  })();
+}
+function flashHit(tg,cb){
+  tg.children.forEach(c=>{if(c.material?.emissive)c.material.emissive.setHex(0xaa0000);});
+  setTimeout(()=>{tg.children.forEach(c=>{if(c.material?.emissive)c.material.emissive.setHex(0x000000);});cb?.();},ad(130));
+}
+function removeUnitGroup(unit){
+  const g=unitGroupMap.get(unit); if(!g) return;
+  const sr=g.rotation.z,td=(unit.col%2===0?1:-1)*Math.PI*0.44;
+  g.children.forEach(c=>{if(c.material){c.material.transparent=true;c.material.opacity=1;}});
+  const t0=performance.now();
+  function step(){const el=performance.now()-t0,t=Math.min(1,el/ad(580)),e=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    g.rotation.z=sr+td*e;g.children.forEach(c=>{if(c.material?.transparent)c.material.opacity=1-e;});
+    if(t<1)requestAnimationFrame(step);else{scene.remove(g);const gi=unitGroups.indexOf(g);if(gi>-1)unitGroups.splice(gi,1);unitGroupMap.delete(unit);}
+  }
+  requestAnimationFrame(step);
+}
+function _doAttack(atk,def,atkG,defG,cb){
+  const s=atkG.position.clone(),toward=new THREE.Vector3().lerpVectors(s,defG.position,0.38),t0=performance.now();
+  function si(){const el=performance.now()-t0,t=Math.min(1,el/ad(140)),e=1-Math.pow(1-t,2);atkG.position.lerpVectors(s,toward,e);if(t<1){requestAnimationFrame(si);return;}
+    doCombat(atk,def);
+    const _la=gameState.lastAction;
+    if(gameSettings.showDmg){
+      const _dp=defG.position.clone();_dp.y+=1.5; showDamageNumber(_dp,`-${_la.dmg}`,'#ff4444');
+      if(_la.ret>0){const _ap=atkG.position.clone();_ap.y+=1.5;showDamageNumber(_ap,`-${_la.ret}`,'#ff8844');}
+    }
+    flashHit(defG,()=>{
+      if(unitGroupMap.has(atk))updateHpBar(unitGroupMap.get(atk));
+      if(unitGroupMap.has(def))updateHpBar(unitGroupMap.get(def));
+      const t1=performance.now();
+      function sb(){const el2=performance.now()-t1,t2=Math.min(1,el2/ad(160));atkG.position.lerpVectors(toward,s,t2);if(t2<1){requestAnimationFrame(sb);return;}
+        atkG.position.copy(s);if(!def.alive)removeUnitGroup(def);if(!atk.alive)removeUnitGroup(atk);cb?.();
+      }
+      requestAnimationFrame(sb);
+    });
+  }
+  requestAnimationFrame(si);
+}
+function executeAttack(atk,def){
+  gameState.animating=true; clearHighlights();
+  if(!_warCryShown){
+    _warCryShown=true;
+    const ab=BATTLES.find(b=>b.name===_currentBattleName);
+    if(ab?.warCry) showWarCry(ab.warCry);
+  }
+  const ag=unitGroupMap.get(atk),dg=unitGroupMap.get(def);
+  _doAttack(atk,def,ag,dg,()=>{atk.attacked=true;gameState.animating=false;gameState.selected=null;updatePanel();checkWinLoss();});
+}
+function executeAttack_pla(atk,def,cb){
+  if(atk._suppressed){atk._suppressed=false;cb?.();return;}
+  gameState.animating=true;
+  const ag=unitGroupMap.get(atk),dg=unitGroupMap.get(def);
+  if(!ag||!dg){gameState.animating=false;cb?.();return;}
+  _doAttack(atk,def,ag,dg,()=>{gameState.animating=false;checkWinLoss();cb?.();});
+}
+function checkWinLoss(){
+  const ia=gameState.units.filter(u=>u.alive&&u.side==='ind').length;
+  const pa=gameState.units.filter(u=>u.alive&&u.side==='pla').length;
+  if(ia===0){showDebrief('loss');return;}
+  const wc=activeBattleData?.winCondition||{type:'waves'};
+  if(wc.type==='rounds'){
+    // Spawn next reinforcement wave when current enemies eliminated
+    if(pa===0&&gameState.waveIndex<PLA_WAVES.length){
+      const wl=activeBattleData?.enemyLabels; const wn=wl?Object.values(wl)[0]||'Enemy':'Enemy';
+      spawnWave(gameState.waveIndex++);showNarrative(`Wave ${gameState.waveIndex} — ${wn} reinforcements!`);
+    }
+  } else {
+    if(pa===0){
+      if(gameState.waveIndex<PLA_WAVES.length){
+        const wl=activeBattleData?.enemyLabels; const wn=wl?Object.values(wl)[1]||'Enemy':'Enemy';
+        spawnWave(gameState.waveIndex++);showNarrative(`Wave ${gameState.waveIndex} — ${wn} reinforcements`);
+      } else { const ab=BATTLES.find(b=>b.name===_currentBattleName); showWarCry(ab?.warCry||'Victory!',()=>showDebrief('win')); }
+    }
+  }
+}
+
+// Enemy AI
+function spawnWave(wi){
+  applyWaveAtmosphere(wi);
+  const spawns=[];
+  PLA_WAVES[wi].forEach(s=>{
+    let col=s.col,row=1;
+    for(let t=0;t<6&&unitAt(col,row);t++) col=Math.max(2,Math.min(MC-3,col+(t%2?1:-1)));
+    if(unitAt(col,row)) return;
+    const st=STATS[s.type];
+    const labels=activeBattleData?.enemyLabels||{}; const bio=activeBattleData?.enemyBio||'Enemy forces.';
+    const unit={side:'pla',col,row,type:s.type,name:labels[s.type]||(s.type==='pla_cdr'?'Enemy Officer':'Enemy Soldier'),bio,
+      hp:st.hp,maxHp:st.hp,atk:st.atk,mov:st.mov,rng:st.rng,morale:100,ability:st.ability||null,abilityUsed:false,abilityRoundUsed:-1,alive:true,moved:false,attacked:false};
+    gameState.units.push(unit);
+    const g=createUnitMesh(unit); _addMoraleRing(g); const fp=hexWorldPos(col,row); fp.y=tileTopY(col,row)+0.03;
+    g.position.set(fp.x,fp.y+5,fp.z); scene.add(g); unitGroups.push(g); unitGroupMap.set(unit,g);
+    spawns.push({g,fp});
+  });
+  spawns.forEach(({g,fp},i)=>setTimeout(()=>{
+    const sy=g.position.y,t0=performance.now();
+    function drop(){const el=performance.now()-t0,t=Math.min(1,el/ad(380)),e=1-Math.pow(1-t,3);g.position.y=sy+(fp.y-sy)*e;if(t<1)requestAnimationFrame(drop);else g.position.y=fp.y;}
+    requestAnimationFrame(drop);
+  },ad(80)*i));
+}
+function enemyTurn(){
+  const pla=gameState.units.filter(u=>u.alive&&u.side==='pla');
+  const ind=gameState.units.filter(u=>u.alive&&u.side==='ind');
+  if(!pla.length||!ind.length){nextRound();return;}
+  let idx=0;
+  function next(){
+    if(idx>=pla.length){nextRound();return;}
+    const p=pla[idx++]; if(!p.alive){next();return;}
+    // Pinned check — low morale unit may freeze
+    if(p.morale!=null&&p.morale<40&&Math.random()<0.30){
+      showNarrative(`${p.name.split(' ').pop()} is pinned — low morale!`);
+      next(); return;
+    }
+    let tgt=null,bd=99;
+    ind.forEach(i=>{if(!i.alive)return;const a=toAxial(p.col,p.row),b=toAxial(i.col,i.row),d=axDist(a.q,a.r,b.q,b.r);if(d<bd){bd=d;tgt=i;}});
+    if(!tgt){next();return;}
+    // Defensive AI: hold position unless enemy is close
+    if(activeBattleData?.defensiveAI && bd>4){
+      // Only attack if in range, no advance
+      if(axDist(toAxial(p.col,p.row).q,toAxial(p.col,p.row).r,toAxial(tgt.col,tgt.row).q,toAxial(tgt.col,tgt.row).r)<=p.rng)
+        executeAttack_pla(p,tgt,next);
+      else next(); return;
+    }
+    const ax=toAxial(p.col,p.row),ta=toAxial(tgt.col,tgt.row);
+    let bn=null,bnd=bd;
+    DIRS.forEach(d=>{const nq=ax.q+d.q,nr=ax.r+d.r,{col:nc,row:nr2}=toOffset(nq,nr);
+      if(nc<0||nc>=MC||nr2<0||nr2>=MR) return;
+      if(TERRAIN[MAP[nr2][nc]]?.block) return;
+      if(unitAt(nc,nr2)) return;
+      const nd=axDist(nq,nr,ta.q,ta.r);if(nd<bnd){bnd=nd;bn={col:nc,row:nr2};}
+    });
+    const afterMove=()=>{
+      if(!tgt.alive){next();return;}
+      const a=toAxial(p.col,p.row),b=toAxial(tgt.col,tgt.row);
+      if(axDist(a.q,a.r,b.q,b.r)<=p.rng) executeAttack_pla(p,tgt,next);
+      else next();
+    };
+    if(bn) executeMove_pla(p,bn.col,bn.row,afterMove); else afterMove();
+  }
+  next();
+}
+function autoPlayIndianTurn(){
+  const units = gameState.units.filter(u=>u.side==='ind'&&u.alive&&!u.moved);
+  let i=0;
+  function next(){
+    if(!gameState.autoPlaying||i>=units.length){ doEndTurn(); return; }
+    const u=units[i++]; if(!u.alive){next();return;}
+    // Pinned check — low morale unit may freeze
+    if(u.morale!=null&&u.morale<40&&Math.random()<0.30){
+      showNarrative(`${u.name.split(' ').pop()} is pinned — low morale!`);
+      setTimeout(next,ad(600)); return;
+    }
+    const enemies=gameState.units.filter(e=>e.side==='pla'&&e.alive);
+    if(!enemies.length){doEndTurn();return;}
+    const ua=toAxial(u.col,u.row);
+    let tgt=null,bd=Infinity;
+    enemies.forEach(e=>{const ea=toAxial(e.col,e.row),d=axDist(ua.q,ua.r,ea.q,ea.r);if(d<bd){bd=d;tgt=e;}});
+    if(!tgt){next();return;}
+    const ta=toAxial(tgt.col,tgt.row);
+    // Move toward target if not in range
+    if(bd>u.rng){
+      let bn=null,bnd=bd;
+      DIRS.forEach(d=>{
+        const nq=ua.q+d.q,nr=ua.r+d.r,{col:nc,row:nr2}=toOffset(nq,nr);
+        if(nc<0||nc>=MC||nr2<0||nr2>=MR) return;
+        if(TERRAIN[MAP[nr2]?.[nc]]?.block) return;
+        if(unitAt(nc,nr2)) return;
+        const nd=axDist(nq,nr,ta.q,ta.r);
+        if(nd<bnd){bnd=nd;bn={col:nc,row:nr2};}
+      });
+      if(bn){
+        executeMove(u,bn.col,bn.row);
+        setTimeout(()=>{
+          const uaPost=toAxial(u.col,u.row);
+          if(tgt.alive&&axDist(uaPost.q,uaPost.r,ta.q,ta.r)<=u.rng&&!u.attacked)
+            executeAttack(u,tgt);
+          setTimeout(next,ad(600));
+        },ad(450));
+        return;
+      }
+    }
+    // Already in range — attack
+    if(!u.attacked&&axDist(ua.q,ua.r,ta.q,ta.r)<=u.rng){
+      executeAttack(u,tgt);
+      setTimeout(next,ad(600));
+    } else {
+      setTimeout(next,ad(600));
+    }
+  }
+  setTimeout(next,600);
+}
+function nextRound(){
+  const ia=gameState.units.filter(u=>u.alive&&u.side==='ind').length;
+  if(ia===0){checkWinLoss();return;}
+  gameState.round++;
+  const wc=activeBattleData?.winCondition||{type:'waves'};
+  if(wc.type==='rounds'&&gameState.round>wc.n){const ab=BATTLES.find(b=>b.name===_currentBattleName);showWarCry(ab?.warCry||'Victory!',()=>showDebrief('win'));return;}
+  if(NARRATIVES[gameState.round]) showNarrative(NARRATIVES[gameState.round]);
+  // Battle-specific round events (e.g., Longewala air strike)
+  const ev=activeBattleData?.roundEvents?.[gameState.round];
+  if(ev?.type==='airstrike'){
+    const pla=gameState.units.filter(u=>u.alive&&u.side==='pla');
+    pla.forEach(u=>{u.hp=Math.max(0,u.hp-ev.dmg);if(u.hp<=0){u.alive=false;gameState.casualties.pla++;if(unitGroupMap.has(u))removeUnitGroup(u);}else if(unitGroupMap.has(u))updateHpBar(unitGroupMap.get(u));});
+    setTimeout(()=>showNarrative(ev.msg),500);
+    const flash=document.createElement('div');
+    flash.style.cssText='position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:400;transition:opacity 0.15s';
+    document.body.appendChild(flash);
+    requestAnimationFrame(()=>{flash.style.opacity='0.55';setTimeout(()=>{flash.style.opacity='0';setTimeout(()=>flash.remove(),200);},200);});
+  }
+  // Historical card trigger
+  if(activeBattleData?.histCards?.[gameState.round])
+    setTimeout(()=>showHistCard(activeBattleData.histCards[gameState.round]),1200);
+  // For non-round-win: check if all enemies dead (Tololing style)
+  const pa=gameState.units.filter(u=>u.alive&&u.side==='pla').length;
+  if(pa===0){ checkWinLoss(); return; }
+  gameState.phase='player_turn';
+  gameState.units.filter(u=>u.side==='ind').forEach(u=>{u.moved=false;u.attacked=false;});
+  gameState.units.forEach(u=>{u._defBonus=0;u._atkBonus=0;u._suppressed=false;u._diggingIn=false;u._coveringFire=false;});
+  gameState.selected=null; updatePanel();
+  // Auto-play: if active, drive Indian units automatically
+  if(gameState.autoPlaying) setTimeout(autoPlayIndianTurn, 500);
+}
+function doEndTurn(){
+  if(gameState.phase!=='player_turn'||gameState.animating) return;
+  deselect(); gameState.phase='enemy_turn'; updatePanel(); setTimeout(enemyTurn,320);
+}
+
+// Input
+const raycaster=new THREE.Raycaster(); const mouse=new THREE.Vector2();
+canvas.addEventListener('click',e=>{
+  if(gameState.screen!=='battle'||gameState.phase!=='player_turn'||gameState.animating) return;
+  const rect=canvas.getBoundingClientRect();
+  mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+  mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(mouse,camera);
+  const discs=[]; unitGroups.forEach(g=>g.children.forEach(c=>{if(c.userData.type==='unit')discs.push(c);}));
+  const hits=raycaster.intersectObjects([...tileMeshes,...discs]);
+  if(!hits.length){deselect();return;}
+  const hd=hits[0].object.userData;
+  if(hd.type==='unit'){const u=hd.unitRef;if(!u.alive)return;if(u.side==='pla'){handleTileClick(u.col,u.row);return;}if(gameState.selected===u){deselect();return;}if(gameState.autoPlaying){gameState.autoPlaying=false;updatePanel();}selectUnit(u);}
+  else if(hd.type==='tile') handleTileClick(hd.col,hd.row);
+});
+function handleTileClick(col,row){
+  const{selected,moveable,attackable}=gameState; const clicked=unitAt(col,row);
+  if(selected){
+    const cm=moveable.find(h=>h.col===col&&h.row===row);
+    if(!selected.moved&&cm&&!clicked){executeMove(selected,col,row);return;}
+    const ca=attackable.find(h=>h.col===col&&h.row===row);
+    if(!selected.attacked&&ca&&clicked?.side==='pla'){executeAttack(selected,clicked);return;}
+    if(clicked?.side==='ind'){selectUnit(clicked);return;}
+    deselect();
+  } else { if(clicked?.side==='ind') selectUnit(clicked); }
+}
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape') deselect();
+  if(e.key==='Enter'&&gameState.phase==='player_turn') doEndTurn();
+  if(e.key==='q'||e.key==='Q') rotateCamera(-1);
+  if(e.key==='e'||e.key==='E') rotateCamera(+1);
+});
+// Touch swipe for camera rotation
+let _touchStartX=0;
+window.addEventListener('touchstart',e=>{_touchStartX=e.touches[0].clientX;},{passive:true});
+window.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-_touchStartX;
+  if(Math.abs(dx)>60) rotateCamera(dx>0?-1:1);
+},{passive:true});
+document.getElementById('end-turn-btn').addEventListener('click',doEndTurn);
+document.getElementById('auto-pause-btn').addEventListener('click', ()=>{
+  gameState.autoPlaying = false;
+  updatePanel();
+});
+
+// UI
+function updatePanel(){
+  const{selected,phase,round,waveIndex,units,log}=gameState;
+  // Auto-play: show pause button instead of end-turn during auto mode
+  const pauseBtn = document.getElementById('auto-pause-btn');
+  const endTurnBtn = document.getElementById('end-turn-btn');
+  if(pauseBtn && endTurnBtn){
+    pauseBtn.style.display = gameState.autoPlaying ? 'block' : 'none';
+    endTurnBtn.style.display = gameState.autoPlaying ? 'none' : '';
+  }
+
+  // Phase indicator
+  const pe=document.getElementById('phase-display');
+  const dot=document.getElementById('phase-dot');
+  const isp=phase==='player_turn';
+  pe.textContent=isp?'YOUR TURN':'ENEMY ADVANCING';
+  pe.className=isp?'':'enemy-phase';
+  if(dot){ dot.className=isp?'phase-dot':'phase-dot enemy'; }
+
+  // Round display
+  const ia=units.filter(u=>u.alive&&u.side==='ind').length;
+  const pa=units.filter(u=>u.alive&&u.side==='pla').length;
+  const wc=activeBattleData?.winCondition||{type:'waves'};
+  const roundSuffix=wc.type==='rounds'?`/${wc.n}`:(PLA_WAVES.length>0?` W${waveIndex}`:'');
+  document.getElementById('round-display').textContent=`R${round}${roundSuffix} ▲${ia}▼${pa}`;
+
+  // Unit info
+  const info=document.getElementById('unit-info');
+  if(!selected){
+    info.innerHTML=`<div class="unit-placeholder">SELECT A UNIT</div>`;
+  } else {
+    const r=selected.hp/selected.maxHp;
+    const hc=r>0.6?'#3a9a4a':r>0.3?'#c8922a':'#cc3a3a';
+    const hglow=r>0.6?'rgba(58,154,74,0.5)':r>0.3?'rgba(200,146,42,0.5)':'rgba(204,58,58,0.5)';
+    const plt=selected.platoon===0?'HQ':`PLT ${selected.platoon}`;
+    const movedMark=selected.moved?'done':'';
+    const atkMark=selected.attacked?'done':'';
+    info.innerHTML=`
+      <div style="color:#c8b878;font-weight:bold;font-size:12px;margin-bottom:2px;letter-spacing:0.5px;">${selected.name}</div>
+      <div style="color:#7a9a7a;font-size:9px;letter-spacing:1px;margin-bottom:10px;">${plt} · ${selected.type.replace('_',' ').toUpperCase()}</div>
+      <div class="hp-row">
+        <span class="hp-label">HP</span>
+        <div class="hp-bar-wrap">
+          <div class="hp-bar-fill" style="width:${r*100}%;background:${hc};box-shadow:0 0 6px ${hglow};"></div>
+        </div>
+        <span class="hp-val" style="color:${hc};">${selected.hp}/${selected.maxHp}</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-chip">
+          <span class="slabel">ATK</span>
+          <span class="sval" style="color:#ddaa66;">${selected.atk}</span>
+        </div>
+        <div class="stat-chip">
+          <span class="slabel">MOV</span>
+          <span class="sval ${movedMark}" style="color:#66aadd;">${selected.mov}${selected.moved?' ✓':''}</span>
+        </div>
+        <div class="stat-chip">
+          <span class="slabel">RNG</span>
+          <span class="sval ${atkMark}" style="color:#cc88cc;">${selected.rng}${selected.attacked?' ✓':''}</span>
+        </div>
+      </div>
+      <div class="unit-bio">${selected.bio}</div>`;
+    // Panel badge — small regiment insignia
+    const activeBattle = BATTLES.find(b=>b.name===_currentBattleName);
+    if(activeBattle){
+      const badge = loadInsigniaImg(activeBattle, 20);
+      badge.style.cssText = 'display:inline-block;vertical-align:middle;margin-right:6px;opacity:0.7;';
+      if(info.firstChild) info.insertBefore(badge, info.firstChild);
+    }
+    // Ability button
+    if(selected.ability){
+      const isOncePerBattle=['rally','swarm'].includes(selected.ability);
+      const isOncePerRound=['covering_fire','dig_in','coordinated_assault','suppress'].includes(selected.ability);
+      const used=isOncePerBattle?selected.abilityUsed:(selected.abilityRoundUsed===gameState.round);
+      const abilityNames={rally:'⚡ RALLY',dig_in:'🪖 DIG IN',covering_fire:'🔫 COVERING FIRE',coordinated_assault:'⚔ COORD. ASSAULT',suppress:'🎯 SUPPRESS',swarm:'🐝 SWARM'};
+      const btn=document.createElement('button');
+      btn.className='ability-btn'+(used?' ability-used':'');
+      btn.textContent=abilityNames[selected.ability]||selected.ability.toUpperCase();
+      btn.disabled=used;
+      btn.addEventListener('click',()=>{if(!used)triggerAbility(selected);});
+      document.getElementById('unit-info').appendChild(btn);
+    }
+  }
+
+  // Last action
+  const lae=document.getElementById('last-action');
+  const la=gameState.lastAction;
+  if(la&&lae){
+    const al=la.atkStruct?`<span class="struct-badge" style="background:#0e180e;color:#4a8a4e;border:1px solid #1e2e1e;">${la.atkStruct.label}</span>`:'';
+    lae.innerHTML=`<div style="color:#cc5555;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${la.atk.name.split(' ').pop()}${al} → ${la.def.name.split(' ').pop()}</div><div style="color:#5a5a4a;font-size:9px;margin-top:2px;">dealt <span style="color:#ff6666;font-weight:bold;">−${la.dmg}</span>${la.ret>0?` · ret <span style="color:#ff9966;">−${la.ret}</span>`:''}</div>`;
+  }
+
+  // Combat log
+  if(log?.length){
+    const le=document.getElementById('combat-log');
+    le.innerHTML=log.slice(0,4).map((l,i)=>`<div style="color:${i===0?'#9aaa9a':'#6a7a6a'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l}</div>`).join('');
+  }
+}
+
+let _nt=null;
+function showNarrative(msg){const el=document.getElementById('narrative');el.textContent=msg;el.style.opacity='1';if(_nt)clearTimeout(_nt);_nt=setTimeout(()=>el.style.opacity='0',3800);}
+
+let _hcTimer=null;
+function showHistCard(data){
+  const hc=document.getElementById('hist-card');
+  document.getElementById('hc-name').textContent=data.name;
+  document.getElementById('hc-rank').textContent=data.rank;
+  document.getElementById('hc-body').textContent=data.body;
+  const m=document.getElementById('hc-medal'); m.textContent=data.medal?`✦ ${data.medal}`:'';
+  hc.classList.remove('hidden'); requestAnimationFrame(()=>hc.classList.add('visible'));
+  if(_hcTimer)clearTimeout(_hcTimer); _hcTimer=setTimeout(closeHistCard,9000);
+}
+function closeHistCard(){
+  const hc=document.getElementById('hist-card'); hc.classList.remove('visible');
+  setTimeout(()=>hc.classList.add('hidden'),450);
+}
+document.addEventListener('DOMContentLoaded',()=>{ document.getElementById('hc-close')?.addEventListener('click',closeHistCard); });
+// hc-close wired after DOM ready
+setTimeout(()=>document.getElementById('hc-close').addEventListener('click',closeHistCard),0);
+
+// Snow
+const _sg=new THREE.BufferGeometry();
+const _sp=new Float32Array(500*3);
+for(let i=0;i<500;i++){_sp[i*3]=(Math.random()-0.5)*26;_sp[i*3+1]=Math.random()*13;_sp[i*3+2]=(Math.random()-0.5)*22;}
+_sg.setAttribute('position',new THREE.BufferAttribute(_sp,3));
+const snowObj=new THREE.Points(_sg,new THREE.PointsMaterial({color:0xffffff,size:0.07,transparent:true,opacity:0.62}));
+scene.add(snowObj);
+function updateSnow(dt){
+  const p=snowObj.geometry.attributes.position;
+  for(let i=0;i<p.count;i++){p.array[i*3+1]-=dt*0.72;p.array[i*3]+=Math.sin(Date.now()/1300+i*0.28)*dt*0.04;if(p.array[i*3+1]<-0.5)p.array[i*3+1]=13;}
+  p.needsUpdate=true;
+}
+
+// Battle init
+function startBattle(name){
+  _warCryShown = false;
+  activeBattleData = BATTLE_DATA[name];
+  const activeBattle = BATTLES.find(b=>b.name===name)||{};
+  const lbl = document.getElementById('panel-battle-label');
+  if(lbl) lbl.textContent = (activeBattleData.introMeta || name).replace(' · ','\n');
+  // Update panel top accent to regiment colour
+  const panelAccent = document.getElementById('panel-accent-bar');
+  if(panelAccent){
+    const rc = activeBattle.regimentColor || activeBattle.color || '#c8a96e';
+    panelAccent.style.background = `linear-gradient(90deg,transparent,${rc},transparent)`;
+  }
+  MAP = activeBattleData.map;
+  TERRAIN = activeBattleData.terrain;
+  STRUCTURES = activeBattleData.structures || {};
+  IND_STARTS = activeBattleData.indStarts;
+  PLA_WAVES = activeBattleData.plaWaves;
+  NARRATIVES = activeBattleData.narratives;
+  startBattleMusic(name);
+  buildTerrain();
+  unitGroups.forEach(g=>scene.remove(g)); unitGroups.length=0; unitGroupMap.clear(); clearHighlights();
+  closeHistCard();
+  gameState.units=IND_STARTS.map(s=>{const st=STATS[s.type];return{side:'ind',col:s.col,row:s.row,type:s.type,name:s.name,platoon:s.platoon??0,bio:s.bio,hp:st.hp,maxHp:st.hp,atk:st.atk,mov:st.mov,rng:st.rng,morale:100,ability:st.ability||null,abilityUsed:false,abilityRoundUsed:-1,alive:true,moved:false,attacked:false};});
+  buildUnits(gameState.units);
+  // Place initial enemies (e.g., Tololing defenders)
+  (activeBattleData.initialEnemies||[]).forEach(s=>{
+    const st=STATS[s.type];
+    const labels=activeBattleData.enemyLabels||{}; const bio=activeBattleData.enemyBio||'Enemy forces.';
+    const unit={side:'pla',col:s.col,row:s.row,type:s.type,name:labels[s.type]||'Enemy',bio,hp:st.hp,maxHp:st.hp,atk:st.atk,mov:st.mov,rng:st.rng,morale:100,ability:st.ability||null,abilityUsed:false,abilityRoundUsed:-1,alive:true,moved:false,attacked:false};
+    gameState.units.push(unit);
+    const g=createUnitMesh(unit); _addMoraleRing(g); placeUnitGroup(g,unit.col,unit.row);
+    scene.add(g); unitGroups.push(g); unitGroupMap.set(unit,g);
+  });
+  gameState.round=1;gameState.waveIndex=0;gameState.selected=null;gameState.moveable=[];gameState.attackable=[];gameState.animating=false;gameState.log=[];gameState.casualties={ind:0,pla:0};gameState.lastAction=null;gameState.autoPlaying=gameSettings.autoPlay;
+  buildStructures();
+  if(PLA_WAVES.length>0) spawnWave(gameState.waveIndex++);
+  gameState.phase='player_turn';gameState.screen='battle';
+  if(gameState.autoPlaying) setTimeout(autoPlayIndianTurn, 1200);
+  showNarrative(NARRATIVES[1]);
+  if(activeBattle.warCry){
+    setTimeout(()=>showNarrative(`⚔ ${activeBattle.warCry}`), 4500);
+  }
+  if(activeBattleData.histCards?.[1]) setTimeout(()=>showHistCard(activeBattleData.histCards[1]),1800);
+  updatePanel();
+  updateCompass();
+}
+
+// Screen flow
+function showScreen(name){
+  ['screen-select','screen-regiment','screen-intro','screen-debrief','screen-opening'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  if(name) document.getElementById(name).classList.remove('hidden');
+  document.getElementById('panel').classList.toggle('hidden',name!==null);
+}
+const OPENING_CARDS = [
+  '"September 1897. A mud-brick signal post.\n10,000 Pashtun warriors."',
+  '"November 1962. −20°C.\nNo artillery. No retreat."',
+  '"December 1971. Midnight.\nPakistani tanks in the desert."',
+  'Six regiments. Six battles.\nOne hundred and twenty-eight years.',
+];
+
+function showOpeningIfNeeded(){
+  if(sessionStorage.getItem('_introShown')){showScreen('screen-select');return;}
+  sessionStorage.setItem('_introShown','1');
+  showScreen('screen-opening');
+  const cardEl = document.getElementById('opening-card');
+  const titleEl = document.getElementById('opening-title');
+  const skipBtn = document.getElementById('opening-skip-btn');
+  let cancelled = false;
+
+  function done(){ if(!cancelled){ cancelled=true; showScreen('screen-select'); } }
+  document.getElementById('opening-begin-btn').addEventListener('click', done);
+  skipBtn.addEventListener('click', done);
+
+  // Show skip button after 3s
+  setTimeout(()=>{ if(!cancelled) skipBtn.classList.remove('hidden'); }, 3000);
+
+  // Sequence cards
+  let ci = 0;
+  function showCard(){
+    if(cancelled) return;
+    if(ci >= OPENING_CARDS.length){
+      cardEl.style.opacity='0';
+      setTimeout(()=>{
+        if(cancelled) return;
+        cardEl.style.display='none';
+        titleEl.classList.remove('hidden');
+        requestAnimationFrame(()=>{ titleEl.style.opacity='1'; });
+      }, 600);
+      return;
+    }
+    cardEl.textContent = OPENING_CARDS[ci++];
+    cardEl.style.opacity='0';
+    requestAnimationFrame(()=>{
+      cardEl.style.opacity='1';
+      setTimeout(()=>{
+        if(cancelled) return;
+        cardEl.style.opacity='0';
+        setTimeout(showCard, 600);
+      }, 2800);
+    });
+  }
+  setTimeout(showCard, 400);
+}
+
+function showDebrief(result){
+  gameState.screen='debrief'; deselect(); closeHistCard(); showScreen('screen-debrief');
+  const ia=gameState.casualties.ind;
+  const pa=gameState.casualties.pla;
+  const bd=activeBattleData||BATTLE_DATA['Rezang La'];
+  const isWin=result==='win';
+  const title=isWin?bd.debriefWin:bd.debriefLoss;
+  const te=document.getElementById('debrief-title');
+  te.textContent=title; te.style.color=isWin?'#c8a96e':'#cc3333';
+  // Regiment label
+  const activeBattle=BATTLES.find(b=>b.name===_currentBattleName)||{};
+  const rl=document.getElementById('debrief-regiment-label');
+  if(rl) rl.textContent=(activeBattle.regimentFull||activeBattle.regiment||'').toUpperCase();
+  // Stat blocks
+  const fallenEl=document.getElementById('db-fallen');
+  if(fallenEl){ fallenEl.textContent=ia; fallenEl.style.color=ia===0?'#4aaa58':ia>=IND_STARTS.length?'#cc3333':'#ddaa44'; }
+  const roundsEl=document.getElementById('db-rounds');
+  if(roundsEl){ roundsEl.textContent=gameState.round; roundsEl.style.color='#9a9a9a'; }
+  const elimEl=document.getElementById('db-eliminated');
+  if(elimEl){ elimEl.textContent=pa; elimEl.style.color='#c8a96e'; }
+  // Epitaph
+  const epitaphEl=document.getElementById('debrief-epitaph');
+  if(epitaphEl) epitaphEl.textContent=isWin
+    ?'"The position held. The message got through."'
+    :'"In the end, what matters is that they chose to stand."';
+  // History
+  const histEl=document.getElementById('debrief-history');
+  if(histEl) histEl.textContent=bd.debriefHistory||'';
+  const legacyEl=document.getElementById('debrief-legacy');
+  if(legacyEl){
+    const ab=BATTLES.find(b=>b.name===_currentBattleName)||{};
+    legacyEl.textContent=isWin?(ab.debriefLegacy||''):'';
+    legacyEl.style.display=isWin&&ab.debriefLegacy?'block':'none';
+  }
+}
+function buildSelectScreen(){
+  const grid=document.getElementById('battle-grid'); grid.innerHTML='';
+  BATTLES.forEach((b,i)=>{
+    const card=document.createElement('div'); card.className='card'+(b.unlocked?' unlocked':' locked');
+    const chap=`CHAPTER ${['I','II','III','IV','V','VI'][i]||i+1}`;
+    const accentStyle=b.unlocked?`background:linear-gradient(90deg,${b.color},transparent)`:`background:#1e1e2e`;
+    const TERRAIN_ICONS = {
+      'Saragarhi': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6,8 L6,4 L10,4 L10,8 L14,8 L14,4 L18,4 L18,8 L22,8 L22,4 L26,4 L26,8 L30,8 L30,4 L34,4 L34,8 L38,8 L38,4 L42,4 L42,8 L46,8 L46,4 L50,4 L50,8 L54,8" stroke="${c}" stroke-width="1.2" stroke-linecap="round"/>
+    <rect x="6" y="8" width="48" height="20" stroke="${c}" stroke-width="1" opacity="0.55"/>
+    <path d="M24,28 L24,17 Q30,12 36,17 L36,28" stroke="${c}" stroke-width="1.2"/>
+  </svg>`,
+      'Rezang La': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4,32 L18,10 L26,18 L34,6 L50,32" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M15,14 L18,10 L21,14" stroke="${c}" stroke-width="1" opacity="0.7"/>
+    <path d="M31,9 L34,6 L37,9" stroke="${c}" stroke-width="1" opacity="0.7"/>
+    <line x1="4" y1="32" x2="56" y2="32" stroke="${c}" stroke-width="0.5" opacity="0.3"/>
+  </svg>`,
+      'Longewala': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2,28 Q14,22 26,26 Q38,20 58,24" stroke="${c}" stroke-width="0.8" opacity="0.45"/>
+    <rect x="16" y="14" width="22" height="8" rx="1" stroke="${c}" stroke-width="1.2"/>
+    <rect x="22" y="10" width="10" height="6" rx="1" stroke="${c}" stroke-width="1.2"/>
+    <line x1="32" y1="13" x2="46" y2="10" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="20" cy="22" r="2.5" stroke="${c}" stroke-width="1"/>
+    <circle cx="29" cy="22" r="2.5" stroke="${c}" stroke-width="1"/>
+    <circle cx="38" cy="22" r="2.5" stroke="${c}" stroke-width="1"/>
+  </svg>`,
+      'Tololing': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2,34 L10,28 L18,20 L26,12 L30,6 L34,12 L42,20 L50,28 L58,32" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M27,9 L30,4 L33,9" stroke="${c}" stroke-width="1" fill="${c}" opacity="0.9"/>
+    <path d="M2,34 L26,12" stroke="${c}" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+  </svg>`,
+      'Siachen': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4,32 L22,10 L30,4 L38,10 L56,32" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M22,10 L30,20 L38,10" stroke="${c}" stroke-width="0.8" opacity="0.6"/>
+    <line x1="30" y1="4" x2="30" y2="20" stroke="${c}" stroke-width="0.8" opacity="0.6"/>
+    <line x1="18" y1="16" x2="42" y2="16" stroke="${c}" stroke-width="0.4" opacity="0.35"/>
+    <line x1="14" y1="22" x2="46" y2="22" stroke="${c}" stroke-width="0.4" opacity="0.25"/>
+  </svg>`,
+      'Operation Sindoor': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22,22 L30,8 L38,22 Z" stroke="${c}" stroke-width="1.4" stroke-linejoin="round" opacity="0.9"/>
+    <line x1="30" y1="8" x2="30" y2="4" stroke="${c}" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="22" y1="22" x2="14" y2="22" stroke="${c}" stroke-width="1.0" stroke-linecap="round" opacity="0.6"/>
+    <line x1="38" y1="22" x2="46" y2="22" stroke="${c}" stroke-width="1.0" stroke-linecap="round" opacity="0.6"/>
+    <line x1="8" y1="22" x2="8" y2="30" stroke="${c}" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+    <path d="M4,22 L12,16 L12,22" stroke="${c}" stroke-width="1.0" stroke-linejoin="round" opacity="0.7"/>
+    <line x1="52" y1="22" x2="52" y2="30" stroke="${c}" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+    <path d="M56,22 L48,16 L48,22" stroke="${c}" stroke-width="1.0" stroke-linejoin="round" opacity="0.7"/>
+    <line x1="4" y1="30" x2="56" y2="30" stroke="${c}" stroke-width="0.8" opacity="0.35"/>
+  </svg>`,
+    };
+    const accentEl = document.createElement('div');
+    accentEl.className = 'card-accent';
+    accentEl.style.cssText = accentStyle + ';';
+
+    const iconEl = document.createElement('div');
+    iconEl.className = 'card-icon';
+    const insigniaImg = loadInsigniaImg(b, 48);
+    iconEl.appendChild(insigniaImg);
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'card-body';
+    bodyEl.innerHTML = `<div class="card-chapter">${chap}</div><div class="card-title" style="color:${b.unlocked?b.color:'#2a2a38'};">${b.name.toUpperCase()}</div><div class="card-meta">${b.year} · ${b.regiment}</div><div class="card-sub">${b.sub}</div><button class="card-btn" style="background:${b.unlocked?b.color:'#1c1c24'};color:${b.unlocked?'#fff':'#2a2a3a'};">${b.unlocked?'▶ PLAY':'COMING SOON'}</button>`;
+
+    card.appendChild(accentEl);
+    card.appendChild(iconEl);
+    card.appendChild(bodyEl);
+
+    if(b.unlocked) card.addEventListener('click',()=>showRegiment(b));
+    grid.appendChild(card);
+  });
+}
+let _currentBattleName = 'Rezang La';
+let _pendingBattle = null;
+function showRegiment(battle){
+  _pendingBattle = battle;
+  const i = BATTLES.findIndex(b=>b.name===battle.name);
+  const chap = `CHAPTER ${['I','II','III','IV','V','VI'][i]||i+1}`;
+  document.getElementById('rgt-chapter').textContent = chap;
+  const nameEl = document.getElementById('rgt-name');
+  nameEl.textContent = battle.regiment; nameEl.style.color = battle.color||'#c8a96e';
+  document.getElementById('rgt-full').textContent = battle.regimentFull||battle.regiment;
+  document.getElementById('rgt-motto').textContent = `${battle.motto} — "${battle.mottoEng}"`;
+  const wcEl = document.getElementById('rgt-warcry');
+  wcEl.textContent = battle.warCry||''; wcEl.style.color = battle.color||'#c8a96e';
+  document.getElementById('rgt-colors').textContent = battle.colorName||'';
+  document.getElementById('rgt-bio').textContent = battle.regimentBio||'';
+  const bg = document.getElementById('rgt-bg');
+  bg.style.background = `radial-gradient(ellipse at 30% 50%,${battle.color}33,transparent 65%)`;
+  const btn = document.getElementById('rgt-btn');
+  btn.style.borderColor = battle.color||'#c8a96e';
+  btn.style.color = battle.color||'#c8a96e';
+  const btnAuto = document.getElementById('rgt-btn-auto');
+  btnAuto.style.borderColor = battle.color||'#c8a96e';
+  btnAuto.style.color = battle.color||'#c8a96e';
+  const insEl = document.getElementById('rgt-insignia');
+  insEl.innerHTML = '';
+  insEl.appendChild(loadInsigniaImg(battle, 140));
+  showScreen('screen-regiment');
+}
+document.getElementById('rgt-btn').addEventListener('click',()=>{ if(_pendingBattle){ gameSettings.autoPlay=false; saveSettings(); showIntro(_pendingBattle); } });
+document.getElementById('rgt-btn-auto').addEventListener('click',()=>{ if(_pendingBattle){ gameSettings.autoPlay=true; saveSettings(); showIntro(_pendingBattle); } });
+
+let _warCryShown = false;
+function showWarCry(text, onDone){
+  const el = document.getElementById('war-cry-overlay');
+  document.getElementById('wc-text').textContent = text;
+  el.style.display = 'flex';
+  requestAnimationFrame(()=>{ el.style.opacity='1'; });
+  setTimeout(()=>{
+    el.style.opacity='0';
+    setTimeout(()=>{ el.style.display='none'; onDone?.(); }, 400);
+  }, 2000);
+}
+
+function showIntro(battle){
+  _currentBattleName = battle.name;
+  const bd=BATTLE_DATA[battle.name]||BATTLE_DATA['Rezang La'];
+  document.getElementById('intro-title').textContent=battle.name.toUpperCase();
+  document.getElementById('intro-meta').textContent=`${battle.year} · ${bd.introMeta}`;
+  document.getElementById('intro-lines').innerHTML=bd.introText||'';
+  // Regiment identity strip
+  const rc=battle.regimentColor||battle.color||'#c8a96e';
+  const cb=document.getElementById('ir-colour-bar');
+  if(cb) cb.style.background=`linear-gradient(90deg,${rc},transparent)`;
+  const rn=document.getElementById('ir-regiment-name');
+  if(rn) rn.textContent=battle.regimentFull||battle.regiment;
+  const mo=document.getElementById('ir-motto');
+  if(mo) mo.textContent=battle.motto||'';
+  const me=document.getElementById('ir-motto-eng');
+  if(me) me.textContent=battle.mottoEng?`"${battle.mottoEng}"`:'';
+  const wc=document.getElementById('ir-warcry');
+  if(wc){ wc.textContent=battle.warCry||''; wc.style.color=battle.color||'#c8a96e'; }
+  showScreen('screen-intro');
+}
+document.getElementById('begin-btn').addEventListener('click',()=>{showScreen(null);startBattle(_currentBattleName);});
+document.getElementById('back-btn').addEventListener('click',()=>{
+  unitGroups.forEach(g=>scene.remove(g));unitGroups.length=0;unitGroupMap.clear();clearHighlights();
+  gameState.units=[];gameState.screen='select';showScreen('screen-select');
+});
+
+// Loop
+const clock=new THREE.Clock();
+function gameLoop(){const dt=clock.getDelta();updateSnow(dt);renderer.render(scene,camera);requestAnimationFrame(gameLoop);}
+// Settings panel wiring
+document.getElementById('settings-btn').addEventListener('click',e=>{
+  e.stopPropagation();
+  startMusic(); // start audio context on this interaction
+  applySettings();
+  document.getElementById('settings-overlay').classList.remove('hidden');
+});
+document.getElementById('s-close-btn').addEventListener('click',()=>{
+  document.getElementById('settings-overlay').classList.add('hidden');
+});
+document.getElementById('settings-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('settings-overlay'))
+    document.getElementById('settings-overlay').classList.add('hidden');
+});
+document.getElementById('s-music-on').addEventListener('click',()=>{
+  gameSettings.musicOn=true; saveSettings(); applySettings();
+  unlockAudio(); if(masterGain){ masterGain.gain.cancelScheduledValues(audioCtx.currentTime); masterGain.gain.setValueAtTime(gameSettings.musicVol/100,audioCtx.currentTime); }
+});
+document.getElementById('s-music-off').addEventListener('click',()=>{
+  gameSettings.musicOn=false; saveSettings(); applySettings();
+  if(masterGain){ masterGain.gain.cancelScheduledValues(audioCtx.currentTime); masterGain.gain.setValueAtTime(0,audioCtx.currentTime); }
+});
+document.getElementById('s-vol').addEventListener('input',e=>{
+  gameSettings.musicVol=parseInt(e.target.value);
+  document.getElementById('s-vol-label').textContent=gameSettings.musicVol+'%';
+  saveSettings();
+  if(masterGain&&gameSettings.musicOn){ masterGain.gain.cancelScheduledValues(audioCtx.currentTime); masterGain.gain.setValueAtTime(gameSettings.musicVol/100,audioCtx.currentTime); }
+});
+document.getElementById('s-anim-slow').addEventListener('click',()=>{ gameSettings.animSpeed=0.5; saveSettings(); applySettings(); });
+document.getElementById('s-anim-norm').addEventListener('click',()=>{ gameSettings.animSpeed=1.0; saveSettings(); applySettings(); });
+document.getElementById('s-anim-fast').addEventListener('click',()=>{ gameSettings.animSpeed=2.0; saveSettings(); applySettings(); });
+document.getElementById('s-dmg-on').addEventListener('click',()=>{ gameSettings.showDmg=true;  saveSettings(); applySettings(); });
+document.getElementById('s-dmg-off').addEventListener('click',()=>{ gameSettings.showDmg=false; saveSettings(); applySettings(); });
+document.getElementById('s-theme-dark').addEventListener('click',()=>{ gameSettings.theme='dark';  saveSettings(); applySettings(); });
+document.getElementById('s-theme-light').addEventListener('click',()=>{ gameSettings.theme='light'; saveSettings(); applySettings(); });
+
+buildSelectScreen(); applySettings(); showOpeningIfNeeded(); gameLoop();
+// Start music on first user interaction (browser autoplay policy)
+document.addEventListener('click',()=>startMusic(),{once:true});
+document.addEventListener('keydown',()=>startMusic(),{once:true});
+document.addEventListener('touchstart',()=>startMusic(),{once:true});
+</script>
+</body>
+</html>
