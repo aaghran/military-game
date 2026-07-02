@@ -2419,6 +2419,11 @@ function autoPlayIndianTurn(){
       });
     }
 
+    const defensive = activeBattleData?.autoPlayStyle==='defensive';
+    // Fortified = on a structure OR on terrain with def > 1.2
+    const onStructure = !!getStructure(u.col,u.row);
+    const onFortified = onStructure || (TERRAIN[MAP[u.row]?.[u.col]]?.def||1)>1.2;
+
     // Score each reachable hex: prefer structures + proximity to enemy
     let bestDest=null, bestScore=-Infinity;
     const allDests=[{col:u.col,row:u.row},...reachable.values()]; // include staying put
@@ -2432,11 +2437,24 @@ function autoPlayIndianTurn(){
       let nearestEnemyDist=Infinity;
       enemies.forEach(e=>{const ea=toAxial(e.col,e.row);const d=axDist(da.q,da.r,ea.q,ea.r);if(d<nearestEnemyDist)nearestEnemyDist=d;});
       const inRange=nearestEnemyDist<=effRng;
-      const score = (atkBonus-1)*3 + rngBonus*2 + (inRange?8:0) - nearestEnemyDist*0.4;
+      let score;
+      if(defensive){
+        // Heavily reward structures (+15) and high-def terrain; do NOT chase enemies
+        const destTerrainDef = TERRAIN[MAP[dr]?.[dc]]?.def||1;
+        score = (st?15:0) + (destTerrainDef>1.2?(destTerrainDef-1)*4:0) + rngBonus*3 + (inRange?6:0);
+        // Penalise moving to open terrain when already fortified
+        if(onFortified && !st && destTerrainDef<=1.2) score -= 20;
+      } else {
+        score = (atkBonus-1)*3 + rngBonus*2 + (inRange?8:0) - nearestEnemyDist*0.4;
+      }
       if(score>bestScore){bestScore=score;bestDest={col:dc,row:dr};}
     });
 
-    const moveNeeded=bestDest&&(bestDest.col!==u.col||bestDest.row!==u.row);
+    // Defensive mode: if already on a structure or fortified terrain, hold position entirely
+    // Otherwise only move if the best destination IS a structure (never advance just to get in range)
+    const moveNeeded = !defensive
+      ? bestDest&&(bestDest.col!==u.col||bestDest.row!==u.row)
+      : !onFortified && bestDest && (bestDest.col!==u.col||bestDest.row!==u.row) && !!getStructure(bestDest.col,bestDest.row);
     const doAttack=()=>{
       if(u.attacked) return;
       // Pick weakest enemy in (effective) range

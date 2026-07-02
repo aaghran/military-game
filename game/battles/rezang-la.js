@@ -83,4 +83,5 @@ export default {
   debriefLoss:   'C COMPANY FALLEN',
   debriefHistory:'In history, 113 of 114 Kumaon soldiers died at Rezang La. Not one retreated. Every man was found facing the enemy.',
   autoPlayForceWin: false,  // historical loss — all of C Company died
+  autoPlayStyle: 'defensive',
 };
