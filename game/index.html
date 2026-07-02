@@ -1357,6 +1357,8 @@ function hexWorldPos(col,row) {
   return new THREE.Vector3(HEX_R*SQ3*(col+(row&1)*0.5), 0, HEX_R*1.5*row);
 }
 function tileTopY(col,row) { return TERRAIN[MAP[row]?.[col]]?.height ?? 0; }
+function cellCenter(col,row){const pos=hexWorldPos(col,row);pos.y=tileTopY(col,row);return pos;}
+const _rnd=(a,b)=>a+(b-a)*Math.random();
 
 function toAxial(c,r)  { return {q:c-(r-(r&1))/2,r}; }
 function toOffset(q,r) { return {col:q+(r-(r&1))/2,row:r}; }
@@ -1366,6 +1368,8 @@ function unitAt(col,row) { return gameState.units.find(u=>u.alive&&u.col===col&&
 
 // Terrain
 let tileMeshes = [];
+let _propMeshes = [];
+let _activeEffects = [];
 function buildTerrain(){
   tileMeshes.forEach(m=>scene.remove(m)); tileMeshes=[];
   for(let row=0;row<MR;row++) for(let col=0;col<MC;col++){
@@ -1379,6 +1383,7 @@ function buildTerrain(){
     mesh.userData={type:'tile',col,row,terrainType:type};
     scene.add(mesh); tileMeshes.push(mesh);
   }
+  buildTerrainProps();
 }
 buildTerrain(); // initial build for select screen background
 
@@ -1410,6 +1415,194 @@ function buildStructures(){
         st.position.set(p.x+Math.cos(a)*0.3,ty+0.1,p.z+Math.sin(a)*0.3); st.rotation.y=a+0.2;}
     }
   });
+}
+
+// ── Terrain decorative props ─────────────────────────────────
+function buildTerrainProps(){
+  _propMeshes.forEach(m=>{scene.remove(m);try{m.geometry.dispose();}catch(e){}});
+  _propMeshes=[];
+  const add=(m)=>{m.userData.isProp=true;scene.add(m);_propMeshes.push(m);return m;};
+  for(let row=0;row<MR;row++) for(let col=0;col<MC;col++){
+    const type=MAP[row]?.[col]; if(!type) continue;
+    const td=TERRAIN[type]; if(!td||td.block) continue;
+    const p=hexWorldPos(col,row);
+    const ty=td.height;
+    const ox=_rnd(-0.14,0.14), oz=_rnd(-0.14,0.14);
+    if(type==='s'){
+      const c=td.color, blue=c&0xff, red=(c>>16)&0xff;
+      if(c>0xc0a000){
+        // Sand dunes — 2-3 flat torus ridges
+        const n=2+Math.floor(Math.random()*2);
+        for(let i=0;i<n;i++){
+          const m=add(new THREE.Mesh(new THREE.TorusGeometry(0.18,0.06,4,8),new THREE.MeshLambertMaterial({color:0xd4aa58})));
+          m.rotation.x=Math.PI/2; m.rotation.z=_rnd(0,Math.PI*2);
+          m.position.set(p.x+_rnd(-0.14,0.14),ty+0.02,p.z+_rnd(-0.14,0.14));
+        }
+      } else if(blue>red){
+        // Snow mounds
+        for(let i=0;i<2;i++){
+          const m=add(new THREE.Mesh(new THREE.SphereGeometry(0.1,6,4),new THREE.MeshLambertMaterial({color:0xe0eeff})));
+          m.scale.y=0.4; m.position.set(p.x+_rnd(-0.14,0.14),ty+0.04,p.z+_rnd(-0.14,0.14));
+        }
+      }
+    } else if(type==='i'){
+      // Ice shard spikes — 3 cones
+      for(let i=0;i<3;i++){
+        const m=add(new THREE.Mesh(new THREE.ConeGeometry(0.04,0.25,4),new THREE.MeshLambertMaterial({color:0x88ccee})));
+        m.position.set(p.x+_rnd(-0.2,0.2),ty+0.12,p.z+_rnd(-0.2,0.2));
+        m.rotation.x=_rnd(-0.2,0.2); m.rotation.z=_rnd(-0.15,0.15);
+      }
+    } else if(type==='r'){
+      // Rock clusters — 2 icosahedra
+      for(let i=0;i<2;i++){
+        const m=add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.1),new THREE.MeshLambertMaterial({color:0x888880})));
+        m.position.set(p.x+_rnd(-0.2,0.2),ty+0.05,p.z+_rnd(-0.2,0.2));
+        m.rotation.set(_rnd(0,Math.PI),_rnd(0,Math.PI),_rnd(0,Math.PI));
+      }
+    } else if(type==='g'){
+      const c=td.color, blue=c&0xff, red=(c>>16)&0xff;
+      if(blue>red){
+        // Glacier ice sheet
+        const m=add(new THREE.Mesh(new THREE.PlaneGeometry(0.3,0.3),new THREE.MeshLambertMaterial({color:0xa0c8e0,transparent:true,opacity:0.5,side:THREE.DoubleSide})));
+        m.rotation.x=-Math.PI/2; m.position.set(p.x+ox,ty+0.01,p.z+oz);
+      }
+    } else if(type==='f'){
+      // Small ice chunks — 1-2 tilted boxes
+      const n=1+Math.floor(Math.random()*2);
+      for(let i=0;i<n;i++){
+        const m=add(new THREE.Mesh(new THREE.BoxGeometry(0.08,0.12,0.08),new THREE.MeshLambertMaterial({color:0x99bbcc})));
+        m.position.set(p.x+_rnd(-0.18,0.18),ty+0.06,p.z+_rnd(-0.18,0.18));
+        m.rotation.set(_rnd(-0.3,0.3),_rnd(0,Math.PI),_rnd(-0.2,0.2));
+      }
+    } else if(type==='b'){
+      const s=getStructure(col,row);
+      if(s&&s.defMul>=2){
+        // Sandbag rows — 2 flat cylinders
+        for(let i=0;i<2;i++){
+          const m=add(new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.07,0.05,8),new THREE.MeshLambertMaterial({color:0x8a6a50})));
+          m.position.set(p.x+ox+(i*0.14-0.07),ty+0.025+i*0.055,p.z+oz);
+        }
+      }
+    } else if(type==='t'){
+      // 2 small rocks + 1 low log
+      for(let i=0;i<2;i++){
+        const m=add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.06),new THREE.MeshLambertMaterial({color:0x888880})));
+        m.position.set(p.x+_rnd(-0.22,0.22),ty+0.03,p.z+_rnd(-0.22,0.22));
+        m.rotation.set(_rnd(0,Math.PI),_rnd(0,Math.PI),0);
+      }
+      const log=add(new THREE.Mesh(new THREE.BoxGeometry(0.12,0.04,0.05),new THREE.MeshLambertMaterial({color:0x6a5030})));
+      log.position.set(p.x+ox,ty+0.02,p.z+oz); log.rotation.y=_rnd(0,Math.PI);
+    }
+  }
+}
+
+// ── Weapon effect animations ─────────────────────────────────
+function spawnWeaponEffect(atk,def){
+  const sp=cellCenter(atk.col,atk.row); sp.y+=0.3;
+  const dp=cellCenter(def.col,def.row); dp.y+=0.3;
+  const struct=getStructure(atk.col,atk.row);
+  let fx='rifle_shot';
+  if(atk.type==='pla_tank') fx='tank_shell';
+  else if(atk.type==='drone') fx='drone_dive';
+  else if(atk.type==='missile') fx='missile_streak';
+  else if(atk.type==='aircraft') fx='aircraft_cannon';
+  else if(struct?.type==='mortar') fx='mortar_arc';
+  else if(struct?.type==='lmg') fx='lmg_burst';
+  const t0=performance.now();
+  const gone=(m)=>{scene.remove(m);try{m.geometry.dispose();}catch(e){}};
+
+  if(fx==='rifle_shot'){
+    const l=new THREE.PointLight(0xffffff,2,3); l.position.copy(sp); scene.add(l);
+    _activeEffects.push(()=>{const t=(performance.now()-t0)/ad(50);if(t>=1){scene.remove(l);return false;}l.intensity=2*(1-t);return true;});
+  }
+  else if(fx==='lmg_burst'){
+    const mfl=new THREE.PointLight(0xff8833,4,4); mfl.position.copy(sp); scene.add(mfl);
+    for(let i=0;i<3;i++) setTimeout(()=>{
+      const m=new THREE.Mesh(new THREE.SphereGeometry(0.04),new THREE.MeshLambertMaterial({color:0xffee88}));
+      m.position.copy(sp); scene.add(m);
+      const st=performance.now();
+      _activeEffects.push(()=>{const t=Math.min(1,(performance.now()-st)/ad(120));m.position.lerpVectors(sp,dp,t);if(t>=1){gone(m);return false;}return true;});
+    },ad(80)*i);
+    _activeEffects.push(()=>{const t=(performance.now()-t0)/ad(300);if(t>=1){scene.remove(mfl);return false;}mfl.intensity=4*(Math.sin(t*Math.PI*9)>0?1:0);return true;});
+  }
+  else if(fx==='mortar_arc'){
+    const shell=new THREE.Mesh(new THREE.SphereGeometry(0.06),new THREE.MeshLambertMaterial({color:0x888880}));
+    shell.position.copy(sp); scene.add(shell);
+    const ax=toAxial(atk.col,atk.row),dx=toAxial(def.col,def.row);
+    const dist=axDist(ax.q,ax.r,dx.q,dx.r);
+    const peakH=Math.max(3,dist*1.5);
+    const tMs=ad(500);
+    _activeEffects.push(()=>{
+      const t=Math.min(1,(performance.now()-t0)/tMs);
+      const mid=new THREE.Vector3().lerpVectors(sp,dp,t); mid.y=sp.y+(dp.y-sp.y)*t+peakH*4*t*(1-t);
+      shell.position.copy(mid);
+      if(t>=1){gone(shell);
+        const ring=new THREE.Mesh(new THREE.RingGeometry(0.05,0.4,12),new THREE.MeshLambertMaterial({color:0xff6633,transparent:true,opacity:1,side:THREE.DoubleSide}));
+        ring.rotation.x=-Math.PI/2; ring.position.copy(dp); ring.position.y+=0.02; scene.add(ring);
+        const fl=new THREE.PointLight(0xffffff,6,5); fl.position.copy(dp); scene.add(fl);
+        const rt=performance.now();
+        _activeEffects.push(()=>{const p=Math.min(1,(performance.now()-rt)/ad(200));ring.material.opacity=1-p;fl.intensity=6*(1-p);if(p>=1){gone(ring);scene.remove(fl);return false;}return true;});
+        return false;} return true;});
+  }
+  else if(fx==='tank_shell'){
+    const shell=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.18,6),new THREE.MeshLambertMaterial({color:0xddaa44}));
+    const dir=new THREE.Vector3().subVectors(dp,sp).normalize();
+    shell.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);
+    shell.position.copy(sp); scene.add(shell);
+    _activeEffects.push(()=>{
+      const t=Math.min(1,(performance.now()-t0)/ad(180));
+      shell.position.lerpVectors(sp,dp,t);
+      if(t>=1){gone(shell);
+        const fl=new THREE.PointLight(0xff8833,8,6); fl.position.copy(dp); scene.add(fl);
+        const sparks=[];
+        for(let i=0;i<6;i++){const sm=new THREE.Mesh(new THREE.SphereGeometry(0.03),new THREE.MeshLambertMaterial({color:0xff9933,transparent:true,opacity:1}));sm.position.copy(dp);scene.add(sm);sparks.push({m:sm,d:new THREE.Vector3(_rnd(-1,1),_rnd(0.2,1),_rnd(-1,1)).normalize()});}
+        const st=performance.now();
+        _activeEffects.push(()=>{const p=Math.min(1,(performance.now()-st)/ad(150));sparks.forEach(s=>{s.m.position.copy(dp).addScaledVector(s.d,p*0.5);s.m.material.opacity=1-p;});fl.intensity=8*(1-p);if(p>=1){sparks.forEach(s=>gone(s.m));scene.remove(fl);return false;}return true;});
+        return false;} return true;});
+  }
+  else if(fx==='drone_dive'){
+    const disc=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,0.02,8),new THREE.MeshLambertMaterial({color:0x444466}));
+    const startP=sp.clone(); startP.y+=2; disc.position.copy(startP); scene.add(disc);
+    _activeEffects.push(()=>{
+      const t=Math.min(1,(performance.now()-t0)/ad(300));
+      disc.position.lerpVectors(startP,dp,t);
+      if(t>=1){gone(disc);
+        const ring=new THREE.Mesh(new THREE.RingGeometry(0.05,0.3,12),new THREE.MeshLambertMaterial({color:0xff4444,transparent:true,opacity:1,side:THREE.DoubleSide}));
+        ring.rotation.x=-Math.PI/2; ring.position.copy(dp); ring.position.y+=0.02; scene.add(ring);
+        const fl=new THREE.PointLight(0xff4444,6,4); fl.position.copy(dp); scene.add(fl);
+        const rt=performance.now();
+        _activeEffects.push(()=>{const p=Math.min(1,(performance.now()-rt)/ad(200));ring.material.opacity=1-p;fl.intensity=6*(1-p);if(p>=1){gone(ring);scene.remove(fl);return false;}return true;});
+        return false;} return true;});
+  }
+  else if(fx==='missile_streak'){
+    const cone=new THREE.Mesh(new THREE.ConeGeometry(0.03,0.4,6),new THREE.MeshLambertMaterial({color:0xaaaacc}));
+    const peakP=new THREE.Vector3().lerpVectors(sp,dp,0.5); peakP.y=Math.max(sp.y,dp.y)+4;
+    cone.position.copy(sp); scene.add(cone);
+    const trail=new THREE.PointLight(0xffffff,3,3); trail.position.copy(sp); scene.add(trail);
+    const P1=ad(200),P2=ad(300);
+    _activeEffects.push(()=>{
+      const el=performance.now()-t0;
+      if(el<P1){const t=el/P1;cone.position.lerpVectors(sp,peakP,t);}
+      else{const t=Math.min(1,(el-P1)/P2);cone.position.lerpVectors(peakP,dp,t);}
+      trail.position.copy(cone.position);
+      if(el>=P1+P2){gone(cone);scene.remove(trail);
+        const ring=new THREE.Mesh(new THREE.RingGeometry(0.05,0.6,12),new THREE.MeshLambertMaterial({color:0xff8833,transparent:true,opacity:1,side:THREE.DoubleSide}));
+        ring.rotation.x=-Math.PI/2; ring.position.copy(dp); ring.position.y+=0.02; scene.add(ring);
+        const fl=new THREE.PointLight(0xffffff,10,8); fl.position.copy(dp); scene.add(fl);
+        const rt=performance.now();
+        _activeEffects.push(()=>{const p=Math.min(1,(performance.now()-rt)/ad(250));ring.material.opacity=1-p;fl.intensity=10*(1-p);if(p>=1){gone(ring);scene.remove(fl);return false;}return true;});
+        return false;} return true;});
+  }
+  else if(fx==='aircraft_cannon'){
+    for(let i=0;i<2;i++) setTimeout(()=>{
+      const m=new THREE.Mesh(new THREE.SphereGeometry(0.05),new THREE.MeshLambertMaterial({color:0xffdd44}));
+      m.position.copy(sp); scene.add(m);
+      const st=performance.now();
+      _activeEffects.push(()=>{const t=Math.min(1,(performance.now()-st)/ad(100));m.position.lerpVectors(sp,dp,t);if(t>=1){gone(m);return false;}return true;});
+    },ad(40)*i);
+    const fl=new THREE.PointLight(0xffffaa,3,3); fl.position.copy(sp); scene.add(fl);
+    _activeEffects.push(()=>{const t=(performance.now()-t0)/ad(80);if(t>=1){scene.remove(fl);return false;}fl.intensity=3*(1-t);return true;});
+  }
 }
 
 // Background music via Web Audio API — per-battle Indian military themes
@@ -2282,6 +2475,7 @@ function executeAttack(atk,def){
     if(ab?.warCry) showWarCry(ab.warCry);
   }
   const ag=unitGroupMap.get(atk),dg=unitGroupMap.get(def);
+  spawnWeaponEffect(atk,def);
   _doAttack(atk,def,ag,dg,()=>{atk.attacked=true;gameState.animating=false;gameState.selected=null;updatePanel();checkWinLoss();});
 }
 function executeAttack_pla(atk,def,cb){
@@ -2289,6 +2483,7 @@ function executeAttack_pla(atk,def,cb){
   gameState.animating=true;
   const ag=unitGroupMap.get(atk),dg=unitGroupMap.get(def);
   if(!ag||!dg){gameState.animating=false;cb?.();return;}
+  spawnWeaponEffect(atk,def);
   _doAttack(atk,def,ag,dg,()=>{gameState.animating=false;checkWinLoss();cb?.();});
 }
 function checkWinLoss(){
@@ -3148,7 +3343,7 @@ document.getElementById('back-btn').addEventListener('click',()=>{
 
 // Loop
 const clock=new THREE.Clock();
-function gameLoop(){const dt=clock.getDelta();updateSnow(dt);renderer.render(scene,camera);requestAnimationFrame(gameLoop);}
+function gameLoop(){const dt=clock.getDelta();updateSnow(dt);if(_activeEffects.length)_activeEffects=_activeEffects.filter(fn=>fn());renderer.render(scene,camera);requestAnimationFrame(gameLoop);}
 // Settings panel wiring
 document.getElementById('theme-toggle-btn').addEventListener('click',e=>{
   e.stopPropagation();
