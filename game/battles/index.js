@@ -1,16 +1,24 @@
-import rezangLa   from './rezang-la.js';
-import saragarhi  from './saragarhi.js';
-import longewala  from './longewala.js';
-import tololing   from './tololing.js';
-import siachen    from './siachen.js';
-import sindoor    from './operation-sindoor.js';
+import saragarhi from './saragarhi.js';
+import haifa     from './haifa.js';
+import kohima    from './kohima.js';
+import rezangLa  from './rezang-la.js';
+import asalUttar from './asal-uttar.js';
+import dograi    from './dograi.js';
+import longewala from './longewala.js';
+import siachen   from './siachen.js';
+import tololing  from './tololing.js';
+import sindoor   from './operation-sindoor.js';
 
 export const BATTLE_DATA = {
-  'Rezang La':        rezangLa,
   'Saragarhi':        saragarhi,
+  'Haifa':            haifa,
+  'Kohima':           kohima,
+  'Rezang La':        rezangLa,
+  'Asal Uttar':       asalUttar,
+  'Dograi':           dograi,
   'Longewala':        longewala,
-  'Tololing':         tololing,
   'Siachen':          siachen,
+  'Tololing':         tololing,
   'Operation Sindoor':sindoor,
 };
 
@@ -45,6 +53,38 @@ export const BATTLES = [
     </svg>`,
   },
   {
+    name: 'Haifa', year: 1918,
+    regiment: 'Jodhpur Lancers & Mysore Lancers',
+    regimentFull: 'Jodhpur Lancers & Mysore Lancers · Imperial Service Cavalry',
+    color: '#c8a030', regimentColor: '#c87a18',
+    colorName: 'Gold & Crimson',
+    motto: 'Rann Banka Rathore', mottoEng: 'The Rathore is brave in battle',
+    warCry: 'Jai Jodhana! Vande Mataram!',
+    insignia: 'Crossed lances on royal blue',
+    regimentBio: 'The Jodhpur Lancers and Mysore Lancers were part of the Indian Imperial Service Cavalry. On 23 September 1918 they executed one of the last great cavalry charges in history, capturing the city of Haifa from Ottoman and German forces in under three hours. India celebrates 23 September as Haifa Day.',
+    debriefLegacy: 'A road in Tel Aviv bears their name. The charge is taught at cavalry schools worldwide.',
+    insigniaSvg: (c) => `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="${c}" stroke-width="2"/><line x1="20" y1="60" x2="60" y2="20" stroke="${c}" stroke-width="3"/><line x1="60" y1="60" x2="20" y2="20" stroke="${c}" stroke-width="3"/><circle cx="40" cy="40" r="6" fill="${c}"/></svg>`,
+    insigniaFile: 'assets/insignia/haifa.svg',
+    unlocked: true,
+    sub: '23 September 1918. Haifa, Ottoman Palestine. The Jodhpur and Mysore Lancers charged across open ground under machine-gun fire — one of the last great cavalry charges in history.',
+  },
+  {
+    name: 'Kohima', year: 1944,
+    regiment: 'Assam Regiment & Rajput Regiment',
+    regimentFull: 'Assam Regiment & Rajput Regiment · 1944 Burma Campaign',
+    color: '#4a8a30', regimentColor: '#3a7a20',
+    colorName: 'Jungle Green',
+    motto: 'Nagaland Forever', mottoEng: 'The Hills Remember',
+    warCry: 'Jai Hind!',
+    insignia: 'Crossed khukris on jungle green',
+    regimentBio: 'The garrison at Kohima held against the full weight of the Japanese 31st Division from 4 April 1944. For 15 days, 1,500 soldiers — Indian, British, and Naga — held 15,000 Japanese at bay on a tennis court in Nagaland. The Japanese never passed.',
+    debriefLegacy: '"When you go home, tell them of us and say — for your tomorrow, we gave our today." The Kohima Epitaph.',
+    insigniaSvg: (c) => `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="${c}" stroke-width="2"/><rect x="28" y="22" width="24" height="36" rx="2" fill="none" stroke="${c}" stroke-width="2"/><line x1="28" y1="40" x2="52" y2="40" stroke="${c}" stroke-width="1.5"/></svg>`,
+    insigniaFile: 'assets/insignia/kohima.svg',
+    unlocked: true,
+    sub: 'April 1944. Nagaland. A tennis court. Japanese and Indian positions 15 metres apart. 1,500 held 15,000. The Japanese never passed.',
+  },
+  {
     name:         'Rezang La',
     year:         1962,
     regiment:     '13 Kumaon',
@@ -76,6 +116,38 @@ export const BATTLES = [
     </svg>`,
   },
   {
+    name: 'Asal Uttar', year: 1965,
+    regiment: 'Poona Horse & 3 Cavalry',
+    regimentFull: '17th Horse (Poona Horse) · 4th Horse · 3rd Cavalry',
+    color: '#c8a030', regimentColor: '#b89020',
+    colorName: 'Black & Gold',
+    motto: 'Sawari Aur Talwar', mottoEng: 'Cavalry and Sword',
+    warCry: 'Ek Bar Aur! (One More Time!)',
+    insignia: 'Centurion tank on gold field',
+    regimentBio: 'The Poona Horse (17th Horse) and its sister regiments destroyed the Pakistani 1st Armoured Division at Asal Uttar in September 1965. 97 Pakistani M48 Patton tanks were captured or destroyed in the paddy fields of Khem Karan. The field is called "Patton Nagar" to this day.',
+    debriefLegacy: 'Two Param Vir Chakras. 97 Pattons in the paddy. The Poona Horse battle cry: "Ek Bar Aur."',
+    insigniaSvg: (c) => `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="${c}" stroke-width="2"/><rect x="24" y="34" width="32" height="14" rx="3" fill="none" stroke="${c}" stroke-width="2"/><line x1="52" y1="41" x2="66" y2="41" stroke="${c}" stroke-width="2.5"/><circle cx="32" cy="50" r="5" fill="none" stroke="${c}" stroke-width="1.5"/><circle cx="48" cy="50" r="5" fill="none" stroke="${c}" stroke-width="1.5"/></svg>`,
+    insigniaFile: 'assets/insignia/asal-uttar.svg',
+    unlocked: true,
+    sub: 'September 1965. Khem Karan, Punjab. Centurion vs Patton. 97 Pakistani tanks destroyed in the paddy fields. "Patton Nagar."',
+  },
+  {
+    name: 'Dograi', year: 1965,
+    regiment: '3 Jat Regiment',
+    regimentFull: '3rd Battalion, Jat Regiment · Lahore Sector, 1965',
+    color: '#8a6030', regimentColor: '#7a5020',
+    colorName: 'Khaki & Maroon',
+    motto: 'Jai Jawan Jai Kisan', mottoEng: 'Hail the Soldier, Hail the Farmer',
+    warCry: 'Jat Balwan! Jai Bhagwan!',
+    insignia: 'Bayonet on maroon ground',
+    regimentBio: 'The 3 Jat Regiment captured Dograi village in a night assault on 21 September 1965. Lt Col Desmond Hayde led the attack personally when radios failed, advancing through compound walls in darkness. The battle is taught as a model night assault at military academies. Battle honour: DOGRAI.',
+    debriefLegacy: 'DOGRAI — embroidered on the Regimental Colour. Worn with pride to this day.',
+    insigniaSvg: (c) => `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="${c}" stroke-width="2"/><line x1="40" y1="15" x2="40" y2="65" stroke="${c}" stroke-width="2.5"/><line x1="40" y1="22" x2="50" y2="32" stroke="${c}" stroke-width="2.5"/></svg>`,
+    insigniaFile: 'assets/insignia/dograi.svg',
+    unlocked: true,
+    sub: '03:00, 21 September 1965. No radio. Fixed bayonets. 3 Jat Regiment stormed Dograi in darkness — room to room, compound to compound.',
+  },
+  {
     name:         'Longewala',
     year:         1971,
     regiment:     '23 Punjab',
@@ -102,6 +174,37 @@ export const BATTLES = [
       <circle cx="40" cy="80" r="6" stroke="${c}" stroke-width="1.6"/>
       <circle cx="40" cy="80" r="2" fill="${c}"/>
       <path d="M37,77 L43,77 M40,74 L40,77 M40,83 L40,86 M37,83 L43,83" stroke="${c}" stroke-width="1"/>
+    </svg>`,
+  },
+  {
+    name:         'Siachen',
+    year:         1987,
+    regiment:     '19 JAK RIF',
+    regimentFull: '19th Battalion, Jammu & Kashmir Rifles',
+    color:        '#4a7aa0',
+    regimentColor:'#2a4a20',   // rifle green
+    colorName:    'Rifle Green',
+    motto:        'Paharon Ki Tareh Mazbooth',
+    mottoEng:     'Firm as the mountains',
+    warCry:       'Durga Mata Ki Jai!',
+    insignia:     'Mountain peak above crossed rifles on rifle green ground',
+    insigniaFile: 'assets/insignia/jak-rif.svg',
+    unlocked:     true,
+    sub:          'The world\'s highest battlefield. A post everyone said was impregnable. Naib Subedar Bana Singh climbed 457 metres of ice to prove them wrong.',
+    regimentBio:  'The Jammu & Kashmir Rifles were raised in 1947 from the soldiers of the former J&K State Forces — men who had spent their lives in the Himalaya and Karakoram. 19 JAK RIF were at Siachen because they belonged there. When Operation Meghdoot secured the glacier for India in 1984, JAK RIF units formed the permanent garrison, living at altitude year-round in conditions that broke most soldiers. Naib Subedar Bana Singh was one of them. In June 1987, he was assigned a task his officers described as near impossible.',
+    debriefLegacy:'Naib Subedar Bana Singh was awarded the Param Vir Chakra, making him the only living PVC recipient at the time. Quaid Post was renamed Bana Post. It remains the highest permanently occupied military post on earth. The Siachen Glacier has been under Indian control since 1984. The cost: more soldiers have died from altitude and cold than from enemy action.',
+    insigniaSvg: (c)=>`<svg viewBox="0 0 80 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40,10 L60,44 L40,36 L20,44 Z" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M40,10 L48,28 L40,36 L32,28 Z" fill="${c}" opacity="0.5"/>
+      <line x1="20" y1="50" x2="38" y2="50" stroke="${c}" stroke-width="2" stroke-linecap="round"/>
+      <line x1="42" y1="50" x2="60" y2="50" stroke="${c}" stroke-width="2" stroke-linecap="round"/>
+      <line x1="30" y1="44" x2="26" y2="68" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="50" y1="44" x2="54" y2="68" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M24,60 L30,56 L38,60" stroke="${c}" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+      <path d="M56,60 L50,56 L42,60" stroke="${c}" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+      <ellipse cx="40" cy="78" rx="14" ry="6" stroke="${c}" stroke-width="1.6"/>
+      <line x1="40" y1="72" x2="40" y2="68" stroke="${c}" stroke-width="1.4"/>
+      <line x1="26" y1="78" x2="54" y2="78" stroke="${c}" stroke-width="1" opacity="0.4"/>
     </svg>`,
   },
   {
@@ -134,37 +237,6 @@ export const BATTLES = [
       <path d="M20,74 L28,68 L40,71 L52,68 L60,74" stroke="${c}" stroke-width="1.6" stroke-linejoin="round" opacity="0.5"/>
       <line x1="40" y1="52" x2="40" y2="60" stroke="${c}" stroke-width="1.4" opacity="0.6"/>
       <path d="M26,88 L40,82 L54,88" stroke="${c}" stroke-width="1.6" stroke-linecap="round" opacity="0.6"/>
-    </svg>`,
-  },
-  {
-    name:         'Siachen',
-    year:         1987,
-    regiment:     '19 JAK RIF',
-    regimentFull: '19th Battalion, Jammu & Kashmir Rifles',
-    color:        '#4a7aa0',
-    regimentColor:'#2a4a20',   // rifle green
-    colorName:    'Rifle Green',
-    motto:        'Paharon Ki Tareh Mazbooth',
-    mottoEng:     'Firm as the mountains',
-    warCry:       'Durga Mata Ki Jai!',
-    insignia:     'Mountain peak above crossed rifles on rifle green ground',
-    insigniaFile: 'assets/insignia/jak-rif.svg',
-    unlocked:     true,
-    sub:          'The world\'s highest battlefield. A post everyone said was impregnable. Naib Subedar Bana Singh climbed 457 metres of ice to prove them wrong.',
-    regimentBio:  'The Jammu & Kashmir Rifles were raised in 1947 from the soldiers of the former J&K State Forces — men who had spent their lives in the Himalaya and Karakoram. 19 JAK RIF were at Siachen because they belonged there. When Operation Meghdoot secured the glacier for India in 1984, JAK RIF units formed the permanent garrison, living at altitude year-round in conditions that broke most soldiers. Naib Subedar Bana Singh was one of them. In June 1987, he was assigned a task his officers described as near impossible.',
-    debriefLegacy:'Naib Subedar Bana Singh was awarded the Param Vir Chakra, making him the only living PVC recipient at the time. Quaid Post was renamed Bana Post. It remains the highest permanently occupied military post on earth. The Siachen Glacier has been under Indian control since 1984. The cost: more soldiers have died from altitude and cold than from enemy action.',
-    insigniaSvg: (c)=>`<svg viewBox="0 0 80 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M40,10 L60,44 L40,36 L20,44 Z" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/>
-      <path d="M40,10 L48,28 L40,36 L32,28 Z" fill="${c}" opacity="0.5"/>
-      <line x1="20" y1="50" x2="38" y2="50" stroke="${c}" stroke-width="2" stroke-linecap="round"/>
-      <line x1="42" y1="50" x2="60" y2="50" stroke="${c}" stroke-width="2" stroke-linecap="round"/>
-      <line x1="30" y1="44" x2="26" y2="68" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
-      <line x1="50" y1="44" x2="54" y2="68" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>
-      <path d="M24,60 L30,56 L38,60" stroke="${c}" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
-      <path d="M56,60 L50,56 L42,60" stroke="${c}" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
-      <ellipse cx="40" cy="78" rx="14" ry="6" stroke="${c}" stroke-width="1.6"/>
-      <line x1="40" y1="72" x2="40" y2="68" stroke="${c}" stroke-width="1.4"/>
-      <line x1="26" y1="78" x2="54" y2="78" stroke="${c}" stroke-width="1" opacity="0.4"/>
     </svg>`,
   },
   {

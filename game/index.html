@@ -899,18 +899,13 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   <div class="select-label">— SELECT A BATTLE —</div>
   <div id="battle-filters">
     <div class="filter-group">
-      <button class="filter-chip active" data-era="all">ALL</button>
-      <button class="filter-chip" data-era="pre">PRE-INDEPENDENCE</button>
-      <button class="filter-chip" data-era="post">POST-INDEPENDENCE</button>
-    </div>
-    <div class="filter-group" id="theater-chips" style="margin-top:8px;">
-      <button class="filter-chip active" data-theater="all">ALL THEATERS</button>
-      <button class="filter-chip" data-theater="1897">1897</button>
-      <button class="filter-chip" data-theater="1962">1962</button>
-      <button class="filter-chip" data-theater="1971">1971</button>
-      <button class="filter-chip" data-theater="1987">SIACHEN</button>
-      <button class="filter-chip" data-theater="1999">KARGIL</button>
-      <button class="filter-chip" data-theater="2025">2025</button>
+      <button class="filter-chip active" data-filter="all">ALL</button>
+      <button class="filter-chip" data-filter="pre">PRE-1947</button>
+      <button class="filter-chip" data-filter="1962">1962</button>
+      <button class="filter-chip" data-filter="1965">1965</button>
+      <button class="filter-chip" data-filter="1971">1971</button>
+      <button class="filter-chip" data-filter="kargil">KARGIL</button>
+      <button class="filter-chip" data-filter="modern">MODERN</button>
     </div>
   </div>
   <div id="battle-grid"></div>
@@ -3145,47 +3140,27 @@ function buildSelectScreen(){
     grid.appendChild(card);
   });
   // Wire up filter chips
-  let activeEra='all', activeTheater='all';
+  let activeFilter='all';
   function applyFilters(){
     const cards=document.querySelectorAll('#battle-grid .card');
     cards.forEach(c=>{
       const yr=parseInt(c.dataset.year);
-      const eraOk = activeEra==='all' || (activeEra==='pre'?yr<1947:yr>=1947);
-      const thOk  = activeTheater==='all' || yr===parseInt(activeTheater);
-      c.style.display=(eraOk&&thOk)?'':'none';
+      let show=false;
+      if(activeFilter==='all')    show=true;
+      else if(activeFilter==='pre')    show=yr<1947;
+      else if(activeFilter==='1962')   show=yr===1962;
+      else if(activeFilter==='1965')   show=yr===1965;
+      else if(activeFilter==='1971')   show=yr===1971;
+      else if(activeFilter==='kargil') show=yr===1999||yr===1987;
+      else if(activeFilter==='modern') show=yr>=2020;
+      c.style.display=show?'':'none';
     });
-    // When era=pre, hide post-1947 theater chips; when era=post, hide 1897
-    const theaterChips=document.querySelectorAll('#theater-chips .filter-chip');
-    theaterChips.forEach(ch=>{
-      const tv=ch.dataset.theater;
-      if(!tv||tv==='all'){ch.style.display='';return;}
-      const y=parseInt(tv);
-      if(activeEra==='pre')  ch.style.display=(y<1947||isNaN(y))?'':'none';
-      else if(activeEra==='post') ch.style.display=(y>=1947||isNaN(y))?'':'none';
-      else ch.style.display='';
-    });
-    // If active theater chip is now hidden, reset to 'all'
-    const activeTh=document.querySelector('#theater-chips .filter-chip.active');
-    if(activeTh&&activeTh.style.display==='none'){
-      activeTh.classList.remove('active');
-      document.querySelector('#theater-chips .filter-chip[data-theater="all"]').classList.add('active');
-      activeTheater='all';
-      applyFilters();
-    }
   }
-  document.querySelectorAll('#battle-filters .filter-chip[data-era]').forEach(btn=>{
+  document.querySelectorAll('#battle-filters .filter-chip[data-filter]').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      document.querySelectorAll('#battle-filters .filter-chip[data-era]').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('#battle-filters .filter-chip[data-filter]').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      activeEra=btn.dataset.era;
-      applyFilters();
-    });
-  });
-  document.querySelectorAll('#theater-chips .filter-chip[data-theater]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('#theater-chips .filter-chip[data-theater]').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      activeTheater=btn.dataset.theater;
+      activeFilter=btn.dataset.filter;
       applyFilters();
     });
   });
