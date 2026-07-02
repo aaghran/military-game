@@ -30,9 +30,9 @@ export default {
     '6,2':{type:'sangar',label:'Mid Bunker E',      atkMul:1.5,defMul:2.2,rngBonus:1},
   },
   indStarts: [
-    {col:5,row:8,type:'hero',       name:'Capt Manoj Kumar Pandey',platoon:0,bio:'"Na Chodnu." Cleared four bunkers single-handed at Khalubar. Killed at the fifth. Youngest recipient of the Param Vir Chakra in the Kargil War. 25 years old. 1/11 Gorkha Rifles.'},
+    {col:5,row:8,type:'hero',       name:'Capt Manoj Kumar Pandey',platoon:0,bio:'"Na Chodnu." Cleared four bunkers single-handed at Khalubar. Killed at the fifth. Param Vir Chakra, posthumous. 25 years old. 1/11 Gorkha Rifles.'},
     {col:3,row:8,type:'section_cdr',name:'Lt Balwan Singh',        platoon:9,bio:'1/11 GR, left assault column. Cleared the western approach to Khalubar under heavy fire.'},
-    {col:7,row:8,type:'section_cdr',name:'Nb Sub Kulbahadur Pun',  platoon:8,bio:'1/11 GR, right column. Gorkha Rifles veteran. Held the captured bunkers against Pakistani counterattacks.'},
+    {col:7,row:8,type:'section_cdr',name:'Nb Sub Kulbahadur Pun',  platoon:8,bio:'1/11 GR, right column. Held the captured bunkers against Pakistani counterattacks.'},
     {col:4,row:7,type:'rifleman',   name:'Rfn Dhan Bahadur Gurung',platoon:9,bio:'Assault section. Followed Capt Pandey up the rockface. Did not turn back.'},
     {col:5,row:7,type:'rifleman',   name:'Rfn Bir Bahadur Rai',    platoon:0,bio:'Centre section. Khukri in hand at the third bunker.'},
     {col:6,row:7,type:'rifleman',   name:'Rfn Jit Bahadur Thapa',  platoon:8,bio:'Right section. Covered the summit approaches as the captain advanced alone.'},
@@ -51,22 +51,22 @@ export default {
   ],
   roundEvents: {},
   narratives: {
-    1:  '3 July 1999 · Night — 1/11 Gorkha Rifles begins the assault on Khalubar.',
-    2:  'First bunker line. Capt Pandey moves forward alone.',
-    3:  'Second line cleared. "Na Chodnu." He does not stop.',
-    4:  'Third and fourth bunkers. The khukri comes out.',
-    5:  'KHALUBAR CAPTURED. The fifth bunker. Capt Pandey falls.',
+    1: '3 July 1999 · Night — 1/11 Gorkha Rifles begins the assault on Khalubar.',
+    2: 'First bunker line. Capt Pandey moves forward alone.',
+    3: 'Second line cleared. "Na Chodnu." He does not stop.',
+    4: 'Third and fourth bunkers. The khukri comes out.',
+    5: 'KHALUBAR CAPTURED. The fifth bunker. Capt Pandey falls.',
   },
   histCards: {
     1: {
       name:  'Captain Manoj Kumar Pandey PVC',
       rank:  '1/11 Gorkha Rifles · Batalik Sector',
-      body:  'Capt Manoj Kumar Pandey cleared four enemy bunkers single-handed at Khalubar on 3 July 1999, sustaining multiple wounds. At the fifth bunker he was killed by an enemy bullet. His last reported words were "Na Chodnu" — "Do not spare them." He was 25 years old. He received the Param Vir Chakra posthumously.',
+      body:  'Capt Manoj Kumar Pandey cleared four enemy bunkers single-handed at Khalubar on 3 July 1999. His last reported words were "Na Chodnu" — "Do not spare them." He was 25 years old. He received the Param Vir Chakra posthumously — the last PVC of the Kargil War.',
     },
     3: {
       name:  'The Gorkha Khukri',
       rank:  '1/11 Gorkha Rifles · Kargil 1999',
-      body:  'The khukri — the curved knife of the Gorkha Regiment — is carried into battle as both weapon and symbol. At close quarters in the bunkers of Khalubar, the Gorkhas fought with every weapon available. The 1/11 Gorkha Rifles captured and held Khalubar against counterattacks through the night.',
+      body:  'The khukri — the curved knife of the Gorkha Regiment — is carried into battle as both weapon and symbol. The 1/11 Gorkha Rifles captured and held Khalubar against counterattacks through the night.',
     },
   },
   winCondition:  {type:'waves'},
@@ -79,5 +79,5 @@ export default {
   introText:     `1/11 Gorkha Rifles — assault on five enemy bunker lines at Khalubar.<br>Capt Manoj Pandey. "Na Chodnu." Five bunkers. One night.<br><br><strong style="color:#c8a96e;">OBJECTIVE</strong><br>Clear all NLI bunker waves and capture Khalubar.<br><br><strong style="color:#c8a96e;">HOW TO PLAY</strong><br>Click a unit to select. <span style="color:#4488ff;">Blue</span> = move. <span style="color:#ff5555;">Red</span> = attack.<br>Advance through each bunker line — the Gorkha way.`,
   debriefWin:    'NA CHODNU — KHALUBAR HELD',
   debriefLoss:   'THE BUNKER LINE HELD',
-  debriefHistory:'Khalubar (Point 4812) was captured by 1/11 Gorkha Rifles on 4 July 1999. Capt Manoj Kumar Pandey cleared four bunkers single-handedly before being killed at the fifth. He received the Param Vir Chakra posthumously — the fourth and final PVC of the Kargil War. He was 25 years old.',
+  debriefHistory:'Khalubar (Point 4812) was captured by 1/11 Gorkha Rifles on 4 July 1999. Capt Manoj Kumar Pandey cleared four bunkers single-handedly before being killed at the fifth. He received the Param Vir Chakra posthumously — the fourth and final PVC of the Kargil War.',
 };

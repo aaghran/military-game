@@ -36,11 +36,11 @@ export default {
     {col:6,row:6,type:'rifleman',   name:'Rfn Balwant Singh',   platoon:8,bio:'Eastern approach defender. Reported the tank column\'s approach in the dark.'},
   ],
   plaWaves: [
-    [{col:4,type:'pla'},{col:5,type:'pla_cdr'},{col:6,type:'pla'}],
-    [{col:3,type:'pla'},{col:4,type:'pla'},{col:5,type:'pla'},{col:6,type:'pla'},{col:7,type:'pla'}],
-    [{col:3,type:'pla_tank'},{col:5,type:'pla_cdr'},{col:7,type:'pla_tank'}],
-    [{col:2,type:'pla'},{col:4,type:'pla_tank'},{col:5,type:'pla_cdr'},{col:6,type:'pla_tank'},{col:8,type:'pla'}],
-    [{col:2,type:'pla'},{col:3,type:'pla_tank'},{col:4,type:'pla'},{col:5,type:'pla_tank'},{col:6,type:'pla'},{col:7,type:'pla_tank'},{col:8,type:'pla'}],
+    [{col:4,row:0,type:'pla'},{col:5,row:0,type:'pla_cdr'},{col:6,row:0,type:'pla'}],
+    [{col:3,row:0,type:'pla'},{col:4,row:0,type:'pla'},{col:5,row:0,type:'pla'},{col:6,row:0,type:'pla'},{col:7,row:0,type:'pla'}],
+    [{col:3,row:0,type:'pla_tank'},{col:5,row:0,type:'pla_cdr'},{col:7,row:0,type:'pla_tank'}],
+    [{col:2,row:0,type:'pla'},{col:4,row:0,type:'pla_tank'},{col:5,row:0,type:'pla_cdr'},{col:6,row:0,type:'pla_tank'},{col:8,row:0,type:'pla'}],
+    [{col:2,row:0,type:'pla'},{col:3,row:0,type:'pla_tank'},{col:4,row:0,type:'pla'},{col:5,row:0,type:'pla_tank'},{col:6,row:0,type:'pla'},{col:7,row:0,type:'pla_tank'},{col:8,row:0,type:'pla'}],
   ],
   initialEnemies: [],
   roundEvents: {5:{type:'airstrike',dmg:2,msg:'IAF Hawker Hunters strike — all Pakistani units take 2 damage!'}},
@@ -81,4 +81,5 @@ export default {
   debriefLoss:   'THE POST IS OVERRUN',
   debriefHistory:'Historically, Longewala held through the night and the IAF destroyed the Pakistani armoured column at dawn. Pakistan lost 36 tanks and 100+ vehicles. India lost 2 soldiers. The post stands to this day.',
   autoPlayForceWin: true,
+  autoPlayStyle:    'defensive',
 };

@@ -1,5 +1,5 @@
 // Battle of Tiger Hill (Point 5060) — 3–4 July 1999
-// 8 Sikh + Grenadiers + Garhwal Rifles | Multi-unit assault, Drass sector
+// 8 Sikh + 18 Grenadiers + Garhwal Rifles | Drass sector
 export default {
   terrain: {
     'P': {color:0x181620,height:5.5,block:true},
@@ -18,26 +18,26 @@ export default {
     ['P','R','r','r','.','.','.',  'r','r','R','P'],
     ['R','r','r','.','.','f','.','.','r','r','R'],
     ['r','r','.','.','s','.','s','.','.','r','r'],
-    ['r','.','.','s','s','.','s','s','.','.','r'],
+    ['r','.','.','s','s','.','s','s','.','.',  'r'],
     ['.','.',  'i','s','.','.','.',  's','i','.','.',],
     ['.','i','i','.','.','.','.','.',  'i','i','.'],
     ['i','i','s','.','.','.','.','.',  's','i','i'],
   ],
   structures: {
-    '4,0':{type:'sangar',label:'Tiger Summit W',   atkMul:2.0,defMul:3.0,rngBonus:2},
-    '6,0':{type:'sangar',label:'Tiger Summit E',   atkMul:2.0,defMul:3.0,rngBonus:2},
-    '5,1':{type:'lmg',   label:'Summit LMG',       atkMul:2.2,defMul:2.0,rngBonus:2},
-    '5,2':{type:'mortar',label:'Mid Mortar Post',  atkMul:2.0,defMul:1.0,rngBonus:3,noRetaliate:true},
-    '3,3':{type:'sangar',label:'W Approach Sangar',atkMul:1.5,defMul:2.0,rngBonus:1},
-    '7,3':{type:'sangar',label:'E Approach Sangar',atkMul:1.5,defMul:2.0,rngBonus:1},
+    '4,0':{type:'sangar',label:'Tiger Summit W',    atkMul:2.0,defMul:3.0,rngBonus:2},
+    '6,0':{type:'sangar',label:'Tiger Summit E',    atkMul:2.0,defMul:3.0,rngBonus:2},
+    '5,1':{type:'lmg',   label:'Summit LMG',        atkMul:2.2,defMul:2.0,rngBonus:2},
+    '5,2':{type:'mortar',label:'Mid Mortar Post',   atkMul:2.0,defMul:1.0,rngBonus:3,noRetaliate:true},
+    '3,3':{type:'sangar',label:'W Approach Sangar', atkMul:1.5,defMul:2.0,rngBonus:1},
+    '7,3':{type:'sangar',label:'E Approach Sangar', atkMul:1.5,defMul:2.0,rngBonus:1},
   },
   indStarts: [
-    {col:5,row:8,type:'hero',       name:'Lt Col K.P. Singh',      platoon:0,bio:'8 Sikh. Commanded the Tiger Hill assault. Coordinated three assault groups simultaneously in darkness and fog. Maha Vir Chakra.'},
-    {col:2,row:7,type:'section_cdr',name:'Maj Sonam Wangchuk',     platoon:9,bio:'Ladakh Scouts. Western assault column. Guided the 8 Sikh advance through the ice face under artillery fire.'},
-    {col:8,row:7,type:'section_cdr',name:'Maj Mohit Saxena',       platoon:8,bio:'Grenadiers, eastern column. Took the right ridge and held against the Pakistani counterattack at dawn.'},
+    {col:5,row:8,type:'hero',       name:'Lt Col K.P. Singh',       platoon:0,bio:'8 Sikh. Commanded the Tiger Hill assault. Coordinated three assault groups simultaneously in darkness and fog. Maha Vir Chakra.'},
+    {col:2,row:7,type:'section_cdr',name:'Maj Sonam Wangchuk',      platoon:9,bio:'Ladakh Scouts. Western assault column. Guided the 8 Sikh advance through the ice face under artillery fire.'},
+    {col:8,row:7,type:'section_cdr',name:'Maj Mohit Saxena',        platoon:8,bio:'Grenadiers, eastern column. Took the right ridge and held against the Pakistani counterattack at dawn.'},
     {col:3,row:8,type:'rifleman',   name:'Hav Yogendra Singh Yadav',platoon:9,bio:'18 Grenadiers. Climbed the 1500-foot face on a rope under fire. Cleared the first three bunkers. Param Vir Chakra (living).'},
-    {col:5,row:9,type:'rifleman',   name:'Rfn Gurbachan Singh',    platoon:0,bio:'8 Sikh, centre. Carried ammunition to the forward section through 48 hours of continuous fire.'},
-    {col:7,row:8,type:'rifleman',   name:'Rfn Dhan Singh Thapa',   platoon:8,bio:'Eastern assault. Garhwal Rifles. Reached the summit ridgeline before dawn.'},
+    {col:5,row:9,type:'rifleman',   name:'Rfn Gurbachan Singh',     platoon:0,bio:'8 Sikh, centre. Carried ammunition to the forward section through 48 hours of continuous fire.'},
+    {col:7,row:8,type:'rifleman',   name:'Rfn Dhan Singh Thapa',    platoon:8,bio:'Eastern assault. Garhwal Rifles. Reached the summit ridgeline before dawn.'},
   ],
   plaWaves: [
     [{col:4,row:0,type:'pla'},{col:5,row:1,type:'pla_cdr'},{col:6,row:0,type:'pla'},{col:3,row:2,type:'pla'},{col:7,row:2,type:'pla'}],
@@ -55,22 +55,22 @@ export default {
     3: {type:'airstrike', dmg:2, msg:'⚡ Bofors artillery strikes Tiger Hill peak. Enemy takes 2 damage.'},
   },
   narratives: {
-    1:  '3 July 1999 · Night — 8 Sikh, Grenadiers, Garhwal Rifles begin the triple assault.',
-    2:  'Hav Yogendra Singh Yadav climbs the cliff face on a rope under fire.',
-    3:  '⚡ Bofors speaks. The Pakistani bunkers shake.',
-    4:  '4 July · 04:15 — Tiger Hill summit reached from both flanks.',
-    5:  'TIGER HILL CAPTURED. India holds its highest point in the Kargil War.',
+    1: '3 July 1999 · Night — 8 Sikh, Grenadiers, Garhwal Rifles begin the triple assault.',
+    2: 'Hav Yogendra Singh Yadav climbs the cliff face on a rope under fire.',
+    3: '⚡ Bofors speaks. The Pakistani bunkers shake.',
+    4: '4 July · 04:15 — Tiger Hill summit reached from both flanks.',
+    5: 'TIGER HILL CAPTURED. India holds its highest point in the Kargil War.',
   },
   histCards: {
     1: {
       name:  'Havildar Yogendra Singh Yadav PVC',
       rank:  '18 Grenadiers · Tiger Hill, July 1999',
-      body:  'Hav Yogendra Singh Yadav climbed a 1,500-foot near-vertical ice face under fire on a rope at Tiger Hill. He was shot multiple times and continued climbing. He cleared three bunkers and secured the rope for the rest of the section to follow. He is one of two living Param Vir Chakra recipients from the Kargil War.',
+      body:  'Hav Yogendra Singh Yadav climbed a 1,500-foot near-vertical ice face under fire on a rope at Tiger Hill. He was shot multiple times and continued climbing. He cleared three bunkers. Param Vir Chakra — one of two living PVC recipients from Kargil.',
     },
     3: {
       name:  'The Bofors Gun',
       rank:  'Kargil War · 1999',
-      body:  'The Swedish-made Bofors FH77B howitzer, acquired amid great controversy in the 1980s, proved decisive at Kargil. Its ability to fire at high angles allowed it to hit enemy positions at 5,000+ metres that no other artillery could reach. Tiger Hill fell with Bofors support. The gun was vindicated.',
+      body:  'The Bofors FH77B howitzer proved decisive at Kargil. Its ability to fire at high angles allowed it to hit enemy positions at 5,000+ metres. Tiger Hill fell with Bofors support.',
     },
   },
   winCondition:  {type:'waves'},
@@ -83,5 +83,5 @@ export default {
   introText:     `8 Sikh + Grenadiers + Garhwal Rifles — three-column assault on Tiger Hill.<br>Point 5060m. Two flanks. Bofors artillery. No retreat.<br><br><strong style="color:#c8a96e;">OBJECTIVE</strong><br>Clear all NLI positions from both flanks and capture Tiger Hill.<br><br><strong style="color:#c8a96e;">HOW TO PLAY</strong><br>Click a unit to select. <span style="color:#4488ff;">Blue</span> = move. <span style="color:#ff5555;">Red</span> = attack.<br>Advance both flanks — the Bofors softens the peak on round 3.`,
   debriefWin:    'TIGER HILL — INDIA HOLDS THE SKY',
   debriefLoss:   'THE SUMMIT WAS NOT REACHED',
-  debriefHistory:'Tiger Hill (Point 5060) was captured by Indian forces on 4 July 1999 in a coordinated three-column assault. Hav Yogendra Singh Yadav of 18 Grenadiers received the Param Vir Chakra for his actions on the cliff face. Tiger Hill was the highest and most fortified position captured in the Kargil War.',
+  debriefHistory:'Tiger Hill (Point 5060) was captured on 4 July 1999. Hav Yogendra Singh Yadav received the Param Vir Chakra for his actions on the cliff face. Tiger Hill was the highest and most fortified position captured in the Kargil War.',
 };
