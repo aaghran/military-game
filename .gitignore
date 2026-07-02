@@ -4,5 +4,8 @@
 !.github/
 !.github/workflows/
 !.github/workflows/deploy-pages.yml
+!docs/
+!docs/**
 !game/
 !game/**
+.vercel
