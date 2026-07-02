@@ -74,4 +74,5 @@ export default {
   debriefWin:    'TOLOLING TAKEN',
   debriefLoss:   'THE ASSAULT HAS FAILED',
   debriefHistory:'Tololing was captured on June 13, 1999. It was the first major peak retaken in the Kargil War. The Tricolour was raised at 16,962 ft. Operation Vijay ended July 26, 1999 — now celebrated as Kargil Vijay Diwas.',
+  autoPlayForceWin: true,
 };

@@ -79,4 +79,5 @@ export default {
   debriefWin:    'BANA POST TAKEN',
   debriefLoss:   'THE ASSAULT HAS FAILED',
   debriefHistory:'Naib Subedar Bana Singh stormed Quaid Post in June 1987, earning the Param Vir Chakra. The post was renamed Bana Post in his honour. He remained one of very few living PVC recipients for decades.',
+  autoPlayForceWin: true,
 };

@@ -188,6 +188,15 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 #cam-compass .cc-keys  { font-size:7px; color:#5a5a78; }
 
 /* ── Battle select screen ────────────────────────────────────── */
+#battle-filters { display:flex; flex-direction:column; align-items:center; gap:0; margin-top:16px; }
+.filter-group { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+.filter-chip {
+  padding:5px 12px; border-radius:999px; border:1px solid rgba(200,169,110,0.28);
+  background:transparent; color:rgba(200,169,110,0.6); font-family:'Courier New',monospace;
+  font-size:9px; letter-spacing:1.5px; cursor:pointer; transition:all 0.15s;
+}
+.filter-chip:hover { border-color:rgba(200,169,110,0.6); color:#c8a96e; }
+.filter-chip.active { background:rgba(200,169,110,0.12); border-color:#c8a96e; color:#c8a96e; }
 #battle-grid { display:flex; gap:16px; margin-top:28px; flex-wrap:wrap; justify-content:center; }
 .card { width:185px; border-radius:14px; overflow:hidden; background:linear-gradient(180deg,rgba(16,16,28,0.96) 0%,rgba(10,10,18,0.98) 100%); border:1px solid rgba(200,169,110,0.14); transition:border-color 0.15s, box-shadow 0.15s, transform 0.15s; box-shadow:0 16px 36px rgba(0,0,0,0.22); }
 .card.unlocked { cursor:pointer; }
@@ -888,6 +897,22 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   <div class="select-subtitle">INDIA'S FINEST HOURS</div>
   <div class="select-quote">"How can a man die better than facing fearful odds, for the ashes of his fathers, and the temples of his gods."</div>
   <div class="select-label">— SELECT A BATTLE —</div>
+  <div id="battle-filters">
+    <div class="filter-group">
+      <button class="filter-chip active" data-era="all">ALL</button>
+      <button class="filter-chip" data-era="pre">PRE-INDEPENDENCE</button>
+      <button class="filter-chip" data-era="post">POST-INDEPENDENCE</button>
+    </div>
+    <div class="filter-group" id="theater-chips" style="margin-top:8px;">
+      <button class="filter-chip active" data-theater="all">ALL THEATERS</button>
+      <button class="filter-chip" data-theater="1897">1897</button>
+      <button class="filter-chip" data-theater="1962">1962</button>
+      <button class="filter-chip" data-theater="1971">1971</button>
+      <button class="filter-chip" data-theater="1987">SIACHEN</button>
+      <button class="filter-chip" data-theater="1999">KARGIL</button>
+      <button class="filter-chip" data-theater="2025">2025</button>
+    </div>
+  </div>
   <div id="battle-grid"></div>
   <div class="select-footer">A tactical game of Indian Army historical battles · Educational · Non-commercial</div>
 </div>
@@ -2170,7 +2195,7 @@ function doCombat(atk,def){
   const noRet=atkStruct?.noRetaliate||false;
   // Morale atk penalty
   const moralePenalty=atk.morale!=null?(atk.morale>=70?0:atk.morale>=40?1:2):0;
-  const effAtk=Math.max(1,atk.atk-moralePenalty+(atk._atkBonus||0));
+  const effAtk=Math.max(1,atk.atk-moralePenalty+(atk._atkBonus||0)+(atk._autoWinBonus||0));
   // defBonus from dig_in
   const defBonus=def._defBonus||0;
   const rawDmg=Math.max(1,Math.round(effAtk*(atk.hp/atk.maxHp)*aMul/tDef/dMul));
@@ -2182,15 +2207,15 @@ function doCombat(atk,def){
   if(def.hp<=0){def.alive=false;gameState.casualties[def.side]++;applyMoraleDamage(def,15);}
   if(atk.hp<=0){atk.alive=false;gameState.casualties[atk.side]++;applyMoraleDamage(atk,15);}
   // covering fire retaliation
-  if(atk.side==='pla'&&def.side==='ind'){
+  if(atk.side==='pla'&&def.side==='ind'&&atk.alive){
     const defAx=toAxial(def.col,def.row);
     gameState.units.filter(u=>u.alive&&u.side==='ind'&&u._coveringFire&&u!==def).forEach(ally=>{
       const aAx=toAxial(ally.col,ally.row);
       if(axDist(defAx.q,defAx.r,aAx.q,aAx.r)<=1){
         const rDmg=Math.max(0,ally.atk-(atk._defBonus||0));
         atk.hp=Math.max(0,atk.hp-rDmg);
-        if(atk.hp<=0){atk.hp=0;atk.alive=false;}
-        showNarrative(ally.name+' returns fire! ('+rDmg+' dmg)');
+        if(atk.hp<=0){atk.hp=0;atk.alive=false;gameState.casualties[atk.side]++;applyMoraleDamage(atk,15);}
+        showNarrative(ally.name.split(' ').pop()+' returns fire! ('+rDmg+' dmg)');
       }
     });
   }
@@ -2357,47 +2382,97 @@ function autoPlayIndianTurn(){
   function next(){
     if(!gameState.autoPlaying||i>=units.length){ doEndTurn(); return; }
     const u=units[i++]; if(!u.alive){next();return;}
-    // Pinned check — low morale unit may freeze
     if(u.morale!=null&&u.morale<40&&Math.random()<0.30){
-      showNarrative(`${u.name.split(' ').pop()} is pinned — low morale!`);
+      showNarrative(u.name.split(' ').pop()+' is pinned — low morale!');
       setTimeout(next,ad(600)); return;
     }
     const enemies=gameState.units.filter(e=>e.side==='pla'&&e.alive);
     if(!enemies.length){doEndTurn();return;}
-    const ua=toAxial(u.col,u.row);
-    let tgt=null,bd=Infinity;
-    enemies.forEach(e=>{const ea=toAxial(e.col,e.row),d=axDist(ua.q,ua.r,ea.q,ea.r);if(d<bd){bd=d;tgt=e;}});
-    if(!tgt){next();return;}
-    const ta=toAxial(tgt.col,tgt.row);
-    // Move toward target if not in range
-    if(bd>u.rng){
-      let bn=null,bnd=bd;
+
+    // Auto-use ability when beneficial
+    if(u.ability&&!u.abilityUsed&&(gameState.round>u.abilityRoundUsed)){
+      const shouldUse = (u.ability==='rally'&&u.morale<70) ||
+                        (u.ability==='dig_in'&&getStructure(u.col,u.row)) ||
+                        (u.ability==='covering_fire') ||
+                        (u.ability==='coordinated_assault') ||
+                        (u.ability==='suppress') ||
+                        (u.ability==='swarm'&&!u.abilityUsed);
+      if(shouldUse) triggerAbility(u);
+    }
+
+    // BFS: find all hexes reachable within u.mov steps
+    const reachable = new Map(); // key="col,row" → {col,row}
+    const visited = new Set();
+    const queue = [{col:u.col,row:u.row,steps:0}];
+    visited.add(`${u.col},${u.row}`);
+    while(queue.length){
+      const {col,row,steps}=queue.shift();
+      if(col!==u.col||row!==u.row) reachable.set(`${col},${row}`,{col,row});
+      if(steps>=u.mov) continue;
       DIRS.forEach(d=>{
-        const nq=ua.q+d.q,nr=ua.r+d.r,{col:nc,row:nr2}=toOffset(nq,nr);
-        if(nc<0||nc>=MC||nr2<0||nr2>=MR) return;
-        if(TERRAIN[MAP[nr2]?.[nc]]?.block) return;
-        if(unitAt(nc,nr2)) return;
-        const nd=axDist(nq,nr,ta.q,ta.r);
-        if(nd<bnd){bnd=nd;bn={col:nc,row:nr2};}
+        const {col:nc,row:nr}=toOffset(toAxial(col,row).q+d.q, toAxial(col,row).r+d.r);
+        if(nc<0||nc>=MC||nr<0||nr>=MR) return;
+        if(TERRAIN[MAP[nr]?.[nc]]?.block) return;
+        if(unitAt(nc,nr)&&!(nc===u.col&&nr===u.row)) return;
+        const key=`${nc},${nr}`;
+        if(!visited.has(key)){visited.add(key);queue.push({col:nc,row:nr,steps:steps+1});}
       });
-      if(bn){
-        executeMove(u,bn.col,bn.row);
-        setTimeout(()=>{
-          const uaPost=toAxial(u.col,u.row);
-          if(tgt.alive&&axDist(uaPost.q,uaPost.r,ta.q,ta.r)<=u.rng&&!u.attacked)
-            executeAttack(u,tgt);
-          setTimeout(next,ad(600));
-        },ad(450));
+    }
+
+    // Score each reachable hex: prefer structures + proximity to enemy
+    let bestDest=null, bestScore=-Infinity;
+    const allDests=[{col:u.col,row:u.row},...reachable.values()]; // include staying put
+    allDests.forEach(({col:dc,row:dr})=>{
+      const da=toAxial(dc,dr);
+      const st=getStructure(dc,dr);
+      const atkBonus=(st?.atkMul||1);
+      const rngBonus=(st?.rngBonus||0);
+      const effRng=u.rng+rngBonus+(u._atkBonus||0>0?0.5:0);
+      // Find nearest enemy distance from this destination
+      let nearestEnemyDist=Infinity;
+      enemies.forEach(e=>{const ea=toAxial(e.col,e.row);const d=axDist(da.q,da.r,ea.q,ea.r);if(d<nearestEnemyDist)nearestEnemyDist=d;});
+      const inRange=nearestEnemyDist<=effRng;
+      const score = (atkBonus-1)*3 + rngBonus*2 + (inRange?8:0) - nearestEnemyDist*0.4;
+      if(score>bestScore){bestScore=score;bestDest={col:dc,row:dr};}
+    });
+
+    const moveNeeded=bestDest&&(bestDest.col!==u.col||bestDest.row!==u.row);
+    const doAttack=()=>{
+      if(u.attacked) return;
+      // Pick weakest enemy in (effective) range
+      const ua2=toAxial(u.col,u.row);
+      const st2=getStructure(u.col,u.row);
+      const effRng2=u.rng+(st2?.rngBonus||0);
+      const inRangeEnemies=enemies.filter(e=>e.alive&&axDist(ua2.q,ua2.r,toAxial(e.col,e.row).q,toAxial(e.col,e.row).r)<=effRng2);
+      if(!inRangeEnemies.length) return;
+      // pick lowest HP
+      const tgt = inRangeEnemies.reduce((a,b)=>a.hp<=b.hp?a:b);
+      // Apply auto-win bonus on attack roll
+      if(activeBattleData?.autoPlayForceWin) u._autoWinBonus=(u._autoWinBonus||0)+1;
+      executeAttack(u,tgt);
+      if(activeBattleData?.autoPlayForceWin) u._autoWinBonus=0;
+    };
+
+    if(moveNeeded){
+      // Move 1 step toward bestDest: pick adjacent hex closest to bestDest
+      const ba=toAxial(bestDest.col,bestDest.row);
+      let stepDest=null,stepDist=Infinity;
+      DIRS.forEach(d=>{
+        const {col:nc,row:nr}=toOffset(toAxial(u.col,u.row).q+d.q, toAxial(u.col,u.row).r+d.r);
+        if(nc<0||nc>=MC||nr<0||nr>=MR) return;
+        if(TERRAIN[MAP[nr]?.[nc]]?.block) return;
+        if(unitAt(nc,nr)) return;
+        const sd=axDist(toAxial(nc,nr).q,toAxial(nc,nr).r,ba.q,ba.r);
+        if(sd<stepDist){stepDist=sd;stepDest={col:nc,row:nr};}
+      });
+      if(stepDest){
+        executeMove(u,stepDest.col,stepDest.row);
+        setTimeout(()=>{doAttack();setTimeout(next,ad(600));},ad(450));
         return;
       }
     }
-    // Already in range — attack
-    if(!u.attacked&&axDist(ua.q,ua.r,ta.q,ta.r)<=u.rng){
-      executeAttack(u,tgt);
-      setTimeout(next,ad(600));
-    } else {
-      setTimeout(next,ad(600));
-    }
+    doAttack();
+    setTimeout(next,ad(600));
   }
   setTimeout(next,600);
 }
@@ -2788,7 +2863,7 @@ function showDebrief(result){
 function buildSelectScreen(){
   const grid=document.getElementById('battle-grid'); grid.innerHTML='';
   BATTLES.forEach((b,i)=>{
-    const card=document.createElement('div'); card.className='card'+(b.unlocked?' unlocked':' locked');
+    const card=document.createElement('div'); card.className='card'+(b.unlocked?' unlocked':' locked'); card.dataset.year=b.year;
     const chap=`CHAPTER ${['I','II','III','IV','V','VI'][i]||i+1}`;
     const accentStyle=b.unlocked?`background:linear-gradient(90deg,${b.color},transparent)`:`background:#1e1e2e`;
     const TERRAIN_ICONS = {
@@ -2855,6 +2930,51 @@ function buildSelectScreen(){
 
     if(b.unlocked) card.addEventListener('click',()=>showRegiment(b));
     grid.appendChild(card);
+  });
+  // Wire up filter chips
+  let activeEra='all', activeTheater='all';
+  function applyFilters(){
+    const cards=document.querySelectorAll('#battle-grid .card');
+    cards.forEach(c=>{
+      const yr=parseInt(c.dataset.year);
+      const eraOk = activeEra==='all' || (activeEra==='pre'?yr<1947:yr>=1947);
+      const thOk  = activeTheater==='all' || yr===parseInt(activeTheater);
+      c.style.display=(eraOk&&thOk)?'':'none';
+    });
+    // When era=pre, hide post-1947 theater chips; when era=post, hide 1897
+    const theaterChips=document.querySelectorAll('#theater-chips .filter-chip');
+    theaterChips.forEach(ch=>{
+      const tv=ch.dataset.theater;
+      if(!tv||tv==='all'){ch.style.display='';return;}
+      const y=parseInt(tv);
+      if(activeEra==='pre')  ch.style.display=(y<1947||isNaN(y))?'':'none';
+      else if(activeEra==='post') ch.style.display=(y>=1947||isNaN(y))?'':'none';
+      else ch.style.display='';
+    });
+    // If active theater chip is now hidden, reset to 'all'
+    const activeTh=document.querySelector('#theater-chips .filter-chip.active');
+    if(activeTh&&activeTh.style.display==='none'){
+      activeTh.classList.remove('active');
+      document.querySelector('#theater-chips .filter-chip[data-theater="all"]').classList.add('active');
+      activeTheater='all';
+      applyFilters();
+    }
+  }
+  document.querySelectorAll('#battle-filters .filter-chip[data-era]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('#battle-filters .filter-chip[data-era]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeEra=btn.dataset.era;
+      applyFilters();
+    });
+  });
+  document.querySelectorAll('#theater-chips .filter-chip[data-theater]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('#theater-chips .filter-chip[data-theater]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTheater=btn.dataset.theater;
+      applyFilters();
+    });
   });
 }
 let _currentBattleName = 'Rezang La';

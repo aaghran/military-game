@@ -80,4 +80,5 @@ export default {
   debriefWin:    'LONGEWALA HOLDS',
   debriefLoss:   'THE POST IS OVERRUN',
   debriefHistory:'Historically, Longewala held through the night and the IAF destroyed the Pakistani armoured column at dawn. Pakistan lost 36 tanks and 100+ vehicles. India lost 2 soldiers. The post stands to this day.',
+  autoPlayForceWin: true,
 };

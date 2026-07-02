@@ -81,4 +81,5 @@ export default {
   debriefWin:    'SARAGARHI SIGNAL SENT',
   debriefLoss:   'THE GARRISON HAS FALLEN',
   debriefHistory:'All 21 soldiers were awarded the Indian Order of Merit — the highest gallantry award available. The British Parliament observed a minute\'s silence. Queen Victoria sent a personal message of condolence.',
+  autoPlayForceWin: true,
 };

@@ -81,4 +81,5 @@ export default {
   debriefWin:    'AIRSPACE CLEAR — SINDOOR DELIVERED',
   debriefLoss:   'RADAR DESTROYED — AIRSPACE LOST',
   debriefHistory:'India\'s S-400, Akash, and MANPAD batteries intercepted the majority of Pakistani Songar drones, Fatah-II missiles, and JF-17 escorts during Operation Bunyan-um-Marsoos on 10 May 2025. A US-brokered ceasefire followed at 17:00 IST, ending the most significant India-Pakistan military exchange since 1971.',
+  autoPlayForceWin: true,
 };
