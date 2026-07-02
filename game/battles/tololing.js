@@ -47,11 +47,10 @@ export default {
   },
   histCards: {
     1: {
-      name:  'Capt Manoj Kumar Pandey',
-      rank:  '1/11 Gorkha Rifles · Kargil 1999',
-      medal: 'Param Vir Chakra — Posthumous',
-      // Born 25 Jun 1975, died 3 Jul 1999 — age 24. Unit confirmed: 1/11 Gorkha Rifles.
-      body:  'Though from an adjacent unit in the Kargil campaign, Pandey\'s example inspired the Tololing assault. He cleared four enemy positions singlehandedly at Khalubar before falling. At 24, he was one of the youngest PVC recipients in the Kargil War.',
+      name:  'Major Vivek Gupta MVC',
+      rank:  '2 Rajputana Rifles · Tololing, June 1999',
+      medal: 'Maha Vir Chakra — Posthumous',
+      body:  'Maj Vivek Gupta led the assault on Tololing and was the first to reach the ridge. He was killed in action at the summit. He was awarded the Maha Vir Chakra posthumously — one of the highest wartime gallantry honours in India. Tololing was captured on 13 June 1999.',
     },
     3: {
       name:  'Lt Saurav Kalia',
