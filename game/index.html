@@ -2305,8 +2305,8 @@ function buildStructures(){
 
     if(s.type==='sangar'){
       const isEnemy = !!(s.label||'').toLowerCase().match(/pak|enemy|bunker/);
-      const sbCol  = isEnemy ? 0x4a5258 : 0xb09060;
-      const sbCol2 = isEnemy ? 0x3a3e44 : 0x8a7048;
+      const sbCol  = isEnemy ? 0x484e52 : 0x6a7840;
+      const sbCol2 = isEnemy ? 0x363a3e : 0x505e30;
       const flCol  = isEnemy ? 0x3a3a42 : 0x4a3a28;
       // Floor disc
       sm(new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,0.03,8),
@@ -2319,18 +2319,18 @@ function buildStructures(){
         // Layer 1 — bottom flush with tile surface
         const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.48,0.10,0.14),
           new THREE.MeshStandardMaterial({color:sbCol,roughness:0.9,metalness:0})));
-        sb.position.set(em.x,ty+0.05,em.z); sb.rotation.y=em.angle+Math.PI/2;
+        sb.position.set(em.x,ty+0.05,em.z); sb.rotation.y=-(em.angle+Math.PI/2);
         // Layer 2 — stacked on top
         const sb2=sm(new THREE.Mesh(new THREE.BoxGeometry(0.44,0.10,0.12),
           new THREE.MeshStandardMaterial({color:sbCol2,roughness:0.9,metalness:0})));
-        sb2.position.set(em.x,ty+0.15,em.z); sb2.rotation.y=em.angle+Math.PI/2;
+        sb2.position.set(em.x,ty+0.15,em.z); sb2.rotation.y=-(em.angle+Math.PI/2);
       }
       if(isEnemy){
         // Concrete roof overhang on front edge
         const em=edges[3];
         const roof=sm(new THREE.Mesh(new THREE.BoxGeometry(0.45,0.05,0.18),
           new THREE.MeshStandardMaterial({color:0x404048,roughness:0.8,metalness:0.05})));
-        roof.position.set(em.x,ty+0.30,em.z); roof.rotation.y=em.angle+Math.PI/2;
+        roof.position.set(em.x,ty+0.30,em.z); roof.rotation.y=-(em.angle+Math.PI/2);
       } else {
         // Weapon silhouette at center
         const wpn=sm(new THREE.Mesh(new THREE.BoxGeometry(0.06,0.14,0.06),
@@ -2346,8 +2346,8 @@ function buildStructures(){
       for(const i of [0,1,5]){
         const em=edges[i];
         const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.48,0.10,0.14),
-          new THREE.MeshStandardMaterial({color:0xb09060,roughness:0.9,metalness:0})));
-        sb.position.set(em.x,ty+0.05,em.z); sb.rotation.y=em.angle+Math.PI/2;
+          new THREE.MeshStandardMaterial({color:0x6a7840,roughness:0.9,metalness:0})));
+        sb.position.set(em.x,ty+0.05,em.z); sb.rotation.y=-(em.angle+Math.PI/2);
       }
       // LMG barrel on edge 3 (front), pointing outward — use Group to orient correctly
       const em3=edges[3];
@@ -2370,8 +2370,8 @@ function buildStructures(){
       for(let i=0;i<6;i++){
         const em=edges[i];
         const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.48,0.10,0.14),
-          new THREE.MeshStandardMaterial({color:0xa08858,roughness:0.9,metalness:0})));
-        sb.position.set(em.x,ty+0.05,em.z); sb.rotation.y=em.angle+Math.PI/2;
+          new THREE.MeshStandardMaterial({color:0x6a7840,roughness:0.9,metalness:0})));
+        sb.position.set(em.x,ty+0.05,em.z); sb.rotation.y=-(em.angle+Math.PI/2);
       }
       // Dug pit floor
       sm(new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.40,0.06,8),
@@ -2390,7 +2390,7 @@ function buildStructures(){
         const em=edges[i];
         const wall=sm(new THREE.Mesh(new THREE.BoxGeometry(0.55,0.40,0.14),
           new THREE.MeshStandardMaterial({color:0x5a4a38,roughness:0.95,metalness:0})));
-        wall.position.set(em.x,ty+0.20,em.z); wall.rotation.y=em.angle+Math.PI/2;
+        wall.position.set(em.x,ty+0.20,em.z); wall.rotation.y=-(em.angle+Math.PI/2);
       }
       // Corner posts at 4 of 6 vertices
       const vertAngles=[Math.PI/6,Math.PI/2,5*Math.PI/6,7*Math.PI/6];
