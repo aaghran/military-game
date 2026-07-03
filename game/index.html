@@ -187,28 +187,124 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 #cam-compass .cc-arrow { font-size:14px; color:#7a7a98; line-height:1; }
 #cam-compass .cc-keys  { font-size:7px; color:#5a5a78; }
 
-/* ── Battle select screen ────────────────────────────────────── */
-#battle-filters { display:flex; flex-direction:column; align-items:center; gap:0; margin-top:16px; }
-.filter-group { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
-.filter-chip {
-  padding:5px 12px; border-radius:999px; border:1px solid rgba(200,169,110,0.28);
-  background:transparent; color:rgba(200,169,110,0.6); font-family:'Courier New',monospace;
-  font-size:9px; letter-spacing:1.5px; cursor:pointer; transition:all 0.15s;
+/* ── Mobile map controls (battle) ───────────────────────────── */
+#map-controls {
+  position: fixed; left: 12px; z-index: 15;
+  display: none; flex-direction: column; gap: 6px;
+  bottom: calc(var(--battle-panel-h, 38vh) + 12px);
+  transition: bottom 0.25s ease;
 }
-.filter-chip:hover { border-color:rgba(200,169,110,0.6); color:#c8a96e; }
-.filter-chip.active { background:rgba(200,169,110,0.12); border-color:#c8a96e; color:#c8a96e; }
-#battle-grid { display:flex; gap:16px; margin-top:28px; flex-wrap:wrap; justify-content:center; }
-.card { width:185px; border-radius:14px; overflow:hidden; background:linear-gradient(180deg,rgba(16,16,28,0.96) 0%,rgba(10,10,18,0.98) 100%); border:1px solid rgba(200,169,110,0.14); transition:border-color 0.15s, box-shadow 0.15s, transform 0.15s; box-shadow:0 16px 36px rgba(0,0,0,0.22); }
-.card.unlocked { cursor:pointer; }
-.card.unlocked:hover { border-color:rgba(200,169,110,0.42); box-shadow:0 18px 40px rgba(0,0,0,0.30), 0 0 22px rgba(58,122,72,0.12); transform:translateY(-2px); }
-.card-accent { height:3px; }
-.card-body { padding:16px 16px 18px; }
-.card-chapter { font-size:8px;letter-spacing:2px;color:#c8a96e;margin-bottom:6px;opacity:0.7; }
-.card-title { font-size:14px; font-weight:bold; letter-spacing:1.3px; margin-bottom:5px; }
-.card-meta { font-size:9px; color:#869181; margin-bottom:12px; letter-spacing:0.8px; }
-.card-sub { font-size:10px; color:#b0b0bf; line-height:1.7; min-height:50px; }
-.card-btn { margin-top:14px; width:100%; padding:11px 0; font-family:'Courier New',monospace; font-size:10px; font-weight:bold; border:none; border-radius:999px; cursor:default; letter-spacing:1.3px; touch-action:manipulation; box-shadow:inset 0 1px 0 rgba(255,255,255,0.08); }
-.card.unlocked .card-btn { cursor:pointer; }
+#map-controls.visible { display: flex; }
+.map-ctrl-btn {
+  width: 44px; height: 44px; border-radius: 12px;
+  border: 1px solid rgba(200,169,110,0.28);
+  background: rgba(4,4,16,0.88); color: #d8c888;
+  font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold;
+  cursor: pointer; touch-action: manipulation;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  display: flex; align-items: center; justify-content: center;
+}
+.map-ctrl-btn:active { background: rgba(200,169,110,0.15); transform: scale(0.96); }
+.map-ctrl-row { display: flex; gap: 6px; }
+.map-ctrl-label {
+  font-size: 7px; letter-spacing: 1.5px; color: #6a6a80;
+  text-align: center; margin-top: 2px; pointer-events: none;
+}
+.map-tools-btn {
+  display: none;
+  position: fixed; z-index: 16;
+  width: 40px; height: 40px; border-radius: 10px;
+  border: 1px solid rgba(200,169,110,0.22);
+  background: rgba(4,4,16,0.82); color: #c8a96e;
+  font-family: 'Courier New', monospace; font-size: 16px;
+  cursor: pointer; touch-action: manipulation;
+  backdrop-filter: blur(10px);
+  align-items: center; justify-content: center;
+  bottom: calc(var(--battle-panel-collapsed-h, 52px) + 10px);
+  left: 10px;
+  transition: bottom 0.25s ease;
+}
+.map-tools-btn:active { background: rgba(200,169,110,0.14); transform: scale(0.96); }
+.mobile-dock-summary { display: none; }
+.map-tools-btn.hidden { display: none !important; }
+
+#panel-toggle {
+  display: none;
+  position: absolute; top: 6px; right: 12px;
+  width: 36px; height: 28px; border: none; border-radius: 8px;
+  background: rgba(255,255,255,0.06); color: #8a9a8a;
+  font-size: 14px; cursor: pointer; touch-action: manipulation;
+}
+#panel-toggle:active { background: rgba(200,169,110,0.12); color: #c8a96e; }
+
+/* ── Battle select screen ────────────────────────────────────── */
+#battle-filters { display:none; }
+#battle-grid { display:none; }
+
+/* ── Era navigation (home screen) ───────────────────────────── */
+.select-home-shell { width: min(100%, 680px); display: flex; flex-direction: column; align-items: center; }
+.select-play-label { font-size: 9px; color: #5a6a7a; letter-spacing: 4px; margin: 4px 0 14px; }
+#era-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; margin-top: 4px; }
+.era-tile {
+  border: 1px solid rgba(200,169,110,0.16); border-radius: 12px; padding: 14px 14px 12px;
+  background: linear-gradient(180deg, rgba(16,16,28,0.94) 0%, rgba(10,10,18,0.98) 100%);
+  cursor: pointer; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  text-align: left; min-height: 108px; position: relative; overflow: hidden;
+}
+.era-tile:hover { border-color: rgba(200,169,110,0.42); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.25); }
+.era-tile:hover .era-tile-insignias { opacity: 1; }
+.era-tile-accent { height: 3px; border-radius: 2px; margin-bottom: 10px; }
+.era-tile-years { font-size: 8px; letter-spacing: 2px; color: #6f756a; margin-bottom: 4px; }
+.era-tile-name { font-size: 11px; font-weight: bold; letter-spacing: 1.5px; margin-bottom: 4px; }
+.era-tile-count { font-size: 8px; color: #5a6a7a; letter-spacing: 1px; }
+.era-tile-insignias { display: flex; gap: 5px; margin-top: 10px; opacity: 0.82; transition: opacity 0.15s; }
+.era-tile-insignias img, .era-tile-insignias > div { width: 26px !important; height: 26px !important; object-fit: contain; }
+.era-tile-glyph { position: absolute; right: 6px; bottom: 4px; opacity: 0.12; pointer-events: none; }
+.era-tile.peaks { border-color: rgba(200,160,48,0.35); }
+#select-era { width: min(100%, 720px); display: none; flex-direction: column; align-items: stretch; }
+#select-era.visible { display: flex; }
+#select-home.hidden { display: none; }
+#era-back-btn {
+  align-self: flex-start; margin-bottom: 16px; padding: 8px 16px;
+  background: transparent; border: 1px solid rgba(200,169,110,0.25); color: #8a8070;
+  font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 1.5px; cursor: pointer;
+  border-radius: 6px; transition: border-color 0.15s, color 0.15s;
+}
+#era-back-btn:hover { border-color: #c8a96e; color: #c8a96e; }
+.era-detail-header { margin-bottom: 16px; text-align: center; }
+.era-detail-years { font-size: 9px; letter-spacing: 3px; color: #6f756a; margin-bottom: 4px; }
+.era-detail-name { font-size: 20px; font-weight: bold; letter-spacing: 4px; }
+.era-detail-blurb { font-size: 10px; color: #8a8a9a; margin-top: 8px; line-height: 1.7; max-width: 480px; margin-left: auto; margin-right: auto; }
+#era-battle-list { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; width: 100%; }
+.battle-card {
+  width: 185px; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(180deg, rgba(16,16,28,0.96) 0%, rgba(10,10,18,0.98) 100%);
+  border: 1px solid rgba(200,169,110,0.14);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  box-shadow: 0 16px 36px rgba(0,0,0,0.22); cursor: pointer;
+}
+.battle-card:hover { border-color: rgba(200,169,110,0.42); box-shadow: 0 18px 40px rgba(0,0,0,0.30), 0 0 22px rgba(58,122,72,0.12); transform: translateY(-2px); }
+.battle-card-accent { height: 3px; }
+.battle-card-visual { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 14px 0; gap: 8px; }
+.battle-card-icon { opacity: 0.8; flex-shrink: 0; }
+.battle-card:hover .battle-card-icon { opacity: 1; transition: opacity 0.2s; }
+.battle-card-terrain { opacity: 0.55; flex-shrink: 0; margin-top: 2px; }
+.battle-card:hover .battle-card-terrain { opacity: 0.85; }
+.battle-card-body { padding: 10px 16px 18px; }
+.battle-card-chapter { font-size: 8px; letter-spacing: 2px; color: #c8a96e; margin-bottom: 6px; opacity: 0.7; }
+.battle-card-title { font-size: 14px; font-weight: bold; letter-spacing: 1.3px; margin-bottom: 5px; }
+.battle-card-meta { font-size: 9px; color: #869181; margin-bottom: 10px; letter-spacing: 0.8px; }
+.battle-card-sub { font-size: 10px; color: #b0b0bf; line-height: 1.65; min-height: 44px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.battle-card-btn { margin-top: 12px; width: 100%; padding: 11px 0; font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; border: none; border-radius: 999px; cursor: pointer; letter-spacing: 1.3px; color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+.era-campaign-cta {
+  width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 10px; text-align: center; cursor: pointer;
+  background: linear-gradient(135deg, #3a2800 0%, #5a4000 40%, #3a2800 100%);
+  border: 1px solid #c8a030; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.era-campaign-cta:hover { border-color: #f0c850; box-shadow: 0 0 16px rgba(200,160,48,0.25); }
+.era-campaign-cta-title { font-size: 10px; font-weight: bold; letter-spacing: 2px; color: #f0c850; }
+.era-campaign-cta-sub { font-size: 8px; color: #a08840; margin-top: 4px; letter-spacing: 0.5px; }
 
 /* ── Intro screen ────────────────────────────────────────────── */
 #screen-intro{
@@ -394,11 +490,63 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 #begin-btn:hover { background:linear-gradient(180deg,#d9bb80 0%,#b18a4d 100%); box-shadow:0 14px 34px rgba(200,169,110,0.26); transform:translateY(-1px); }
 
 /* ── Debrief screen ──────────────────────────────────────────── */
-#debrief-title { font-size:26px; font-weight:bold; letter-spacing:3px; }
-#debrief-stats { font-size:11px; color:#9a9a9a; margin-top:18px; line-height:2.6; text-align:center; }
-#debrief-epitaph { font-size:12px; color:#9a9aaa; margin-top:28px; font-style:italic; }
-#back-btn { margin-top:36px; padding:11px 38px; background:transparent; border:1px solid #3a3a50; color:#999; font-family:'Courier New',monospace; font-size:10px; cursor:pointer; letter-spacing:1px; transition:border-color 0.15s, color 0.15s; }
-#back-btn:hover { border-color:#666; color:#999; }
+#screen-debrief { overflow-y: auto; justify-content: flex-start; padding: 40px 20px 32px; }
+.debrief-shell { width: min(100%, 720px); display: flex; flex-direction: column; align-items: center; }
+.debrief-header { text-align: center; margin-bottom: 20px; }
+#debrief-insignia { margin-bottom: 12px; opacity: 0.85; }
+#debrief-title { font-size: 24px; font-weight: bold; letter-spacing: 3px; }
+.debrief-regiment-label { font-size: 9px; letter-spacing: 3px; color: #8e9585; margin-top: 8px; }
+.debrief-body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; margin: 8px 0 16px; }
+.debrief-panel {
+  border: 1px solid rgba(200,169,110,0.14); border-radius: 14px;
+  background: linear-gradient(180deg, rgba(16,16,28,0.92) 0%, rgba(9,9,18,0.96) 100%);
+  padding: 16px; min-height: 160px;
+}
+.debrief-panel-label { font-size: 8px; letter-spacing: 2.5px; color: #6f756a; margin-bottom: 12px; }
+.debrief-stat-row { display: flex; gap: 20px; justify-content: center; margin-bottom: 12px; }
+.debrief-stat { text-align: center; flex: 1; }
+.debrief-stat-val { font-size: 32px; font-weight: bold; line-height: 1; font-family: 'Courier New', monospace; }
+.debrief-stat-label { font-size: 7px; letter-spacing: 2px; color: #6f756a; margin-top: 5px; }
+.debrief-fallen { margin-top: 8px; padding-top: 10px; border-top: 1px solid rgba(200,169,110,0.1); }
+.debrief-fallen-label { font-size: 7px; letter-spacing: 2px; color: #6f756a; margin-bottom: 6px; }
+.debrief-fallen-name { font-size: 9px; color: #b8a890; line-height: 1.8; letter-spacing: 0.5px; }
+.debrief-fallen-clear { font-size: 9px; color: #4aaa58; letter-spacing: 1px; }
+#debrief-infographic { min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+.dbi-odds { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.dbi-odds-num { font-size: 28px; font-weight: bold; font-family: 'Courier New', monospace; }
+.dbi-odds-lbl { font-size: 7px; letter-spacing: 1.5px; color: #6f756a; margin-top: 4px; }
+.dbi-odds-vs { font-size: 11px; color: #504840; }
+.dbi-alt-bar-wrap { display: flex; gap: 14px; align-items: flex-end; justify-content: center; height: 100px; }
+.dbi-alt-bar { width: 36px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, rgba(200,169,110,0.5), rgba(200,169,110,0.15)); position: relative; }
+.dbi-alt-bar.peak { background: linear-gradient(180deg, #c8a96e, rgba(200,169,110,0.2)); }
+.dbi-alt-val { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 8px; color: #c8a96e; white-space: nowrap; letter-spacing: 0.5px; }
+.dbi-alt-lbl { font-size: 7px; color: #6f756a; text-align: center; margin-top: 6px; letter-spacing: 1px; }
+.dbi-armour-num { font-size: 48px; font-weight: bold; text-align: center; font-family: 'Courier New', monospace; color: #c8a96e; line-height: 1; }
+.dbi-armour-lbl { font-size: 9px; color: #8a8070; text-align: center; margin-top: 8px; letter-spacing: 1px; }
+.dbi-armour-sub { font-size: 8px; color: #6f756a; text-align: center; margin-top: 6px; line-height: 1.6; }
+.dbi-intercept-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(200,169,110,0.08); font-size: 9px; }
+.dbi-intercept-row:last-child { border-bottom: none; }
+.dbi-intercept-lbl { color: #8a8070; letter-spacing: 1px; }
+.dbi-intercept-val { color: #c8a96e; font-weight: bold; }
+.dbi-note { font-size: 8px; color: #6f756a; text-align: center; margin-top: 10px; letter-spacing: 1px; line-height: 1.5; }
+.dbi-charge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
+.dbi-charge-val { font-size: 22px; font-weight: bold; color: #c8a96e; }
+.dbi-charge-lbl { font-size: 7px; color: #6f756a; letter-spacing: 1.5px; margin-top: 4px; }
+.dbi-siege-row { display: flex; justify-content: space-around; text-align: center; margin-bottom: 10px; }
+.debrief-hero-card {
+  width: 100%; border: 1px solid rgba(200,169,110,0.2); border-radius: 12px;
+  padding: 14px 18px; margin-bottom: 14px; text-align: center;
+  background: linear-gradient(180deg, rgba(200,169,110,0.06) 0%, transparent 100%);
+}
+.debrief-hero-medal { font-size: 8px; letter-spacing: 2.5px; color: #c89030; margin-bottom: 6px; }
+.debrief-hero-name { font-size: 13px; font-weight: bold; color: #d8c888; letter-spacing: 1px; }
+.debrief-hero-rank { font-size: 8px; color: #7a7a8a; margin: 4px 0 8px; letter-spacing: 1px; }
+.debrief-hero-quote { font-size: 10px; color: #9a9aaa; font-style: italic; line-height: 1.6; }
+#debrief-epitaph { font-size: 12px; color: #9a9aaa; margin: 4px 0 14px; font-style: italic; text-align: center; max-width: 480px; line-height: 1.7; }
+.debrief-history { font-size: 10px; color: #b1b0c2; max-width: 560px; line-height: 1.9; text-align: center; padding-top: 14px; border-top: 1px solid rgba(200,169,110,0.14); }
+.debrief-legacy { font-size: 9px; line-height: 1.8; color: #81819a; margin-top: 10px; max-width: 560px; text-align: center; font-style: italic; }
+#back-btn { margin-top: 24px; padding: 11px 38px; background: transparent; border: 1px solid #3a3a50; color: #999; font-family: 'Courier New', monospace; font-size: 10px; cursor: pointer; letter-spacing: 1px; transition: border-color 0.15s, color 0.15s; }
+#back-btn:hover { border-color: #666; color: #bbb; }
 
 /* ── Select screen polish ────────────────────────────────────── */
 .select-bg { position:absolute;inset:0;pointer-events:none;
@@ -532,90 +680,268 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 
 /* ── Mobile layout ───────────────────────────────────────────── */
 @media (max-width: 700px) {
-  /* Panel becomes a bottom drawer */
+  :root {
+    --battle-panel-h: min(28vh, 240px);
+    --battle-panel-collapsed-h: 52px;
+  }
+
+  /* Panel becomes a bottom drawer — collapsible */
   #panel {
-    width:100vw; height:auto; max-height:34vh;
-    top:auto; bottom:0; right:0;
-    border:none; border-top:1px solid rgba(200,169,110,0.16);
-    border-radius:20px 20px 0 0;
-    flex-direction:column;
-    overflow-y:auto;
+    width: 100vw; height: auto;
+    max-height: var(--battle-panel-h);
+    top: auto; bottom: 0; right: 0; left: 0;
+    border: none; border-top: 1px solid rgba(200,169,110,0.2);
+    border-radius: 16px 16px 0 0;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    transition: max-height 0.28s ease;
+    position: fixed;
   }
-  #panel::before { display:none; } /* hide pseudo-element top bar on mobile */
-  .panel-accent-bar { display:none; }  /* already shown via border-top */
+  #panel.panel-collapsed {
+    max-height: var(--battle-panel-collapsed-h);
+    overflow: hidden;
+  }
+  #panel.panel-collapsed .panel-unit,
+  #panel.panel-collapsed .panel-last,
+  #panel.panel-collapsed .panel-log { display: none !important; }
+  body:not(.mobile-battle) #panel.panel-collapsed #auto-pause-btn { display: none !important; }
+  #panel.panel-collapsed .panel-header { padding-bottom: 4px; }
+  #panel.panel-collapsed .panel-phase { margin: 6px 12px 0; }
+  #panel.panel-collapsed #end-turn-btn {
+    margin: 6px 12px 10px; padding: 12px;
+    font-size: 12px; letter-spacing: 2px;
+  }
+  #panel-toggle { display: block; }
+  #panel { position: fixed; }
+  .panel-header { position: relative; padding-right: 48px; }
 
-  /* Collapse unit bio on mobile to save space */
-  .unit-bio { display:none; }
+  #panel::before { display:none; }
+  .panel-accent-bar { display:block; height:3px; margin:0; border-radius:0; }
 
-  /* End turn button fixed size */
-  #end-turn-btn { margin:6px 10px 8px; padding:12px; font-size:11px; }
-  #auto-pause-btn { margin:0 10px 6px; padding:10px; font-size:9px; }
+  /* Mobile battle — map-first: slim dock, minimal chrome */
+  body.mobile-battle .panel-header { display: none !important; }
+  body.mobile-battle .panel-accent-bar { display: none !important; }
+  body.mobile-battle #cam-compass,
+  body.mobile-battle #theme-toggle-btn { display: none !important; }
+  body.mobile-battle #quick-actions {
+    top: max(8px, env(safe-area-inset-top));
+    right: 8px;
+  }
+  body.mobile-battle #settings-btn {
+    min-width: 40px; min-height: 40px;
+    padding: 0; border-radius: 10px;
+    background: rgba(4,4,16,0.75);
+    border-color: rgba(200,169,110,0.18);
+  }
+  body.mobile-battle .map-tools-btn:not(.hidden) { display: flex; }
+  body.mobile-battle:not(.panel-collapsed) .map-tools-btn {
+    bottom: calc(var(--battle-panel-h) + 10px);
+  }
+  body.mobile-battle #map-controls {
+    flex-direction: row;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(var(--battle-panel-collapsed-h) + 10px);
+    gap: 6px;
+    display: none;
+  }
+  body.mobile-battle:not(.panel-collapsed) #map-controls {
+    bottom: calc(var(--battle-panel-h) + 10px);
+  }
+  body.mobile-battle.map-tools-open #map-controls.visible { display: flex; }
+  body.mobile-battle .map-ctrl-btn { width: 38px; height: 38px; font-size: 16px; border-radius: 10px; }
+  body.mobile-battle #panel.panel-collapsed {
+    display: grid;
+    grid-template-columns: minmax(72px, auto) 1fr auto 36px;
+    grid-template-rows: 1fr;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px max(0px, env(safe-area-inset-bottom));
+    max-height: var(--battle-panel-collapsed-h);
+  }
+  body.mobile-battle #panel.panel-collapsed .panel-phase {
+    grid-column: 1;
+    margin: 0; padding: 0 6px;
+    border: none; background: none;
+    min-width: 0;
+  }
+  body.mobile-battle #panel.panel-collapsed #phase-display {
+    font-size: 8px; letter-spacing: 1px;
+    text-align: left;
+  }
+  body.mobile-battle #panel.panel-collapsed #round-display { display: none; }
+  body.mobile-battle #panel.panel-collapsed .mobile-dock-summary {
+    display: block;
+    grid-column: 2;
+    font-size: 10px; color: #9aaa9a;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    text-align: center; padding: 0 4px;
+  }
+  body.mobile-battle #panel.panel-collapsed #end-turn-btn,
+  body.mobile-battle #panel.panel-collapsed #auto-pause-btn {
+    grid-column: 3;
+    margin: 0; padding: 8px 10px;
+    min-height: 38px; font-size: 9px; letter-spacing: 1px;
+    border-radius: 8px;
+  }
+  body.mobile-battle #panel.panel-collapsed #panel-toggle {
+    grid-column: 4;
+    position: static; width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  body.mobile-battle #panel:not(.panel-collapsed) { max-height: var(--battle-panel-h); }
+  body.mobile-battle #panel:not(.panel-collapsed) .mobile-dock-summary { display: none; }
+  body.mobile-battle #narrative {
+    top: max(8px, env(safe-area-inset-top));
+    bottom: auto;
+    left: 52px; right: 52px;
+    transform: none;
+    font-size: 10px; line-height: 1.45;
+    padding: 7px 12px;
+    white-space: normal; text-align: center;
+    border-radius: 8px;
+    max-width: none;
+  }
+  body.mobile-battle #hist-card {
+    top: max(48px, calc(env(safe-area-inset-top) + 40px));
+    bottom: calc(var(--battle-panel-collapsed-h) + 8px);
+    max-height: none;
+    border-radius: 12px;
+    transform: translateY(110%);
+  }
+  body.mobile-battle:not(.panel-collapsed) #hist-card {
+    bottom: calc(var(--battle-panel-h) + 8px);
+  }
+  body.mobile-battle #hist-card.visible { transform: translateY(0); }
 
-  /* Canvas adjusts so bottom panel doesn't overlap */
-  canvas { height:calc(100vh - 0px); } /* panel overlays, that's OK */
+  /* Readable typography on small screens */
+  .unit-bio { display:block; font-size:10px; line-height:1.55; max-height:48px; overflow-y:auto; }
+  .unit-placeholder { font-size: 11px; margin-top: 12px; }
+  #end-turn-btn { margin:8px 12px 12px; padding:14px; font-size:12px; letter-spacing:2px; min-height:48px; }
+  #auto-pause-btn { margin:0 12px 6px; padding:12px; font-size:10px; min-height:44px; }
 
-  /* Phase and round in one line */
-  .panel-header { padding:8px 12px 7px; }
-  .panel-title { font-size:12px; letter-spacing:2px; }
-  .panel-battle { font-size:7px; letter-spacing:1.5px; }
-  .panel-phase { margin:8px 10px 0; padding:5px 10px; }
-  #phase-display { font-size:8px; }
-  #round-display { font-size:8px; }
+  canvas { height: 100vh; }
 
-  /* Stat chips larger touch targets */
-  .stat-chip { padding:7px 4px; }
-  .stat-chip .sval { font-size:15px; }
-  .panel-unit { margin:8px 10px 0; padding:8px 10px; }
-  .panel-last { margin:8px 10px 0; min-height:34px; padding:5px 10px; }
+  .panel-header { padding:10px 48px 8px 14px; }
+  .panel-title { font-size:13px; letter-spacing:3px; }
+  .panel-battle { font-size:9px; letter-spacing:1px; line-height:1.4; }
+  .panel-phase { margin:8px 12px 0; padding:8px 12px; }
+  #phase-display { font-size:10px; letter-spacing:1.5px; }
+  #round-display { font-size:9px; }
+  .stat-chip { padding:8px 4px; min-height:44px; display:flex; flex-direction:column; justify-content:center; }
+  .stat-chip .slabel { font-size:8px; }
+  .stat-chip .sval { font-size:16px; }
+  .panel-unit { margin:8px 12px 0; padding:10px 12px; max-height: none; }
+  .panel-last { margin:8px 12px 0; min-height:36px; padding:6px 10px; }
   .panel-log { display:none; }
-  #last-action { font-size:8px; line-height:1.5; }
+  #last-action { font-size:9px; line-height:1.5; }
+  .ability-btn { min-height:44px; font-size:10px; padding:10px; }
 
-  /* Narrative bar full-width on mobile */
+  /* Narrative + overlays sit above panel */
   #narrative {
-    left:0; right:0; bottom:0;
-    transform:none;
-    border-radius:0; white-space:normal;
-    text-align:center;
-    bottom:calc(34vh + 2px); /* above the panel */
+    left: 8px; right: 8px;
+    transform: none;
+    border-radius: 10px;
+    white-space: normal;
+    text-align: center;
+    bottom: calc(var(--battle-panel-h) + 8px);
+    font-size: 11px;
+    line-height: 1.5;
+    padding: 10px 14px;
+    max-width: none;
+  }
+  body.panel-collapsed #narrative,
+  body.panel-collapsed #map-controls,
+  body.panel-collapsed #cam-compass {
+    bottom: calc(var(--battle-panel-collapsed-h) + 8px);
+  }
+  body.mobile-battle #narrative {
+    top: max(8px, env(safe-area-inset-top));
+    bottom: auto !important;
+    left: 52px; right: 52px;
+    font-size: 10px; line-height: 1.45;
+    padding: 7px 12px;
   }
 
-  /* Historical card full-width on mobile */
   #hist-card {
-    left:0; right:0; top:auto; bottom:calc(34vh + 4px);
-    width:100%; border-radius:0;
-    transform:translateY(110%) translateX(0);
+    left:0; right:0; top:auto;
+    bottom: calc(var(--battle-panel-h) + 4px);
+    width:100%; border-radius:12px 12px 0 0;
+    transform: translateY(110%);
+    max-height: 45vh; overflow-y: auto;
   }
-  #hist-card.visible { transform:translateY(0) translateX(0); }
-
-  /* Quick actions stay visible and thumb-friendly */
-  #quick-actions{
-    top:auto; right:12px; bottom:12px;
-    flex-direction:column; align-items:stretch;
+  body.panel-collapsed #hist-card {
+    bottom: calc(var(--battle-panel-collapsed-h) + 4px);
   }
-  .quick-action-btn{
-    min-height:44px; padding:0 16px; justify-content:flex-start;
-    backdrop-filter:blur(10px);
+  body.mobile-battle #hist-card {
+    top: max(48px, calc(env(safe-area-inset-top) + 40px));
+    bottom: calc(var(--battle-panel-collapsed-h) + 8px) !important;
+    max-height: none;
+    border-radius: 12px;
+    transform: translateY(110%);
   }
-  #theme-toggle-btn, #settings-btn{ min-width:0; }
+  body.mobile-battle:not(.panel-collapsed) #hist-card {
+    bottom: calc(var(--battle-panel-h) + 8px) !important;
+  }
+  body.mobile-battle #hist-card.visible { transform: translateY(0); }
+  #hist-card.visible { transform: translateY(0); }
 
-  /* Compass */
-  #cam-compass { bottom:calc(34vh + 8px); right:8px; }
+  /* Quick actions — compact, top corner */
+  #quick-actions {
+    top: max(10px, env(safe-area-inset-top));
+    right: 10px;
+    flex-direction: row; gap: 6px;
+  }
+  .quick-action-btn {
+    min-height: 44px; min-width: 44px;
+    padding: 0 10px;
+    backdrop-filter: blur(10px);
+  }
+  .quick-action-btn .qa-label { display: none; }
+  #theme-toggle-btn, #settings-btn { min-width: 44px; }
 
-  /* Select screen cards become readable */
-  #screen-select{padding:28px 16px 96px;}
-  .select-header{gap:12px;margin-bottom:14px;}
-  .select-title{font-size:30px;letter-spacing:8px;text-align:center;}
-  .select-subtitle{font-size:10px;letter-spacing:4px;text-align:center;}
-  .select-quote{font-size:12px;line-height:1.7;padding:0 6px;}
-  #battle-grid{gap:12px;}
-  .card { width:min(100%, 340px); }
-  .card-body{padding:16px;}
-  .card-title{font-size:15px;}
-  .card-meta,.card-sub,.card-btn{font-size:11px;}
-  .card-sub{min-height:0;line-height:1.7;}
+  #cam-compass {
+    bottom: calc(var(--battle-panel-h) + 8px);
+    right: 10px;
+    background: rgba(4,4,16,0.75);
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(200,169,110,0.15);
+  }
+  .cc-keys { display: none; }
+
+  /* Select screen — era navigation */
+  #screen-select{padding:24px 14px max(80px, env(safe-area-inset-bottom));}
+  .select-header{gap:12px;margin-bottom:10px;}
+  .select-title{font-size:28px;letter-spacing:6px;text-align:center;}
+  .select-subtitle{font-size:10px;letter-spacing:3px;text-align:center;}
+  .select-quote{
+    font-size:11px;line-height:1.65;padding:0 4px;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  #campaign-banner { margin-bottom: 14px; }
+  .campaign-banner-inner { padding: 12px 14px; gap: 12px; }
+  .campaign-title { font-size: 0.95rem; }
+  .select-play-label { font-size: 8px; margin-bottom: 10px; }
+  #era-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .era-tile{min-height:108px;padding:12px;}
+  .era-tile-name{font-size:11px;}
+  .era-tile-years{font-size:9px;}
+  #era-battle-list{gap:12px;}
+  .battle-card{width:100%;max-width:360px;}
+  .battle-card-body{padding:12px 16px 16px;}
+  .battle-card-sub{min-height:0;-webkit-line-clamp:3;font-size:11px;}
+  .battle-card-title{font-size:15px;}
+  .battle-card-btn{min-height:48px;font-size:11px;}
+  #era-back-btn{min-height:44px;padding:10px 16px;}
+  .era-battle-play{min-height:40px;}
+  .debrief-body{grid-template-columns:1fr;}
+  .debrief-stat-val{font-size:26px;}
+  #screen-debrief{padding:24px 14px max(32px, env(safe-area-inset-bottom));}
 
   /* Intro screen padding */
-  #screen-intro{padding:24px 18px 104px;}
+  #screen-intro{padding:24px 14px max(100px, env(safe-area-inset-bottom));}
   .intro-shell{width:100%;}
   .intro-briefing{grid-template-columns:1fr;gap:14px;}
   .intro-regiment { width:100%; }
@@ -624,15 +950,17 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
   .intro-facts{grid-template-columns:1fr 1fr;}
   .intro-copy{font-size:11px;line-height:1.8;}
   .intro-step{font-size:10px;line-height:1.7;}
-  #begin-btn { width:min(90vw,320px); padding:14px 24px; }
+  #begin-btn { width:100%; max-width:320px; padding:14px 24px; min-height:48px; }
 
   /* Regiment screen: stack insignia above text on mobile */
-  #screen-regiment{padding:18px 0 96px;}
-  .rgt-layout{flex-direction:column;align-items:center;gap:24px;padding:28px 20px 0;}
+  #screen-regiment{padding:18px 14px max(96px, env(safe-area-inset-bottom));}
+  .rgt-layout{flex-direction:column;align-items:center;gap:24px;padding:24px 16px 0;}
   .rgt-insignia-col{width:100%;display:flex;justify-content:center;}
   .rgt-insignia{width:100px;height:120px;}
   .rgt-content{width:100%;}
-  .rgt-full{margin-bottom:16px;}
+  .rgt-full{margin-bottom:16px;font-size:11px;line-height:1.6;}
+  .rgt-bio{font-size:12px;line-height:1.75;}
+  .rgt-btn,.rgt-btn-auto{min-height:48px;width:100%;text-align:center;}
   .rgt-divider{
     height:2px;
     background:linear-gradient(90deg,transparent,rgba(200,169,110,0.55),transparent);
@@ -659,36 +987,73 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 }
 
 @media (max-width: 700px) and (orientation: landscape) {
-  /* Landscape mobile: panel goes back to right side but narrower */
+  /* Landscape mobile: narrow side panel, still map-first */
+  body.mobile-battle #panel {
+    width: 200px; height: calc(100vh - 20px); max-height: none;
+    top: 10px; bottom: auto; right: 10px; left: auto;
+    border: 1px solid rgba(86,76,48,0.34);
+    border-radius: 14px;
+    overflow-y: auto;
+    padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  body.mobile-battle #panel.panel-collapsed {
+    width: 200px; max-height: none;
+    display: flex; flex-direction: column;
+    grid-template-columns: unset; grid-template-rows: unset;
+    padding: 0;
+  }
+  body.mobile-battle #panel.panel-collapsed .mobile-dock-summary { display: none; }
+  body.mobile-battle #panel.panel-collapsed #round-display { display: block; }
+  body.mobile-battle #panel.panel-collapsed .panel-phase { margin: 8px 10px 0; padding: 6px 8px; }
+  body.mobile-battle #panel.panel-collapsed #end-turn-btn,
+  body.mobile-battle #panel.panel-collapsed #auto-pause-btn { margin: 8px 10px 10px; }
+  body.mobile-battle #panel.panel-collapsed #panel-toggle { position: absolute; top: 6px; right: 8px; }
+  body.mobile-battle #map-controls {
+    left: 10px; bottom: 10px; transform: none;
+  }
+  body.mobile-battle .map-tools-btn:not(.hidden) {
+    left: 10px; bottom: 10px;
+  }
+  body.mobile-battle #narrative {
+    left: 10px; right: 220px; top: 10px; transform: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  body.mobile-battle #hist-card {
+    left: 10px; top: 50%; bottom: auto; width: 240px;
+    transform: translateY(-50%) translateX(-280px);
+  }
+  body.mobile-battle #hist-card.visible { transform: translateY(-50%) translateX(0); }
   #panel {
-    width:200px; height:calc(100vh - 28px); max-height:none;
-    top:14px; bottom:auto; right:14px;
+    width:220px; height:calc(100vh - 28px); max-height:none;
+    top:14px; bottom:auto; right:14px; left:auto;
     border:1px solid rgba(86,76,48,0.34);
     border-radius:16px;
     overflow-y:auto;
+    padding-bottom:0;
   }
+  #panel.panel-collapsed { max-height:none; width:200px; }
+  #panel-toggle { display:block; top:8px; right:8px; }
   .panel-accent-bar { display:block; margin:10px 14px 0; }
-  .unit-bio { display:block; font-size:8px; }
-  #quick-actions{
-    right:226px;
-    bottom:12px;
+  .unit-bio { display:block; font-size:9px; max-height:36px; }
+  #map-controls {
+    left:12px; bottom:12px;
   }
-  #narrative { left:50%; bottom:28px; transform:translateX(calc(-50% - 100px)); white-space:nowrap; }
+  #quick-actions{
+    top:12px; right:240px; bottom:auto;
+  }
+  #narrative { left:50%; bottom:28px; transform:translateX(calc(-50% - 100px)); white-space:nowrap; max-width:50vw; }
   #hist-card { left:14px; top:50%; bottom:auto; width:260px; transform:translateY(-50%) translateX(-300px); }
   #hist-card.visible { transform:translateY(-50%) translateX(0); }
-  #cam-compass { bottom:14px; right:210px; }
+  #cam-compass { bottom:14px; right:230px; }
 }
 
 .card-icon { padding:12px 14px 0; opacity:0.75; }
 .card.unlocked:hover .card-icon { opacity:1; transition:opacity 0.2s; }
 
-/* ── Debrief redesign ────────────────────────────────────────── */
+/* ── Debrief redesign (legacy aliases) ───────────────────────── */
 .debrief-regiment-label { font-size:9px; letter-spacing:3px; color:#8e9585; margin-top:8px; margin-bottom:6px; }
-.debrief-stat-row { display:flex; gap:40px; justify-content:center; margin:24px 0 20px; }
-.debrief-stat { text-align:center; }
-.debrief-stat-val { font-size:40px; font-weight:bold; line-height:1; font-family:'Courier New',monospace; }
-.debrief-stat-label { font-size:8px; letter-spacing:3px; color:#6f756a; margin-top:6px; }
-.debrief-history { font-size:10px; color:#b1b0c2; max-width:500px; line-height:1.95; text-align:center; margin-top:18px; padding:18px 26px 0; border-top:1px solid rgba(200,169,110,0.14); }
 
 /* ── LIGHT THEME ─────────────────────────────────────────── */
 body.light{background:#f0ebe0;color:#1a1505;}
@@ -703,6 +1068,11 @@ body.light .select-label{color:#7a6040 !important;}
 body.light .select-footer{color:#a09080;}
 body.light .card{background:linear-gradient(180deg,#fffdf9 0%,#f4eee3 100%);border-color:#d0c8b8;box-shadow:0 10px 24px rgba(0,0,0,0.08);}
 body.light .card.unlocked:hover{background:#f8f4ee;border-color:#b8a888;box-shadow:0 14px 28px rgba(0,0,0,0.12);}
+body.light .battle-card{background:linear-gradient(180deg,#fffdf9 0%,#f4eee3 100%);border-color:#d0c8b8;box-shadow:0 10px 24px rgba(0,0,0,0.08);}
+body.light .battle-card:hover{background:#f8f4ee;border-color:#b8a888;box-shadow:0 14px 28px rgba(0,0,0,0.12);}
+body.light .battle-card-chapter{color:#9a8060 !important;}
+body.light .battle-card-meta{color:#6a5840 !important;}
+body.light .battle-card-sub{color:#4a3820 !important;}
 body.light .card-chapter{color:#9a8060 !important;}
 body.light .card-meta{color:#6a5840 !important;}
 body.light .card-sub{color:#4a3820 !important;}
@@ -745,7 +1115,12 @@ body.light .debrief-regiment-label{color:#8a7860;}
 body.light .debrief-stat-label{color:#8a7860;}
 body.light #debrief-epitaph{color:#5a4a30;}
 body.light .debrief-history{color:#5a4a30;border-top-color:#d8d0c0;}
-body.light .debrief-legacy{color:#6a5a40;border-top-color:#d8d0c0;}
+body.light .debrief-legacy{color:#6a5a40;}
+body.light .debrief-panel{background:linear-gradient(180deg,#fffdf9 0%,#f4eee3 100%);border-color:#d0c8b8;}
+body.light .era-tile{background:linear-gradient(180deg,#fffdf9 0%,#f4eee3 100%);border-color:#d0c8b8;}
+body.light .era-tile:hover{border-color:#b8a888;}
+body.light .era-battle-row{background:linear-gradient(90deg,#fffdf9,#f4eee3);border-color:#d0c8b8;}
+body.light .debrief-hero-card{background:linear-gradient(180deg,rgba(200,169,110,0.08),transparent);border-color:#d0c8b8;}
 body.light #back-btn{border-color:#c8bfaa;color:#5a4a30;}
 body.light #back-btn:hover{background:#e0d8c8;}
 body.light #panel{background:linear-gradient(180deg,rgba(248,242,232,0.94) 0%,rgba(232,226,212,0.97) 100%);border-color:#c8bfaa;}
@@ -872,9 +1247,6 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
 #war-cry-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:500;opacity:0;transition:opacity 0.35s;pointer-events:none;}
 .wc-text{font-size:clamp(1.6em,5vw,3em);color:#c8a96e;letter-spacing:0.18em;text-align:center;text-transform:uppercase;text-shadow:0 0 50px rgba(200,169,110,0.55),0 0 20px rgba(200,169,110,0.3);padding:0 24px;}
 
-/* ── DEBRIEF LEGACY ──────────────────────────────────────── */
-.debrief-legacy{font-size:0.72em;line-height:1.9;color:#81819a;margin:18px 28px 0;padding-top:18px;border-top:1px solid rgba(200,169,110,0.14);max-width:560px;text-align:left;}
-
 /* ── SHARED CAMPAIGN BUTTONS ─────────────────────────────── */
 .btn-primary {
   background: linear-gradient(135deg, #4a3800, #6a5000);
@@ -970,7 +1342,7 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
 .campaign-footer { display:flex; justify-content:space-between; align-items:center; padding:20px 30px; border-top:1px solid #1a1508; }
 
 /* Bridge screen */
-#campaign-bridge-screen { display:flex; align-items:center; justify-content:center; background:#080604; }
+#campaign-bridge-screen:not(.hidden) { display:flex; align-items:center; justify-content:center; background:#080604; }
 .bridge-inner { max-width:560px; text-align:center; padding:40px 20px; }
 .bridge-meta { font-size:0.75rem; letter-spacing:0.2em; color:#604820; font-family:'Courier New',monospace; margin-bottom:12px; }
 .bridge-title { font-size:1.6rem; font-weight:bold; letter-spacing:0.15em; color:#f0c850; font-family:'Courier New',monospace; margin-bottom:20px; }
@@ -982,7 +1354,7 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
 .bridge-btn { margin: 0 auto; }
 
 /* Complete screen */
-#campaign-complete-screen { display:flex; align-items:center; justify-content:center; background:#060402; }
+#campaign-complete-screen:not(.hidden) { display:flex; align-items:center; justify-content:center; background:#060402; }
 .complete-inner { max-width:620px; text-align:center; padding:40px 20px; }
 .complete-title { font-size:2rem; font-weight:bold; letter-spacing:0.2em; color:#f0c850; font-family:'Courier New',monospace; }
 .complete-date { font-size:0.9rem; letter-spacing:0.3em; color:#806830; margin-top:8px; margin-bottom:20px; font-family:'Courier New',monospace; }
@@ -1015,29 +1387,32 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   <div class="select-title">REGIMENT</div>
   <div class="select-subtitle">INDIA'S FINEST HOURS</div>
   <div class="select-quote">"How can a man die better than facing fearful odds, for the ashes of his fathers, and the temples of his gods."</div>
-  <div class="select-label">— SELECT A BATTLE —</div>
-  <div id="battle-filters">
-    <div class="filter-group">
-      <button class="filter-chip active" data-filter="all">ALL</button>
-      <button class="filter-chip" data-filter="pre">PRE-1947</button>
-      <button class="filter-chip" data-filter="1962">1962</button>
-      <button class="filter-chip" data-filter="1965">1965</button>
-      <button class="filter-chip" data-filter="1971">1971</button>
-      <button class="filter-chip" data-filter="kargil">KARGIL</button>
-      <button class="filter-chip" data-filter="modern">MODERN</button>
-    </div>
-  </div>
-  <div id="campaign-banner" onclick="startCampaign()">
-    <div class="campaign-banner-inner">
-      <div class="campaign-icon">🏔</div>
-      <div class="campaign-text">
-        <div class="campaign-title">VIJAY DIWAS CAMPAIGN</div>
-        <div class="campaign-sub">5 Kargil battles · In tribute to those who held the peaks · 26 July</div>
+
+  <div id="select-home" class="select-home-shell">
+    <div id="campaign-banner" onclick="startCampaign()">
+      <div class="campaign-banner-inner">
+        <div class="campaign-icon">🏔</div>
+        <div class="campaign-text">
+          <div class="campaign-title">VIJAY DIWAS CAMPAIGN</div>
+          <div class="campaign-sub">5 Kargil battles in sequence · 26 July tribute</div>
+        </div>
+        <div class="campaign-arrow">▶</div>
       </div>
-      <div class="campaign-arrow">▶</div>
     </div>
+    <div class="select-play-label">— OR PICK AN ERA —</div>
+    <div id="era-grid"></div>
   </div>
-  <div id="battle-grid"></div>
+
+  <div id="select-era">
+    <button id="era-back-btn" type="button">← ALL ERAS</button>
+    <div class="era-detail-header">
+      <div class="era-detail-years" id="era-detail-years"></div>
+      <div class="era-detail-name" id="era-detail-name"></div>
+      <div class="era-detail-blurb" id="era-detail-blurb"></div>
+    </div>
+    <div id="era-battle-list"></div>
+  </div>
+
   <div class="select-footer">A tactical game of Indian Army historical battles · Educational · Non-commercial</div>
 </div>
 <div id="screen-regiment" class="screen hidden">
@@ -1122,26 +1497,42 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   </div>
 </div>
 <div id="screen-debrief" class="screen hidden">
-  <div id="debrief-title"></div>
-  <div id="debrief-regiment-label" class="debrief-regiment-label"></div>
-  <div id="debrief-stat-row" class="debrief-stat-row">
-    <div class="debrief-stat">
-      <div class="debrief-stat-val" id="db-fallen">—</div>
-      <div class="debrief-stat-label">FALLEN</div>
+  <div class="debrief-shell">
+    <div class="debrief-header">
+      <div id="debrief-insignia"></div>
+      <div id="debrief-title"></div>
+      <div id="debrief-regiment-label" class="debrief-regiment-label"></div>
     </div>
-    <div class="debrief-stat">
-      <div class="debrief-stat-val" id="db-rounds">—</div>
-      <div class="debrief-stat-label">ROUNDS</div>
+    <div class="debrief-body">
+      <div class="debrief-panel">
+        <div class="debrief-panel-label">YOUR BATTLE</div>
+        <div class="debrief-stat-row">
+          <div class="debrief-stat">
+            <div class="debrief-stat-val" id="db-fallen">—</div>
+            <div class="debrief-stat-label">FALLEN</div>
+          </div>
+          <div class="debrief-stat">
+            <div class="debrief-stat-val" id="db-rounds">—</div>
+            <div class="debrief-stat-label">ROUNDS</div>
+          </div>
+          <div class="debrief-stat">
+            <div class="debrief-stat-val" id="db-eliminated">—</div>
+            <div class="debrief-stat-label" id="db-eliminated-label">ELIMINATED</div>
+          </div>
+        </div>
+        <div id="debrief-fallen" class="debrief-fallen"></div>
+      </div>
+      <div class="debrief-panel">
+        <div class="debrief-panel-label">WHAT HAPPENED</div>
+        <div id="debrief-infographic"></div>
+      </div>
     </div>
-    <div class="debrief-stat">
-      <div class="debrief-stat-val" id="db-eliminated">—</div>
-      <div class="debrief-stat-label">ELIMINATED</div>
-    </div>
+    <div id="debrief-hero-card" class="debrief-hero-card"></div>
+    <div id="debrief-epitaph"></div>
+    <div id="debrief-history" class="debrief-history"></div>
+    <div id="debrief-legacy" class="debrief-legacy"></div>
+    <button id="back-btn">← RETURN TO MAP</button>
   </div>
-  <div id="debrief-epitaph"></div>
-  <div id="debrief-history" class="debrief-history"></div>
-  <div id="debrief-legacy" class="debrief-legacy"></div>
-  <button id="back-btn">← RETURN TO MAP</button>
 </div>
 <!-- ── CAMPAIGN SCREENS ────────────────────────────────────── -->
 <div id="campaign-screen" class="screen hidden">
@@ -1154,7 +1545,7 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   </div>
   <div id="campaign-battles-list"></div>
   <div class="campaign-footer">
-    <button class="btn-secondary" onclick="showScreen('screen-select')">← Back</button>
+    <button class="btn-secondary" onclick="showBattleSelect()">← Back</button>
     <button class="btn-primary" id="campaign-start-btn" onclick="continueCampaign()">BEGIN CAMPAIGN</button>
   </div>
 </div>
@@ -1185,7 +1576,7 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
       Every 26th of July, India remembers.
     </div>
     <div class="complete-footer">
-      <button class="btn-secondary" onclick="showScreen('screen-select')">Return to Battles</button>
+      <button class="btn-secondary" onclick="showBattleSelect()">Return to Battles</button>
       <button class="btn-primary" onclick="resetCampaign(); showScreen('campaign-screen')">Play Again</button>
     </div>
   </div>
@@ -1194,6 +1585,7 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
 <canvas id="c"></canvas>
 <div id="panel" class="hidden">
   <div id="panel-accent-bar" class="panel-accent-bar"></div>
+  <button id="panel-toggle" type="button" aria-label="Collapse panel">▾</button>
   <div class="panel-header">
     <div class="panel-title">REGIMENT</div>
     <div class="panel-battle" id="panel-battle-label">· · ·</div>
@@ -1202,6 +1594,9 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
     <div class="phase-dot" id="phase-dot"></div>
     <div id="phase-display">YOUR TURN</div>
     <div id="round-display">R1</div>
+  </div>
+  <div id="mobile-dock-summary" class="mobile-dock-summary">
+    <span id="mobile-dock-unit">Tap map to select</span>
   </div>
   <div class="panel-unit">
     <div id="unit-info"><div class="unit-placeholder">SELECT A UNIT</div></div>
@@ -1231,6 +1626,14 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
 <div id="cam-compass">
   <div class="cc-arrow" id="cc-arrow">↖</div>
   <div class="cc-keys">Q · E</div>
+</div>
+<button id="map-tools-btn" class="map-tools-btn hidden" type="button" aria-label="Map controls" title="Map controls">⊞</button>
+<div id="map-controls">
+  <button id="cam-rotate-l" class="map-ctrl-btn" type="button" title="Rotate left">↺</button>
+  <button id="cam-rotate-r" class="map-ctrl-btn" type="button" title="Rotate right">↻</button>
+  <button id="cam-zoom-in" class="map-ctrl-btn" type="button" title="Zoom in">+</button>
+  <button id="cam-zoom-out" class="map-ctrl-btn" type="button" title="Zoom out">−</button>
+  <button id="cam-fit" class="map-ctrl-btn" type="button" title="Reset view">⌂</button>
 </div>
 <div id="quick-actions">
   <button id="theme-toggle-btn" class="quick-action-btn" title="Toggle theme">
@@ -1295,6 +1698,7 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
 <script type="module">
 import * as THREE from 'three';
 import { BATTLE_DATA, BATTLES } from './battles/index.js';
+import { DEBRIEF_DATA } from './battles/debrief-data.js';
 
 // Settings — persisted to localStorage
 const gameSettings = { musicOn:true, musicVol:35, animSpeed:1.0, showDmg:true, theme:'dark', autoPlay:false };
@@ -1462,15 +1866,93 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a14);
 scene.fog = new THREE.FogExp2(0x0a0a14, 0.022);
 
-const FRUSTUM = 11;
+const FRUSTUM_BASE = 11;
 let aspect = window.innerWidth / window.innerHeight;
-const camera = new THREE.OrthographicCamera(-FRUSTUM*aspect, FRUSTUM*aspect, FRUSTUM, -FRUSTUM, 0.1, 200);
+let cameraZoom = 1.0;
+const camera = new THREE.OrthographicCamera(-FRUSTUM_BASE*aspect, FRUSTUM_BASE*aspect, FRUSTUM_BASE, -FRUSTUM_BASE, 0.1, 200);
 
 const cameraTarget = new THREE.Vector3(9.5, 1, 6.75);
+const CAMERA_DEFAULT = { x: 9.5, z: 6.75, angle: Math.PI / 4, zoom: 1.0 };
 const CAMERA_LIMITS = { minX: 4.5, maxX: 14.5, minZ: 3.5, maxZ: 10.5 };
-const CAM_RADIUS = 12 * Math.SQRT2; // orbit radius in xz
+const CAM_RADIUS = 12 * Math.SQRT2;
 const CAM_Y = 13;
-let cameraAngle = Math.PI / 4; // 45° = SE view (default)
+let cameraAngle = CAMERA_DEFAULT.angle;
+
+function isMobileView(){ return window.matchMedia('(max-width: 700px)').matches; }
+function tapThreshold(){ return isMobileView() ? 14 : 8; }
+
+function updateCameraProjection(){
+  const f = FRUSTUM_BASE / cameraZoom;
+  camera.left = -f * aspect;
+  camera.right = f * aspect;
+  camera.top = f;
+  camera.bottom = -f;
+  camera.updateProjectionMatrix();
+}
+function setCameraZoom(z){
+  cameraZoom = Math.max(0.7, Math.min(1.75, z));
+  updateCameraProjection();
+}
+function resetCameraView(){
+  cameraTarget.set(CAMERA_DEFAULT.x, 1, CAMERA_DEFAULT.z);
+  cameraAngle = CAMERA_DEFAULT.angle;
+  cameraZoom = (isMobileView() && document.body.classList.contains('mobile-battle'))
+    ? 1.48 : CAMERA_DEFAULT.zoom;
+  updateCameraPosition();
+  updateCameraProjection();
+  updateCompass();
+}
+function setMobileBattleMode(on){
+  const active = on && isMobileView();
+  document.body.classList.toggle('mobile-battle', active);
+  const toolsBtn = document.getElementById('map-tools-btn');
+  if(toolsBtn) toolsBtn.classList.toggle('hidden', !active);
+  if(!active) setMapToolsOpen(false);
+}
+function setMapToolsOpen(open){
+  document.body.classList.toggle('map-tools-open', open);
+  const el = document.getElementById('map-controls');
+  if(el) el.classList.toggle('visible', open && isMobileView());
+  const btn = document.getElementById('map-tools-btn');
+  if(btn) btn.textContent = open ? '✕' : '⊞';
+}
+function setMapControlsVisible(show){
+  if(document.body.classList.contains('mobile-battle')){
+    if(!show) setMapToolsOpen(false);
+    return;
+  }
+  const el = document.getElementById('map-controls');
+  if(!el) return;
+  el.classList.toggle('visible', show && isMobileView());
+}
+function setPanelCollapsed(collapsed){
+  const panel = document.getElementById('panel');
+  if(panel) panel.classList.toggle('panel-collapsed', collapsed);
+  document.body.classList.toggle('panel-collapsed', collapsed);
+  const btn = document.getElementById('panel-toggle');
+  if(btn) btn.textContent = collapsed ? '▴' : '▾';
+  if(collapsed && document.body.classList.contains('mobile-battle')) setMapToolsOpen(false);
+}
+function updateMobileDock(){
+  const dock = document.getElementById('mobile-dock-unit');
+  if(!dock || !document.body.classList.contains('mobile-battle')) return;
+  const { selected, phase, round, waveIndex, units } = gameState;
+  const ia = units.filter(u=>u.alive&&u.side==='ind').length;
+  const pa = units.filter(u=>u.alive&&u.side==='pla').length;
+  const wc = activeBattleData?.winCondition||{type:'waves'};
+  const roundSuffix = wc.type==='rounds'?`/${wc.n}`:(PLA_WAVES.length>0?` W${waveIndex}`:'');
+  if(selected){
+    const short = selected.name.split(' ').slice(-2).join(' ') || selected.name;
+    dock.textContent = short;
+    dock.style.color = '#c8b878';
+  } else {
+    const isp = phase === 'player_turn';
+    dock.textContent = isp
+      ? `R${round}${roundSuffix} · ▲${ia}▼${pa}`
+      : `Enemy · R${round}${roundSuffix}`;
+    dock.style.color = '#8a9a8a';
+  }
+}
 
 function clampCameraTarget(){
   cameraTarget.x = Math.max(CAMERA_LIMITS.minX, Math.min(CAMERA_LIMITS.maxX, cameraTarget.x));
@@ -1497,7 +1979,8 @@ function panCameraByScreenDelta(dx,dy){
     cameraTarget.z - camera.position.z
   ).normalize();
   const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0,1,0)).normalize();
-  const worldUnitsPerPixel = (FRUSTUM * 2) / Math.max(window.innerHeight, 1);
+  const f = FRUSTUM_BASE / cameraZoom;
+  const worldUnitsPerPixel = (f * 2) / Math.max(window.innerHeight, 1);
   cameraTarget.addScaledVector(right, -dx * worldUnitsPerPixel);
   cameraTarget.addScaledVector(forward, -dy * worldUnitsPerPixel * 0.9);
   updateCameraPosition();
@@ -1509,6 +1992,7 @@ function updateCompass(){
   if(el) el.textContent=arrows[idx];
 }
 updateCameraPosition();
+updateCameraProjection();
 
 scene.add(new THREE.AmbientLight(0x334466, 0.9));
 const sun = new THREE.DirectionalLight(0xffd4a0, 1.3);
@@ -1520,8 +2004,7 @@ scene.add(sun);
 
 window.addEventListener('resize', () => {
   aspect = window.innerWidth/window.innerHeight;
-  camera.left=-FRUSTUM*aspect; camera.right=FRUSTUM*aspect;
-  camera.updateProjectionMatrix();
+  updateCameraProjection();
   renderer.setSize(window.innerWidth,window.innerHeight);
 });
 
@@ -2516,7 +2999,14 @@ function buildUnits(list) {
 }
 
 // Game state
-const gameState={screen:'select',phase:'',units:[],selected:null,moveable:[],attackable:[],round:1,waveIndex:0,animating:false,log:[],casualties:{ind:0,pla:0},lastAction:null,autoPlaying:false};
+const gameState={screen:'select',phase:'',units:[],selected:null,moveable:[],attackable:[],round:1,waveIndex:0,animating:false,log:[],casualties:{ind:0,pla:0},fallenNames:[],lastAction:null,autoPlaying:false};
+
+function recordCasualty(unit){
+  gameState.casualties[unit.side]++;
+  if(unit.side==='ind' && unit.name){
+    if(!gameState.fallenNames.includes(unit.name)) gameState.fallenNames.push(unit.name);
+  }
+}
 
 // Highlights
 let highlightMeshes=[];
@@ -2611,8 +3101,8 @@ function doCombat(atk,def){
   // Large hit morale damage
   if(dmg>def.maxHp*0.5){def.morale=Math.max(0,(def.morale!=null?def.morale:100)-20);updateMoraleRing(def);}
   def.hp-=dmg; atk.hp-=ret;
-  if(def.hp<=0){def.alive=false;gameState.casualties[def.side]++;applyMoraleDamage(def,15);}
-  if(atk.hp<=0){atk.alive=false;gameState.casualties[atk.side]++;applyMoraleDamage(atk,15);}
+  if(def.hp<=0){def.alive=false;recordCasualty(def);applyMoraleDamage(def,15);}
+  if(atk.hp<=0){atk.alive=false;recordCasualty(atk);applyMoraleDamage(atk,15);}
   // covering fire retaliation
   if(atk.side==='pla'&&def.side==='ind'&&atk.alive){
     const defAx=toAxial(def.col,def.row);
@@ -2621,7 +3111,7 @@ function doCombat(atk,def){
       if(axDist(defAx.q,defAx.r,aAx.q,aAx.r)<=1){
         const rDmg=Math.max(0,ally.atk-(atk._defBonus||0));
         atk.hp=Math.max(0,atk.hp-rDmg);
-        if(atk.hp<=0){atk.hp=0;atk.alive=false;gameState.casualties[atk.side]++;applyMoraleDamage(atk,15);}
+        if(atk.hp<=0){atk.hp=0;atk.alive=false;recordCasualty(atk);applyMoraleDamage(atk,15);}
         showNarrative(ally.name.split(' ').pop()+' returns fire! ('+rDmg+' dmg)');
       }
     });
@@ -2914,7 +3404,7 @@ function nextRound(){
   const ev=activeBattleData?.roundEvents?.[gameState.round];
   if(ev?.type==='airstrike'){
     const pla=gameState.units.filter(u=>u.alive&&u.side==='pla');
-    pla.forEach(u=>{u.hp=Math.max(0,u.hp-ev.dmg);if(u.hp<=0){u.alive=false;gameState.casualties.pla++;if(unitGroupMap.has(u))removeUnitGroup(u);}else if(unitGroupMap.has(u))updateHpBar(unitGroupMap.get(u));});
+    pla.forEach(u=>{u.hp=Math.max(0,u.hp-ev.dmg);if(u.hp<=0){u.alive=false;recordCasualty(u);if(unitGroupMap.has(u))removeUnitGroup(u);}else if(unitGroupMap.has(u))updateHpBar(unitGroupMap.get(u));});
     setTimeout(()=>showNarrative(ev.msg),500);
     const flash=document.createElement('div');
     flash.style.cssText='position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:400;transition:opacity 0.15s';
@@ -2942,6 +3432,15 @@ function doEndTurn(){
 // Input
 const raycaster=new THREE.Raycaster(); const mouse=new THREE.Vector2();
 const pointerState = { active:false, id:null, startX:0, startY:0, lastX:0, lastY:0, moved:false };
+const activePointers = new Map();
+let pinchStartDist = 0;
+let pinchStartZoom = 1;
+
+function pointerDistance(){
+  const pts = [...activePointers.values()];
+  if(pts.length < 2) return 0;
+  return Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+}
 function handleCanvasTap(clientX,clientY){
   if(gameState.screen!=='battle'||gameState.phase!=='player_turn'||gameState.animating) return;
   const rect=canvas.getBoundingClientRect();
@@ -2957,39 +3456,74 @@ function handleCanvasTap(clientX,clientY){
 }
 canvas.addEventListener('pointerdown',e=>{
   if(gameState.screen!=='battle') return;
-  pointerState.active = true;
-  pointerState.id = e.pointerId;
-  pointerState.startX = pointerState.lastX = e.clientX;
-  pointerState.startY = pointerState.lastY = e.clientY;
-  pointerState.moved = false;
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if(activePointers.size === 1){
+    pointerState.active = true;
+    pointerState.id = e.pointerId;
+    pointerState.startX = pointerState.lastX = e.clientX;
+    pointerState.startY = pointerState.lastY = e.clientY;
+    pointerState.moved = false;
+  }
+  if(activePointers.size === 2){
+    pinchStartDist = pointerDistance();
+    pinchStartZoom = cameraZoom;
+    pointerState.moved = true;
+  }
   canvas.setPointerCapture?.(e.pointerId);
 });
 canvas.addEventListener('pointermove',e=>{
-  if(!pointerState.active || pointerState.id!==e.pointerId || gameState.screen!=='battle') return;
+  if(gameState.screen!=='battle' || !activePointers.has(e.pointerId)) return;
+  const prev = activePointers.get(e.pointerId);
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if(activePointers.size >= 2){
+    const dist = pointerDistance();
+    if(pinchStartDist > 0){
+      const scale = dist / pinchStartDist;
+      setCameraZoom(pinchStartZoom * scale);
+    }
+    pointerState.moved = true;
+    return;
+  }
+
+  if(!pointerState.active || pointerState.id!==e.pointerId) return;
   const dx = e.clientX - pointerState.lastX;
   const dy = e.clientY - pointerState.lastY;
   const totalDx = e.clientX - pointerState.startX;
   const totalDy = e.clientY - pointerState.startY;
-  if(Math.hypot(totalDx,totalDy) > 8){
+  const thresh = tapThreshold();
+  if(Math.hypot(totalDx,totalDy) > thresh){
     pointerState.moved = true;
     panCameraByScreenDelta(dx,dy);
   }
   pointerState.lastX = e.clientX;
   pointerState.lastY = e.clientY;
 });
+function endPointer(e){
+  activePointers.delete(e.pointerId);
+  if(activePointers.size < 2) pinchStartDist = 0;
+  if(activePointers.size === 1){
+    const remaining = [...activePointers.entries()][0];
+    pointerState.id = remaining[0];
+    pointerState.startX = pointerState.lastX = remaining[1].x;
+    pointerState.startY = pointerState.lastY = remaining[1].y;
+    pointerState.moved = false;
+  }
+  if(!activePointers.size){
+    pointerState.active = false;
+    pointerState.id = null;
+  }
+}
 canvas.addEventListener('pointerup',e=>{
-  if(!pointerState.active || pointerState.id!==e.pointerId) return;
-  const wasTap = !pointerState.moved && Math.hypot(e.clientX-pointerState.startX,e.clientY-pointerState.startY) <= 8;
-  pointerState.active = false;
-  pointerState.id = null;
+  if(!activePointers.has(e.pointerId)) return;
+  const wasTap = activePointers.size === 1 && !pointerState.moved &&
+    Math.hypot(e.clientX-pointerState.startX,e.clientY-pointerState.startY) <= tapThreshold();
+  endPointer(e);
   canvas.releasePointerCapture?.(e.pointerId);
   if(wasTap) handleCanvasTap(e.clientX,e.clientY);
 });
 canvas.addEventListener('pointercancel',e=>{
-  if(pointerState.id===e.pointerId){
-    pointerState.active = false;
-    pointerState.id = null;
-  }
+  if(activePointers.has(e.pointerId)) endPointer(e);
 });
 function handleTileClick(col,row){
   const{selected,moveable,attackable}=gameState; const clicked=unitAt(col,row);
@@ -3012,6 +3546,26 @@ document.getElementById('end-turn-btn').addEventListener('click',doEndTurn);
 document.getElementById('auto-pause-btn').addEventListener('click', ()=>{
   gameState.autoPlaying = false;
   updatePanel();
+});
+document.getElementById('panel-toggle')?.addEventListener('click',e=>{
+  e.stopPropagation();
+  const panel = document.getElementById('panel');
+  setPanelCollapsed(!panel?.classList.contains('panel-collapsed'));
+});
+document.getElementById('cam-rotate-l')?.addEventListener('click',()=>rotateCamera(-1));
+document.getElementById('cam-rotate-r')?.addEventListener('click',()=>rotateCamera(+1));
+document.getElementById('cam-zoom-in')?.addEventListener('click',()=>setCameraZoom(cameraZoom * 1.15));
+document.getElementById('cam-zoom-out')?.addEventListener('click',()=>setCameraZoom(cameraZoom / 1.15));
+document.getElementById('cam-fit')?.addEventListener('click',()=>resetCameraView());
+document.getElementById('map-tools-btn')?.addEventListener('click',e=>{
+  e.stopPropagation();
+  setMapToolsOpen(!document.body.classList.contains('map-tools-open'));
+});
+window.addEventListener('resize',()=>{
+  if(gameState.screen==='battle'){
+    setMobileBattleMode(true);
+    if(!document.body.classList.contains('mobile-battle')) setMapControlsVisible(isMobileView());
+  }
 });
 
 // UI
@@ -3111,6 +3665,7 @@ function updatePanel(){
     const le=document.getElementById('combat-log');
     le.innerHTML=log.slice(0,4).map((l,i)=>`<div style="color:${i===0?'#9aaa9a':'#6a7a6a'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l}</div>`).join('');
   }
+  updateMobileDock();
 }
 
 let _nt=null;
@@ -3181,7 +3736,7 @@ function startBattle(name){
     const g=createUnitMesh(unit); _addMoraleRing(g); placeUnitGroup(g,unit.col,unit.row);
     scene.add(g); unitGroups.push(g); unitGroupMap.set(unit,g);
   });
-  gameState.round=1;gameState.waveIndex=0;gameState.selected=null;gameState.moveable=[];gameState.attackable=[];gameState.animating=false;gameState.log=[];gameState.casualties={ind:0,pla:0};gameState.lastAction=null;gameState.autoPlaying=gameSettings.autoPlay;
+  gameState.round=1;gameState.waveIndex=0;gameState.selected=null;gameState.moveable=[];gameState.attackable=[];gameState.animating=false;gameState.log=[];gameState.casualties={ind:0,pla:0};gameState.fallenNames=[];gameState.lastAction=null;gameState.autoPlaying=gameSettings.autoPlay;
   buildStructures();
   if(PLA_WAVES.length>0) spawnWave(gameState.waveIndex++);
   gameState.phase='player_turn';gameState.screen='battle';
@@ -3192,7 +3747,12 @@ function startBattle(name){
   }
   if(activeBattleData.histCards?.[1]) setTimeout(()=>showHistCard(activeBattleData.histCards[1]),1800);
   updatePanel();
+  setMobileBattleMode(true);
+  resetCameraView();
+  setPanelCollapsed(isMobileView());
+  setMapToolsOpen(false);
   updateCompass();
+  updateMobileDock();
 }
 
 // Screen flow
@@ -3200,6 +3760,8 @@ function showScreen(name){
   ['screen-select','screen-regiment','screen-intro','screen-debrief','screen-opening','campaign-screen','campaign-bridge-screen','campaign-complete-screen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
   if(name) document.getElementById(name).classList.remove('hidden');
   document.getElementById('panel').classList.toggle('hidden',name!==null);
+  if(name!==null || gameState.screen!=='battle') setMobileBattleMode(false);
+  else setMobileBattleMode(true);
 }
 const OPENING_CARDS = [
   '"September 1897. A mud-brick signal post.\n10,000 Pashtun warriors."',
@@ -3209,7 +3771,7 @@ const OPENING_CARDS = [
 ];
 
 function showOpeningIfNeeded(){
-  if(sessionStorage.getItem('_introShown')){showScreen('screen-select');return;}
+  if(sessionStorage.getItem('_introShown')){showBattleSelect();return;}
   sessionStorage.setItem('_introShown','1');
   showScreen('screen-opening');
   const cardEl = document.getElementById('opening-card');
@@ -3217,7 +3779,7 @@ function showOpeningIfNeeded(){
   const skipBtn = document.getElementById('opening-skip-btn');
   let cancelled = false;
 
-  function done(){ if(!cancelled){ cancelled=true; showScreen('screen-select'); } }
+  function done(){ if(!cancelled){ cancelled=true; showBattleSelect(); } }
   document.getElementById('opening-begin-btn').addEventListener('click', done);
   skipBtn.addEventListener('click', done);
 
@@ -3252,60 +3814,173 @@ function showOpeningIfNeeded(){
   setTimeout(showCard, 400);
 }
 
+function renderDebriefInfographic(info, color){
+  if(!info) return '<div class="dbi-note">History remembered.</div>';
+  const c = color || '#c8a96e';
+  switch(info.type){
+    case 'odds':
+      return `<div class="dbi-odds">
+        <div><div class="dbi-odds-num" style="color:${c}">${info.indian}</div><div class="dbi-odds-lbl">${info.indianLabel||'INDIAN'}</div></div>
+        <div class="dbi-odds-vs">vs</div>
+        <div><div class="dbi-odds-num" style="color:#8a7060">${info.enemy}</div><div class="dbi-odds-lbl">${info.enemyLabel||'ENEMY'}</div></div>
+      </div>${info.note?`<div class="dbi-note">${info.note}</div>`:''}`;
+    case 'altitude':
+      return `<div class="dbi-alt-bar-wrap">
+        <div><div class="dbi-alt-bar" style="height:40px"><div class="dbi-alt-val">0</div></div><div class="dbi-alt-lbl">BASE</div></div>
+        <div><div class="dbi-alt-bar peak" style="height:90px"><div class="dbi-alt-val">${info.peak}</div></div><div class="dbi-alt-lbl">PEAK</div></div>
+      </div>
+      ${info.detail?`<div class="dbi-note">${info.detail}</div>`:''}
+      ${info.label?`<div class="dbi-note">${info.label}</div>`:''}`;
+    case 'armour':
+      return `<div class="dbi-armour-num">${info.destroyed}</div>
+        <div class="dbi-armour-lbl">${info.label}</div>
+        ${info.sub?`<div class="dbi-armour-sub">${info.sub}</div>`:''}`;
+    case 'intercept':
+      return (info.items||[]).map(row=>`
+        <div class="dbi-intercept-row">
+          <span class="dbi-intercept-lbl">${row.label}</span>
+          <span class="dbi-intercept-val">${row.stopped} / ${row.inbound}</span>
+        </div>`).join('') + (info.note?`<div class="dbi-note">${info.note}</div>`:'');
+    case 'charge':
+      return `<div class="dbi-charge-grid">
+        <div><div class="dbi-charge-val">${info.duration}</div><div class="dbi-charge-lbl">TO CAPTURE</div></div>
+        <div><div class="dbi-charge-val">${info.prisoners}</div><div class="dbi-charge-lbl">PRISONERS</div></div>
+        <div><div class="dbi-charge-val">${info.guns}</div><div class="dbi-charge-lbl">GUNS TAKEN</div></div>
+        <div><div class="dbi-charge-lbl" style="margin-top:8px">${info.note||''}</div></div>
+      </div>`;
+    case 'siege':
+      return `<div class="dbi-siege-row">
+        <div><div class="dbi-charge-val">${info.days}</div><div class="dbi-charge-lbl">DAYS HELD</div></div>
+        <div><div class="dbi-charge-val">${info.garrison}</div><div class="dbi-charge-lbl">GARRISON</div></div>
+        <div><div class="dbi-charge-val">${info.enemy}</div><div class="dbi-charge-lbl">JAPANESE</div></div>
+      </div>${info.note?`<div class="dbi-note">${info.note}</div>`:''}`;
+    case 'timeline':
+      return `<div class="dbi-charge-grid">
+        <div><div class="dbi-charge-val">${info.start}</div><div class="dbi-charge-lbl">H-HOUR</div></div>
+        <div><div class="dbi-charge-val">${info.end}</div><div class="dbi-charge-lbl">OBJECTIVE</div></div>
+      </div>
+      ${info.label?`<div class="dbi-note">${info.label}</div>`:''}
+      ${info.detail?`<div class="dbi-note">${info.detail}</div>`:''}`;
+    default:
+      return info.note ? `<div class="dbi-note">${info.note}</div>` : '';
+  }
+}
+
 function showDebrief(result){
   gameState.screen='debrief'; deselect(); closeHistCard(); showScreen('screen-debrief');
   const ia=gameState.casualties.ind;
   const pa=gameState.casualties.pla;
   const bd=activeBattleData||BATTLE_DATA['Rezang La'];
   const isWin=result==='win';
+  const activeBattle=BATTLES.find(b=>b.name===_currentBattleName)||{};
+  const dd=DEBRIEF_DATA[_currentBattleName]||{};
+  const accent=activeBattle.regimentColor||activeBattle.color||'#c8a96e';
+
   const title=isWin?bd.debriefWin:bd.debriefLoss;
   const te=document.getElementById('debrief-title');
-  te.textContent=title; te.style.color=isWin?'#c8a96e':'#cc3333';
-  // Regiment label
-  const activeBattle=BATTLES.find(b=>b.name===_currentBattleName)||{};
+  te.textContent=title; te.style.color=isWin?accent:'#cc3333';
+
+  const insEl=document.getElementById('debrief-insignia');
+  if(insEl){ insEl.innerHTML=''; insEl.appendChild(loadInsigniaImg(activeBattle, 56)); }
+
   const rl=document.getElementById('debrief-regiment-label');
   if(rl) rl.textContent=(activeBattle.regimentFull||activeBattle.regiment||'').toUpperCase();
-  // Stat blocks
+
   const fallenEl=document.getElementById('db-fallen');
   if(fallenEl){ fallenEl.textContent=ia; fallenEl.style.color=ia===0?'#4aaa58':ia>=IND_STARTS.length?'#cc3333':'#ddaa44'; }
   const roundsEl=document.getElementById('db-rounds');
   if(roundsEl){ roundsEl.textContent=gameState.round; roundsEl.style.color='#9a9a9a'; }
   const elimEl=document.getElementById('db-eliminated');
-  if(elimEl){ elimEl.textContent=pa; elimEl.style.color='#c8a96e'; }
-  // Epitaph
+  if(elimEl){ elimEl.textContent=pa; elimEl.style.color=accent; }
+  const elimLbl=document.getElementById('db-eliminated-label');
+  if(elimLbl) elimLbl.textContent=(dd.eliminatedLabel||'ELIMINATED').toUpperCase();
+
+  const fallenBox=document.getElementById('debrief-fallen');
+  if(fallenBox){
+    if(ia===0){
+      fallenBox.innerHTML='<div class="debrief-fallen-clear">All defenders accounted for.</div>';
+    } else if(gameState.fallenNames.length){
+      fallenBox.innerHTML=`<div class="debrief-fallen-label">FALLEN IN YOUR BATTLE</div>`+
+        gameState.fallenNames.map(n=>`<div class="debrief-fallen-name">${n}</div>`).join('');
+    } else {
+      fallenBox.innerHTML=`<div class="debrief-fallen-label">${ia} DEFENDER${ia>1?'S':''} LOST</div>`;
+    }
+  }
+
+  const infoEl=document.getElementById('debrief-infographic');
+  if(infoEl) infoEl.innerHTML=renderDebriefInfographic(dd.infographic, accent);
+
+  const heroEl=document.getElementById('debrief-hero-card');
+  if(heroEl){
+    const h=dd.hero;
+    if(h && isWin){
+      heroEl.style.display='block';
+      heroEl.style.borderColor=accent+'44';
+      heroEl.innerHTML=`
+        ${h.medal?`<div class="debrief-hero-medal">★ ${h.medal.toUpperCase()}</div>`:''}
+        <div class="debrief-hero-name">${h.name}</div>
+        <div class="debrief-hero-rank">${h.rank}</div>
+        <div class="debrief-hero-quote">"${h.quote}"</div>`;
+    } else {
+      heroEl.style.display='none';
+      heroEl.innerHTML='';
+    }
+  }
+
   const epitaphEl=document.getElementById('debrief-epitaph');
-  if(epitaphEl) epitaphEl.textContent=isWin
-    ?'"The position held. The message got through."'
-    :'"In the end, what matters is that they chose to stand."';
-  // History
+  if(epitaphEl){
+    const line=isWin?(dd.epitaphWin||''):(dd.epitaphLoss||'"In the end, what matters is that they chose to stand."');
+    epitaphEl.textContent=line?`"${line.replace(/^"|"$/g,'')}"`:'';
+    epitaphEl.style.display=line?'block':'none';
+  }
+
   const histEl=document.getElementById('debrief-history');
   if(histEl) histEl.textContent=bd.debriefHistory||'';
+
   const legacyEl=document.getElementById('debrief-legacy');
   if(legacyEl){
-    const ab=BATTLES.find(b=>b.name===_currentBattleName)||{};
-    legacyEl.textContent=isWin?(ab.debriefLegacy||''):'';
-    legacyEl.style.display=isWin&&ab.debriefLegacy?'block':'none';
+    legacyEl.textContent=isWin?(activeBattle.debriefLegacy||''):'';
+    legacyEl.style.display=isWin&&activeBattle.debriefLegacy?'block':'none';
   }
 }
-function buildSelectScreen(){
-  const grid=document.getElementById('battle-grid'); grid.innerHTML='';
-  BATTLES.forEach((b,i)=>{
-    const card=document.createElement('div'); card.className='card'+(b.unlocked?' unlocked':' locked'); card.dataset.year=b.year;
-    const chap=`CHAPTER ${['I','II','III','IV','V','VI'][i]||i+1}`;
-    const accentStyle=b.unlocked?`background:linear-gradient(90deg,${b.color},transparent)`:`background:#1e1e2e`;
-    const TERRAIN_ICONS = {
-      'Saragarhi': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+const BATTLE_TERRAIN_ICONS = {
+  'Saragarhi': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M6,8 L6,4 L10,4 L10,8 L14,8 L14,4 L18,4 L18,8 L22,8 L22,4 L26,4 L26,8 L30,8 L30,4 L34,4 L34,8 L38,8 L38,4 L42,4 L42,8 L46,8 L46,4 L50,4 L50,8 L54,8" stroke="${c}" stroke-width="1.2" stroke-linecap="round"/>
     <rect x="6" y="8" width="48" height="20" stroke="${c}" stroke-width="1" opacity="0.55"/>
     <path d="M24,28 L24,17 Q30,12 36,17 L36,28" stroke="${c}" stroke-width="1.2"/>
   </svg>`,
-      'Rezang La': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  'Haifa': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="8" y1="28" x2="52" y2="10" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="52" y1="28" x2="8" y2="10" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="30" cy="19" r="4" stroke="${c}" stroke-width="1.2"/>
+    <path d="M30,8 L34,15 L30,12 L26,15 Z" fill="${c}" opacity="0.7"/>
+  </svg>`,
+  'Kohima': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="14" y="12" width="32" height="18" stroke="${c}" stroke-width="1.2" rx="1"/>
+    <line x1="14" y1="21" x2="46" y2="21" stroke="${c}" stroke-width="0.8" opacity="0.6"/>
+    <line x1="30" y1="12" x2="30" y2="30" stroke="${c}" stroke-width="0.8" opacity="0.6"/>
+    <path d="M4,32 L18,14 L30,22 L42,8 L56,28" stroke="${c}" stroke-width="1" opacity="0.35"/>
+  </svg>`,
+  'Rezang La': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M4,32 L18,10 L26,18 L34,6 L50,32" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>
     <path d="M15,14 L18,10 L21,14" stroke="${c}" stroke-width="1" opacity="0.7"/>
     <path d="M31,9 L34,6 L37,9" stroke="${c}" stroke-width="1" opacity="0.7"/>
     <line x1="4" y1="32" x2="56" y2="32" stroke="${c}" stroke-width="0.5" opacity="0.3"/>
   </svg>`,
-      'Longewala': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  'Asal Uttar': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="18" y="16" width="24" height="10" rx="2" stroke="${c}" stroke-width="1.2"/>
+    <line x1="42" y1="21" x2="54" y2="21" stroke="${c}" stroke-width="1.5"/>
+    <circle cx="22" cy="28" r="3" stroke="${c}" stroke-width="1"/><circle cx="38" cy="28" r="3" stroke="${c}" stroke-width="1"/>
+    <path d="M2,30 Q20,24 38,28 Q50,30 58,26" stroke="${c}" stroke-width="0.8" opacity="0.4"/>
+  </svg>`,
+  'Dograi': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="10" width="20" height="18" stroke="${c}" stroke-width="1.2" rx="1"/>
+    <line x1="30" y1="12" x2="30" y2="26" stroke="${c}" stroke-width="1.5"/>
+    <line x1="30" y1="14" x2="36" y2="20" stroke="${c}" stroke-width="1.5"/>
+    <circle cx="30" cy="8" r="2" fill="${c}" opacity="0.5"/>
+  </svg>`,
+  'Longewala': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M2,28 Q14,22 26,26 Q38,20 58,24" stroke="${c}" stroke-width="0.8" opacity="0.45"/>
     <rect x="16" y="14" width="22" height="8" rx="1" stroke="${c}" stroke-width="1.2"/>
     <rect x="22" y="10" width="10" height="6" rx="1" stroke="${c}" stroke-width="1.2"/>
@@ -3314,19 +3989,33 @@ function buildSelectScreen(){
     <circle cx="29" cy="22" r="2.5" stroke="${c}" stroke-width="1"/>
     <circle cx="38" cy="22" r="2.5" stroke="${c}" stroke-width="1"/>
   </svg>`,
-      'Tololing': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  'Tololing': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M2,34 L10,28 L18,20 L26,12 L30,6 L34,12 L42,20 L50,28 L58,32" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>
     <path d="M27,9 L30,4 L33,9" stroke="${c}" stroke-width="1" fill="${c}" opacity="0.9"/>
     <path d="M2,34 L26,12" stroke="${c}" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
   </svg>`,
-      'Siachen': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  'Siachen': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M4,32 L22,10 L30,4 L38,10 L56,32" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>
     <path d="M22,10 L30,20 L38,10" stroke="${c}" stroke-width="0.8" opacity="0.6"/>
     <line x1="30" y1="4" x2="30" y2="20" stroke="${c}" stroke-width="0.8" opacity="0.6"/>
     <line x1="18" y1="16" x2="42" y2="16" stroke="${c}" stroke-width="0.4" opacity="0.35"/>
     <line x1="14" y1="22" x2="46" y2="22" stroke="${c}" stroke-width="0.4" opacity="0.25"/>
   </svg>`,
-      'Operation Sindoor': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  'Point 5140': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4,32 L20,12 L30,6 L40,12 L56,32" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>
+    <text x="30" y="24" text-anchor="middle" font-size="9" fill="${c}" font-family="monospace">5140</text>
+  </svg>`,
+  'Khalubar': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30,6 L48,30 L12,30 Z" stroke="${c}" stroke-width="1.2" fill="none"/>
+    <line x1="20" y1="22" x2="40" y2="22" stroke="${c}" stroke-width="1"/>
+    <rect x="24" y="14" width="12" height="6" stroke="${c}" stroke-width="1" rx="1"/>
+  </svg>`,
+  'Tiger Hill': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4,32 L16,18 L28,8 L40,14 L56,32" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>
+    <polygon points="28,8 32,16 24,16" fill="${c}" opacity="0.8"/>
+    <line x1="28" y1="8" x2="28" y2="4" stroke="${c}" stroke-width="1"/>
+  </svg>`,
+  'Operation Sindoor': (c)=>`<svg viewBox="0 0 60 36" width="60" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22,22 L30,8 L38,22 Z" stroke="${c}" stroke-width="1.4" stroke-linejoin="round" opacity="0.9"/>
     <line x1="30" y1="8" x2="30" y2="4" stroke="${c}" stroke-width="1.2" stroke-linecap="round"/>
     <line x1="22" y1="22" x2="14" y2="22" stroke="${c}" stroke-width="1.0" stroke-linecap="round" opacity="0.6"/>
@@ -3337,52 +4026,119 @@ function buildSelectScreen(){
     <path d="M56,22 L48,16 L48,22" stroke="${c}" stroke-width="1.0" stroke-linejoin="round" opacity="0.7"/>
     <line x1="4" y1="30" x2="56" y2="30" stroke="${c}" stroke-width="0.8" opacity="0.35"/>
   </svg>`,
-    };
-    const accentEl = document.createElement('div');
-    accentEl.className = 'card-accent';
-    accentEl.style.cssText = accentStyle + ';';
+};
 
-    const iconEl = document.createElement('div');
-    iconEl.className = 'card-icon';
-    const insigniaImg = loadInsigniaImg(b, 48);
-    iconEl.appendChild(insigniaImg);
+const ERA_GLYPHS = {
+  frontier: (c)=>`<svg viewBox="0 0 48 48" width="48" height="48" fill="none"><path d="M8,36 L8,20 L16,20 L16,28 L32,28 L32,20 L40,20 L40,36" stroke="${c}" stroke-width="1.5"/><path d="M16,20 L24,8 L32,20" stroke="${c}" stroke-width="1.2"/></svg>`,
+  wwii:     (c)=>`<svg viewBox="0 0 48 48" width="48" height="48" fill="none"><rect x="10" y="14" width="28" height="20" stroke="${c}" stroke-width="1.5"/><line x1="10" y1="24" x2="38" y2="24" stroke="${c}" stroke-width="1"/><line x1="24" y1="14" x2="24" y2="34" stroke="${c}" stroke-width="1"/></svg>`,
+  '1962':   (c)=>`<svg viewBox="0 0 48 48" width="48" height="48" fill="none"><path d="M4,40 L16,16 L24,24 L32,8 L44,40" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+  '1965':   (c)=>`<svg viewBox="0 0 48 48" width="48" height="48" fill="none"><rect x="12" y="22" width="24" height="10" rx="2" stroke="${c}" stroke-width="1.5"/><line x1="36" y1="27" x2="44" y2="27" stroke="${c}" stroke-width="2"/><line x1="24" y1="14" x2="24" y2="22" stroke="${c}" stroke-width="2"/></svg>`,
+  '1971':   (c)=>`<svg viewBox="0 0 48 48" width="48" height="48" fill="none"><path d="M4,36 Q24,28 44,32" stroke="${c}" stroke-width="1"/><rect x="16" y="18" width="16" height="8" stroke="${c}" stroke-width="1.2"/><circle cx="18" cy="32" r="3" stroke="${c}"/><circle cx="30" cy="32" r="3" stroke="${c}"/></svg>`,
+  peaks:    (c)=>`<svg viewBox="0 0 48 48" width="48" height="48" fill="none"><path d="M4,40 L14,22 L24,30 L34,10 L44,40" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/><path d="M32,12 L34,8 L36,12" fill="${c}"/></svg>`,
+  modern:   (c)=>`<svg viewBox="0 0 48 48" width="48" height="48" fill="none"><path d="M24,8 L28,22 L24,26 L20,22 Z" stroke="${c}" stroke-width="1.4"/><ellipse cx="24" cy="34" rx="16" ry="6" stroke="${c}" stroke-width="1.2"/><line x1="24" y1="26" x2="24" y2="30" stroke="${c}"/></svg>`,
+};
 
-    const bodyEl = document.createElement('div');
-    bodyEl.className = 'card-body';
-    bodyEl.innerHTML = `<div class="card-chapter">${chap}</div><div class="card-title" style="color:${b.unlocked?b.color:'#2a2a38'};">${b.name.toUpperCase()}</div><div class="card-meta">${b.year} · ${b.regiment}</div><div class="card-sub">${b.sub}</div><button class="card-btn" style="background:${b.unlocked?b.color:'#1c1c24'};color:${b.unlocked?'#fff':'#2a2a3a'};">${b.unlocked?'▶ PLAY':'COMING SOON'}</button>`;
+function battleChapterIndex(battleName){
+  return BATTLES.findIndex(b=>b.name===battleName);
+}
 
-    card.appendChild(accentEl);
-    card.appendChild(iconEl);
-    card.appendChild(bodyEl);
+function buildBattleCard(battle){
+  const i=battleChapterIndex(battle.name);
+  const chap=`CHAPTER ${['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII'][i]||i+1}`;
+  const c=battle.color||'#c8a96e';
+  const terrainFn=BATTLE_TERRAIN_ICONS[battle.name];
+  const terrainHtml=terrainFn?`<div class="battle-card-terrain">${terrainFn(c)}</div>`:'';
 
-    if(b.unlocked) card.addEventListener('click',()=>showRegiment(b));
-    grid.appendChild(card);
+  const card=document.createElement('div');
+  card.className='battle-card';
+  card.innerHTML=`
+    <div class="battle-card-accent" style="background:linear-gradient(90deg,${c},transparent)"></div>
+    <div class="battle-card-visual">
+      <div class="battle-card-icon"></div>
+      ${terrainHtml}
+    </div>
+    <div class="battle-card-body">
+      <div class="battle-card-chapter">${chap}</div>
+      <div class="battle-card-title" style="color:${c}">${battle.name.toUpperCase()}</div>
+      <div class="battle-card-meta">${battle.year} · ${battle.regiment}</div>
+      <div class="battle-card-sub">${battle.sub}</div>
+      <button class="battle-card-btn" style="background:${c}">▶ PLAY</button>
+    </div>`;
+  card.querySelector('.battle-card-icon').appendChild(loadInsigniaImg(battle, 48));
+  card.addEventListener('click',()=>{ if(battle.unlocked) showRegiment(battle); });
+  return card;
+}
+
+const ERAS = [
+  { id:'frontier', name:'THE FRONTIER', years:'1897–1918', color:'#c8a030', battles:['Saragarhi','Haifa'], blurb:'Northwest frontier and the last cavalry charges of the Great War.' },
+  { id:'wwii',     name:'WORLD WAR II', years:'1944', color:'#4a8a30', battles:['Kohima'], blurb:'The tennis court siege. The Japanese never passed.' },
+  { id:'1962',     name:'1962', years:'LADAKH', color:'#3a7a48', battles:['Rezang La'], blurb:'−20°C. No artillery. No retreat.' },
+  { id:'1965',     name:'1965', years:'PUNJAB', color:'#b89020', battles:['Asal Uttar','Dograi'], blurb:'Pattons in the paddy. Bayonets in the dark.' },
+  { id:'1971',     name:'1971', years:'THAR DESERT', color:'#5880c0', battles:['Longewala'], blurb:'120 men. 45 tanks. Hold until dawn.' },
+  { id:'peaks',    name:'THE PEAKS', years:'1987–1999', color:'#c8a030', battles:['Siachen','Tololing','Point 5140','Khalubar','Tiger Hill'], blurb:'Siachen to Kargil. The highest battlefields on earth.', campaign:true },
+  { id:'modern',   name:'MODERN', years:'2025', color:'#3a7ab8', battles:['Operation Sindoor'], blurb:'Drones, missiles, and the defence of the skies.' },
+];
+
+function showSelectHome(){
+  document.getElementById('select-home')?.classList.remove('hidden');
+  document.getElementById('select-era')?.classList.remove('visible');
+}
+
+function showEraDetail(eraId){
+  const era=ERAS.find(e=>e.id===eraId);
+  if(!era) return;
+  document.getElementById('select-home')?.classList.add('hidden');
+  const eraView=document.getElementById('select-era');
+  eraView?.classList.add('visible');
+  document.getElementById('era-detail-years').textContent=era.years;
+  const nameEl=document.getElementById('era-detail-name');
+  nameEl.textContent=era.name;
+  nameEl.style.color=era.color;
+  document.getElementById('era-detail-blurb').textContent=era.blurb;
+
+  const list=document.getElementById('era-battle-list');
+  list.innerHTML='';
+  era.battles.forEach(bName=>{
+    const b=BATTLES.find(x=>x.name===bName);
+    if(!b) return;
+    list.appendChild(buildBattleCard(b));
   });
-  // Wire up filter chips
-  let activeFilter='all';
-  function applyFilters(){
-    const cards=document.querySelectorAll('#battle-grid .card');
-    cards.forEach(c=>{
-      const yr=parseInt(c.dataset.year);
-      let show=false;
-      if(activeFilter==='all')    show=true;
-      else if(activeFilter==='pre')    show=yr<1947;
-      else if(activeFilter==='1962')   show=yr===1962;
-      else if(activeFilter==='1965')   show=yr===1965;
-      else if(activeFilter==='1971')   show=yr===1971;
-      else if(activeFilter==='kargil') show=yr===1999||yr===1987;
-      else if(activeFilter==='modern') show=yr>=2020;
-      c.style.display=show?'':'none';
-    });
+
+  if(era.campaign){
+    const cta=document.createElement('div');
+    cta.className='era-campaign-cta';
+    cta.innerHTML=`<div class="era-campaign-cta-title">▶ VIJAY DIWAS CAMPAIGN</div><div class="era-campaign-cta-sub">Play all 5 Kargil battles in sequence</div>`;
+    cta.addEventListener('click', startCampaign);
+    list.appendChild(cta);
   }
-  document.querySelectorAll('#battle-filters .filter-chip[data-filter]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('#battle-filters .filter-chip[data-filter]').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      activeFilter=btn.dataset.filter;
-      applyFilters();
+}
+
+function buildSelectScreen(){
+  const grid=document.getElementById('era-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  ERAS.forEach(era=>{
+    const tile=document.createElement('div');
+    tile.className='era-tile'+(era.campaign?' peaks':'');
+    const glyphFn=ERA_GLYPHS[era.id];
+    const insigniaRow=document.createElement('div');
+    insigniaRow.className='era-tile-insignias';
+    era.battles.slice(0,4).forEach(bName=>{
+      const b=BATTLES.find(x=>x.name===bName);
+      if(b) insigniaRow.appendChild(loadInsigniaImg(b, 26));
     });
+    tile.innerHTML=`
+      <div class="era-tile-accent" style="background:linear-gradient(90deg,${era.color},transparent)"></div>
+      <div class="era-tile-years">${era.years}</div>
+      <div class="era-tile-name" style="color:${era.color}">${era.name}</div>
+      <div class="era-tile-count">${era.battles.length} battle${era.battles.length>1?'s':''}</div>
+      ${glyphFn?`<div class="era-tile-glyph">${glyphFn(era.color)}</div>`:''}`;
+    tile.appendChild(insigniaRow);
+    tile.addEventListener('click',()=>showEraDetail(era.id));
+    grid.appendChild(tile);
   });
+  document.getElementById('era-back-btn')?.addEventListener('click', showSelectHome);
+  showSelectHome();
 }
 let _currentBattleName = 'Rezang La';
 let _pendingBattle = null;
@@ -3485,6 +4241,23 @@ function showCampaignComplete() {
 function resetCampaign() {
   campaignState = { active: false, currentIndex: 0, completed: [] };
 }
+
+function showBattleSelect(){
+  showScreen('screen-select');
+  showSelectHome();
+}
+
+// Inline onclick handlers need globals — module scope is not window
+Object.assign(window, {
+  startCampaign,
+  continueCampaign,
+  launchCampaignBattle,
+  showCampaignComplete,
+  resetCampaign,
+  showScreen,
+  showBattleSelect,
+});
+
 function showRegiment(battle){
   _pendingBattle = battle;
   const i = BATTLES.findIndex(b=>b.name===battle.name);
@@ -3646,7 +4419,9 @@ document.getElementById('back-btn').addEventListener('click',()=>{
     }
     return;
   }
-  showScreen('screen-select');
+  setMapControlsVisible(false);
+  setPanelCollapsed(false);
+  showBattleSelect();
 });
 
 // Loop
