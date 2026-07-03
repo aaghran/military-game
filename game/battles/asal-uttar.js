@@ -29,12 +29,12 @@ export default {
     '5,4':{type:'mortar',label:'Mortar Troop', atkMul:2.0,defMul:1.0,rngBonus:2,noRetaliate:true},
   },
   indStarts: [
-    {col:5,row:3,type:'hero',       name:'Lt Col Ardeshir Tarapore',platoon:0,bio:'Poona Horse. Killed in action. Posthumously awarded Param Vir Chakra — India\'s highest wartime honour. His Centurion tank was hit three times; he continued fighting until the fourth hit.'},
-    {col:3,row:3,type:'section_cdr',name:'Capt Daljit Singh',       platoon:9,bio:'3 Cavalry. Western flank, sugarcane ambush. His squadron held the drainage channel against the Patton advance.'},
-    {col:7,row:3,type:'section_cdr',name:'Lt Arun Khetrapal',       platoon:8,bio:'Poona Horse. 21 years old. His tank was on fire; he refused to bail out and continued firing. Param Vir Chakra (posthumous).'},
-    {col:4,row:4,type:'rifleman',   name:'Hav Ram Singh Centurion', platoon:9,bio:'Tank crew, western hide. Centurion 20-pounder at 400 yards — first Patton destroyed at Asal Uttar.'},
-    {col:5,row:4,type:'rifleman',   name:'Gnr Mortar Troop',        platoon:0,bio:'Anti-tank troop. Sited in the sugarcane. The Pattons came into the killing ground one by one.'},
-    {col:6,row:4,type:'rifleman',   name:'Hav Gurbachan Singh',     platoon:8,bio:'Eastern ambush position. His Centurion claimed four Pattons in the first hour.'},
+    {col:5,row:3,type:'hero',       name:'Lt Col Ardeshir Tarapore',platoon:0,bio:'Commanding Officer, Poona Horse. Led from his Centurion tank. Hit three times — refused to abandon his tank or crew. Killed on the fourth hit. Param Vir Chakra — Posthumous.'},
+    {col:3,row:3,type:'section_cdr',name:'CQMH Abdul Hamid',        platoon:9,bio:'4 Grenadiers. Armed with a jeep-mounted RCL gun, he stalked and destroyed 7 Pakistani Patton tanks. Killed in action during his eighth engagement. Param Vir Chakra — Posthumous.'},
+    {col:7,row:3,type:'section_cdr',name:'Maj Ranjit Singh Dayal',  platoon:8,bio:'3 Cavalry. Led the counterattack on the western flank. His squadron held the drainage channel and prevented a Pakistani breakthrough. Maha Vir Chakra.'},
+    {col:4,row:4,type:'rifleman',   name:'Hav Karnail Singh',       platoon:9,bio:'Centurion tank commander, Poona Horse. Western hide position. His 20-pounder claimed the first Patton in the killing ground at first light.'},
+    {col:5,row:4,type:'rifleman',   name:'Hav Gurnam Singh',        platoon:0,bio:'Mortar troop, Poona Horse. Sited in the sugarcane. The Pattons entered the soft paddy ground one by one — and were destroyed one by one.'},
+    {col:6,row:4,type:'rifleman',   name:'Hav Gurbachan Singh',     platoon:8,bio:'Eastern ambush position. His Centurion tank claimed four Pattons in the first two hours of the battle.'},
   ],
   plaWaves: [
     [{col:3,row:8,type:'pla_tank'},{col:5,row:8,type:'pla_cdr'},{col:7,row:8,type:'pla_tank'},{col:4,row:9,type:'pla'},{col:6,row:9,type:'pla'}],
@@ -56,12 +56,17 @@ export default {
     1: {
       name:  'Param Vir Chakra — Lt Col Ardeshir Tarapore',
       rank:  'Poona Horse · Asal Uttar, September 1965',
-      body:  'Lt Col Ardeshir Tarapore led the Poona Horse in a series of counterattacks at Asal Uttar. His tank was hit three times. He continued to command and fight until the fourth hit killed him. He was awarded the Param Vir Chakra posthumously — India\'s highest wartime honour.',
+      body:  'Lt Col Ardeshir Tarapore commanded the Poona Horse from inside his Centurion tank throughout the battle. Hit three times, he refused evacuation and continued directing fire. He was killed on the fourth hit. Param Vir Chakra — Posthumous. He was 44 years old.',
     },
-    3: {
-      name:  'The Graveyard of Pattons',
+    2: {
+      name:  'CQMH Abdul Hamid — The Man Who Stalked Pattons',
+      rank:  '4 Grenadiers · Asal Uttar, September 1965',
+      body:  'Company Quartermaster Havildar Abdul Hamid mounted a recoilless rifle on a jeep and hunted Pakistani Patton tanks in the sugarcane fields. He destroyed seven before being killed during his eighth engagement. Param Vir Chakra — Posthumous. He was 32 years old.',
+    },
+    4: {
+      name:  'Patton Nagar — The Graveyard of Tanks',
       rank:  'Battle of Khem Karan · 1965',
-      body:  'Pakistan\'s 1st Armoured Division — equipped with the latest M48 Patton tanks, called "the best tanks in Asia" — was destroyed at Asal Uttar in the paddy fields of Punjab. 97 Pakistani tanks were captured or destroyed. The field is still called "Patton Nagar" — Patton Town.',
+      body:  'Pakistan\'s 1st Armoured Division — equipped with the M48 Patton, called "the best tank in Asia" — drove into a carefully prepared killing ground at Asal Uttar. The waterlogged paddy trapped the tanks. 97 Pakistani Pattons were destroyed or captured. The field is still called "Patton Nagar."',
     },
   },
   winCondition:  {type:'waves'},
