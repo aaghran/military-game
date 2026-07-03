@@ -1404,28 +1404,72 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   margin-right: auto;
 }
 
-/* ── Death flash ─────────────────────────────────────────────── */
-.death-flash {
+/* ── Death toast ─────────────────────────────────────────────── */
+#death-toast {
   position: fixed;
-  bottom: 120px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(4, 4, 16, 0.92);
-  border: 1px solid rgba(180, 60, 60, 0.5);
-  border-radius: 6px;
-  padding: 8px 20px;
+  background: rgba(8,4,4,0.92);
+  border: 1px solid rgba(160,60,60,0.45);
+  border-radius: 4px;
+  padding: 7px 18px;
   font-family: 'Courier New', monospace;
-  font-size: 11px;
-  color: #c88080;
-  letter-spacing: 1px;
-  z-index: 9999;
+  font-size: 10px;
+  color: #c07070;
+  letter-spacing: 1.5px;
   pointer-events: none;
-  transition: opacity 0.6s;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s;
   white-space: nowrap;
 }
-.death-flash-name { color: #e0a080; font-weight: bold; }
-.death-flash-label { color: #806060; margin-left: 6px; }
-.death-flash-fade { opacity: 0; }
+#death-toast.death-toast-show { opacity: 1; }
+
+/* ── Structure info card ─────────────────────────────────────── */
+#structure-info-card {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(6,8,12,0.96);
+  border: 1px solid rgba(200,169,110,0.3);
+  border-radius: 10px;
+  padding: 20px 18px;
+  width: 200px;
+  z-index: 500;
+  font-family: 'Courier New', monospace;
+  animation: sc-slide-in 0.2s ease-out;
+}
+@keyframes sc-slide-in {
+  from { opacity:0; transform: translateY(-50%) translateX(20px); }
+  to   { opacity:1; transform: translateY(-50%) translateX(0); }
+}
+.sc-close { position:absolute; top:10px; right:12px; cursor:pointer; color:#4a4a5a; font-size:11px; }
+.sc-close:hover { color:#c8a96e; }
+.sc-icon { font-size:24px; text-align:center; margin-bottom:8px; color:#c8a96e; }
+.sc-type { font-size:7px; letter-spacing:3px; color:#6a7a5a; text-align:center; margin-bottom:4px; }
+.sc-label { font-size:10px; color:#c8b880; text-align:center; margin-bottom:12px; }
+.sc-bonuses { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
+.sc-bonus { font-size:9px; color:#90b090; background:rgba(80,120,80,0.12); border-radius:3px; padding:3px 7px; }
+.sc-desc { font-size:9px; color:#7a8a7a; line-height:1.6; margin-bottom:10px; }
+.sc-occupancy { font-size:9px; padding-top:8px; border-top:1px solid rgba(200,169,110,0.1); }
+.sc-ind { color:#6090c8; }
+.sc-ene { color:#c06060; }
+.sc-empty { color:#4a5a4a; }
+
+/* ── Structure legend panel ──────────────────────────────────── */
+#structure-legend-panel {
+  position:fixed; bottom:70px; right:180px;
+  background:rgba(6,8,12,0.96); border:1px solid rgba(200,169,110,0.25);
+  border-radius:8px; padding:14px 16px; width:220px; z-index:500;
+  font-family:'Courier New',monospace; font-size:9px;
+  animation: sc-slide-in 0.15s ease-out;
+}
+.sl-title { font-size:8px; letter-spacing:3px; color:#6a7a5a; margin-bottom:10px; }
+.sl-row { display:flex; align-items:flex-start; gap:8px; color:#8a9a8a; margin-bottom:7px; line-height:1.5; }
+.sl-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:2px; }
+.sl-note { color:#4a5a4a; margin-top:10px; font-style:italic; border-top:1px solid rgba(200,169,110,0.1); padding-top:8px; }
 
 /* ── End turn idle nudge ─────────────────────────────────────── */
 .end-turn-nudge {
@@ -1790,6 +1834,10 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
     <span class="qa-icon">ℹ</span>
     <span class="qa-label">Mission</span>
   </button>
+  <button id="structure-legend-btn" class="quick-action-btn" title="Structure types" style="display:none" onclick="toggleStructureLegend()">
+    <span class="qa-icon">⬡</span>
+    <span class="qa-label">Structures</span>
+  </button>
   <button id="theme-toggle-btn" class="quick-action-btn" title="Toggle theme">
     <span class="qa-icon">◐</span>
     <span class="qa-label">Light mode</span>
@@ -2014,6 +2062,7 @@ function getStructure(col,row) { return STRUCTURES[`${col},${row}`]; }
 
 let activeBattleData = null; // set by startBattle(name)
 let structureMeshes = []; // tracked for clearing on battle restart
+let _glowRingMeshes = []; // pulsing glow rings on structure hexes
 
 
 // Three.js
@@ -2205,8 +2254,39 @@ function buildTerrain(){
 buildTerrain(); // initial build for select screen background
 
 // Structures
+function _structGlowColor(s) {
+  if (s.type === 'fort')   return 0xc8a030;
+  if (s.type === 'mortar') return 0xff6820;
+  if (s.type === 'lmg')    return 0xcc2020;
+  if (s.type === 'sangar') {
+    const lbl = (s.label || '').toLowerCase();
+    if (lbl.includes('pak') || lbl.includes('enemy') || lbl.includes('bunker')) return 0x8a1a1a;
+    return 0x8090a0;
+  }
+  return 0x8090a0;
+}
+function _addStructureGlowRing(col, row, color) {
+  const pos = hexWorldPos(col, row);
+  const ty = tileTopY(col, row);
+  const geo = new THREE.TorusGeometry(0.52, 0.045, 8, 32);
+  const mat = new THREE.MeshStandardMaterial({
+    color, emissive: color, emissiveIntensity: 0.6,
+    transparent: true, opacity: 0.75,
+  });
+  const ring = new THREE.Mesh(geo, mat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.set(pos.x, ty + 0.08, pos.z);
+  ring._glowRing = true;
+  ring._baseEmissive = 0.6;
+  ring._pulseOffset = Math.random() * Math.PI * 2;
+  scene.add(ring);
+  structureMeshes.push(ring);
+  _glowRingMeshes.push(ring);
+  return ring;
+}
 function buildStructures(){
   structureMeshes.forEach(m=>scene.remove(m)); structureMeshes=[];
+  _glowRingMeshes=[];
   Object.entries(STRUCTURES).forEach(([key,s])=>{
     const [col,row]=key.split(',').map(Number);
     const p=hexWorldPos(col,row), ty=tileTopY(col,row);
@@ -2252,6 +2332,8 @@ function buildStructures(){
         const box=sm(new THREE.Mesh(new THREE.BoxGeometry(0.10,0.07,0.07),new THREE.MeshStandardMaterial({color:0x3a3a28,roughness:0.9,metalness:0})));
         box.position.set(p.x+Math.cos(a)*0.26,ty+0.035,p.z+Math.sin(a)*0.26);}
     }
+    // Glow ring for this structure
+    _addStructureGlowRing(col, row, _structGlowColor(s));
   });
 }
 
@@ -2366,8 +2448,13 @@ function spawnWeaponEffect(atk,def){
   const gone=(m)=>{scene.remove(m);try{m.geometry.dispose();}catch(e){}};
 
   if(fx==='rifle_shot'){
+    const pts=[new THREE.Vector3(sp.x,sp.y,sp.z),new THREE.Vector3(dp.x,dp.y,dp.z)];
+    const geo=new THREE.BufferGeometry().setFromPoints(pts);
+    const mat=new THREE.LineBasicMaterial({color:0xffffcc,transparent:true,opacity:1.0});
+    const line=new THREE.Line(geo,mat);
+    scene.add(line);
     const l=new THREE.PointLight(0xffffff,2,3); l.position.copy(sp); scene.add(l);
-    _activeEffects.push(()=>{const t=(performance.now()-t0)/ad(50);if(t>=1){scene.remove(l);return false;}l.intensity=2*(1-t);return true;});
+    _activeEffects.push(()=>{const t=(performance.now()-t0)/ad(120);if(t>=1){scene.remove(line);scene.remove(l);try{geo.dispose();}catch(e){}return false;}const p=t<0.5?1.0:1.0-(t-0.5)*2;mat.opacity=p;l.intensity=2*(1-t);return true;});
   }
   else if(fx==='lmg_burst'){
     const mfl=new THREE.PointLight(0xff8833,4,4); mfl.position.copy(sp); scene.add(mfl);
@@ -2412,6 +2499,10 @@ function spawnWeaponEffect(atk,def){
         for(let i=0;i<6;i++){const sm=new THREE.Mesh(new THREE.SphereGeometry(0.03),new THREE.MeshLambertMaterial({color:0xff9933,transparent:true,opacity:1}));sm.position.copy(dp);scene.add(sm);sparks.push({m:sm,d:new THREE.Vector3(_rnd(-1,1),_rnd(0.2,1),_rnd(-1,1)).normalize()});}
         const st=performance.now();
         _activeEffects.push(()=>{const p=Math.min(1,(performance.now()-st)/ad(150));sparks.forEach(s=>{s.m.position.copy(dp).addScaledVector(s.d,p*0.5);s.m.material.opacity=1-p;});fl.intensity=8*(1-p);if(p>=1){sparks.forEach(s=>gone(s.m));scene.remove(fl);return false;}return true;});
+        // Camera shake
+        const origX=camera.position.x, origZ=camera.position.z;
+        const shakeT=performance.now();
+        _activeEffects.push(()=>{const elapsed=(performance.now()-shakeT)/1000;if(elapsed>=0.35){camera.position.x=origX;camera.position.z=origZ;return false;}const intensity=0.06*(1-elapsed/0.35);camera.position.x=origX+(Math.random()-0.5)*intensity;camera.position.z=origZ+(Math.random()-0.5)*intensity;return true;});
         return false;} return true;});
   }
   else if(fx==='drone_dive'){
@@ -3701,7 +3792,91 @@ canvas.addEventListener('pointerup',e=>{
 canvas.addEventListener('pointercancel',e=>{
   if(activePointers.has(e.pointerId)) endPointer(e);
 });
+// ── Fire arc flash ───────────────────────────────────────────
+let _fireArcMeshes = [];
+function triggerFireArc(col, row, struct) {
+  _fireArcMeshes.forEach(m => scene.remove(m));
+  _fireArcMeshes = [];
+  if (!struct || col == null) return;
+  const range = struct.rngBonus ? 2 : 1;
+  const a1 = toAxial(col, row);
+  const colorMap = { lmg:0xcc2020, mortar:0xff6820, sangar:0x8090a0, fort:0xc8a030 };
+  const arcColor = colorMap[struct.type] || 0xc8a96e;
+  for (let c = 0; c < MC; c++) {
+    for (let r = 0; r < MR; r++) {
+      const a2 = toAxial(c, r);
+      const d = axDist(a1.q, a1.r, a2.q, a2.r);
+      if (d > 0 && d <= range + 1) {
+        const pos = hexWorldPos(c, r);
+        const geo = new THREE.CylinderGeometry(0.5, 0.5, 0.02, 6);
+        const mat = new THREE.MeshBasicMaterial({ color: arcColor, transparent: true, opacity: 0.0 });
+        const disc = new THREE.Mesh(geo, mat);
+        disc.position.set(pos.x, tileTopY(c, r) + 0.05, pos.z);
+        scene.add(disc);
+        _fireArcMeshes.push(disc);
+      }
+    }
+  }
+  let start = null;
+  function animArc(ts) {
+    if (!start) start = ts;
+    const elapsed = (ts - start) / 1000;
+    let opacity = 0;
+    if (elapsed < 0.3) opacity = (elapsed / 0.3) * 0.35;
+    else if (elapsed < 1.1) opacity = 0.35;
+    else if (elapsed < 1.5) opacity = 0.35 * (1 - (elapsed - 1.1) / 0.4);
+    else { _fireArcMeshes.forEach(m => scene.remove(m)); _fireArcMeshes = []; return; }
+    _fireArcMeshes.forEach(m => { m.material.opacity = opacity; });
+    requestAnimationFrame(animArc);
+  }
+  requestAnimationFrame(animArc);
+}
+
+// ── Structure info card ──────────────────────────────────────
+function showStructureCard(col, row, struct) {
+  const existing = document.getElementById('structure-info-card');
+  if (existing) { existing.remove(); triggerFireArc(null, null, null); return; }
+  const typeLabels = { sangar:'DEFENSIVE BUNKER', lmg:'LMG POST', mortar:'MORTAR PIT', fort:'FORTIFIED WALLS' };
+  const typeDesc = {
+    sangar: 'A reinforced firing position. Defenders inside are significantly harder to hit and harder to dislodge.',
+    lmg:    'A Light Machine Gun emplacement. Extends firing range and delivers sustained suppressive fire across multiple hexes.',
+    mortar: 'Indirect fire weapon. Attacks from range without line-of-sight. Cannot be counterattacked directly.',
+    fort:   'Ancient stone walls. Exceptional defensive multiplier. Control of this position often decides the battle.',
+  };
+  const typeIcon = { sangar:'⬡', lmg:'◎', mortar:'✦', fort:'⬟' };
+  const occupant = gameState.units.find(u => u.alive && u.col === col && u.row === row);
+  let occupancyHtml = '<span class="sc-empty">Unoccupied</span>';
+  if (occupant) {
+    occupancyHtml = occupant.side === 'ind'
+      ? `<span class="sc-ind">● ${occupant.name}</span>`
+      : `<span class="sc-ene">● Enemy · Capture to flip bonuses</span>`;
+  }
+  const bonuses = [];
+  if (struct.defMul > 1) bonuses.push(`+${Math.round((struct.defMul-1)*100)}% defense`);
+  if (struct.atkMul > 1) bonuses.push(`+${Math.round((struct.atkMul-1)*100)}% attack`);
+  if (struct.rngBonus)   bonuses.push(`+${struct.rngBonus} hex range`);
+  const bonusHtml = bonuses.map(b => `<span class="sc-bonus">${b}</span>`).join('');
+  const card = document.createElement('div');
+  card.id = 'structure-info-card';
+  card.innerHTML = `
+    <div class="sc-close" onclick="document.getElementById('structure-info-card').remove();triggerFireArc(null,null,null)">✕</div>
+    <div class="sc-icon">${typeIcon[struct.type] || '⬡'}</div>
+    <div class="sc-type">${typeLabels[struct.type] || struct.type.toUpperCase()}</div>
+    <div class="sc-label">${struct.label}</div>
+    <div class="sc-bonuses">${bonusHtml || '<span class="sc-bonus">Standard position</span>'}</div>
+    <div class="sc-desc">${typeDesc[struct.type] || ''}</div>
+    <div class="sc-occupancy">${occupancyHtml}</div>
+  `;
+  document.body.appendChild(card);
+  triggerFireArc(col, row, struct);
+}
+
 function handleTileClick(col,row){
+  const struct = getStructure(col, row);
+  if (struct && !gameState.selected) { showStructureCard(col, row, struct); return; }
+  // Close card if open and user clicks elsewhere
+  const card = document.getElementById('structure-info-card');
+  if (card) { card.remove(); triggerFireArc(null, null, null); }
   const{selected,moveable,attackable}=gameState; const clicked=unitAt(col,row);
   if(selected){
     const cm=moveable.find(h=>h.col===col&&h.row===row);
@@ -3858,17 +4033,19 @@ function updatePanel(){
 let _nt=null;
 function showNarrative(msg){const el=document.getElementById('narrative');el.textContent=msg;el.style.opacity='1';if(_nt)clearTimeout(_nt);_nt=setTimeout(()=>el.style.opacity='0',3800);}
 
-// ── Death flash ──────────────────────────────────────────────
+// ── Death toast ──────────────────────────────────────────────
 function showDeathFlash(unit) {
   if (!unit || !unit.name || unit.side !== 'ind') return;
-  const flash = document.createElement('div');
-  flash.className = 'death-flash';
-  flash.innerHTML = `<span class="death-flash-name">${unit.name}</span><span class="death-flash-label">— fallen</span>`;
-  document.body.appendChild(flash);
-  setTimeout(() => {
-    flash.classList.add('death-flash-fade');
-    setTimeout(() => flash.remove(), 600);
-  }, 1800);
+  let el = document.getElementById('death-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'death-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = unit.name + ' · fallen';
+  el.className = 'death-toast death-toast-show';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = 'death-toast'; }, 2200);
 }
 
 // ── End turn idle nudge ──────────────────────────────────────
@@ -4013,6 +4190,25 @@ function showScreen(name){
   if(rankKey) rankKey.classList.toggle('visible', isBattle);
   const missionBtn = document.getElementById('mission-info-btn');
   if(missionBtn) missionBtn.style.display = isBattle ? '' : 'none';
+  const structBtn = document.getElementById('structure-legend-btn');
+  if(structBtn) structBtn.style.display = isBattle ? '' : 'none';
+  // Close legend panel when leaving battle
+  if(!isBattle){ const lp=document.getElementById('structure-legend-panel'); if(lp) lp.remove(); }
+}
+function toggleStructureLegend() {
+  let panel = document.getElementById('structure-legend-panel');
+  if (panel) { panel.remove(); return; }
+  panel = document.createElement('div');
+  panel.id = 'structure-legend-panel';
+  panel.innerHTML = `
+    <div class="sl-title">STRUCTURES</div>
+    <div class="sl-row"><span class="sl-dot" style="background:#8090a0"></span><strong>Sangar / Bunker</strong> — +def, +range. Take cover here.</div>
+    <div class="sl-row"><span class="sl-dot" style="background:#cc2020"></span><strong>LMG Post</strong> — Extends attack range. High suppression.</div>
+    <div class="sl-row"><span class="sl-dot" style="background:#ff6820"></span><strong>Mortar Pit</strong> — Indirect fire. Cannot be counterattacked.</div>
+    <div class="sl-row"><span class="sl-dot" style="background:#c8a030"></span><strong>Fort Walls</strong> — Maximum defense. Battle-deciding position.</div>
+    <div class="sl-note">Tap any glowing tile to see details and range.</div>
+  `;
+  document.body.appendChild(panel);
 }
 const OPENING_CARDS = [
   '"September 1897. A mud-brick signal post.\n10,000 Pashtun warriors."',
@@ -4724,7 +4920,23 @@ document.getElementById('back-btn').addEventListener('click',()=>{
 
 // Loop
 const clock=new THREE.Clock();
-function gameLoop(){const dt=clock.getDelta();updateSnow(dt);if(_activeEffects.length)_activeEffects=_activeEffects.filter(fn=>fn());renderer.render(scene,camera);requestAnimationFrame(gameLoop);}
+function gameLoop(){
+  const dt=clock.getDelta();
+  updateSnow(dt);
+  if(_activeEffects.length)_activeEffects=_activeEffects.filter(fn=>fn());
+  // Pulse structure glow rings
+  if(_glowRingMeshes.length){
+    const _t=performance.now()/1000;
+    _glowRingMeshes.forEach(m=>{
+      if(m._glowRing){
+        m.material.emissiveIntensity=0.4+0.35*Math.sin(_t*1.8+m._pulseOffset);
+        m.material.opacity=0.55+0.25*Math.sin(_t*1.8+m._pulseOffset);
+      }
+    });
+  }
+  renderer.render(scene,camera);
+  requestAnimationFrame(gameLoop);
+}
 // Settings panel wiring
 document.getElementById('theme-toggle-btn').addEventListener('click',e=>{
   e.stopPropagation();
