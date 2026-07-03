@@ -38,9 +38,9 @@ On every push to `main`, GitHub Actions deploys the `game/` directory as a stati
 
 **GitHub Pages:** `https://aaghran.github.io/military-game/`
 
-**Vercel (production):** `https://regiment-delta.vercel.app/`
+**Vercel (production):** `https://regiment-delta.vercel.app/game/landing.html`
 
-The Vercel deployment serves `landing.html` at `/` and the game at `/index.html`. Share links use `/share.html?battle=BattleName`.
+The Vercel deployment uses `/game/` as the site path. Landing at `/game/landing.html`, game at `/game/index.html`, share at `/game/share.html?battle=BattleName`. Root `/` redirects to landing.
 
 ## Repo scope
 
