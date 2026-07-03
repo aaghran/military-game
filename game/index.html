@@ -1365,6 +1365,141 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
 .complete-insignia-label { font-size:0.6rem; color:#604820; letter-spacing:0.08em; font-family:'Courier New',monospace; }
 .complete-body { font-size:0.8rem; color:#706050; line-height:1.8; margin-bottom:30px; }
 .complete-footer { display:flex; justify-content:center; gap:16px; }
+
+/* ── Story mode hint & button ────────────────────────────────── */
+.story-mode-hint { font-size: 8px; color: #5a6a4a; letter-spacing: 1px; margin-top: 16px; margin-bottom: 6px; text-align: center; }
+#watch-story-btn {
+  margin-top: 10px;
+  padding: 10px 32px;
+  background: transparent;
+  border: 1px solid rgba(200,169,110,0.35);
+  color: #a09060;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: border-color 0.15s, color 0.15s;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+#watch-story-btn:hover { border-color: #c8a96e; color: #c8a96e; }
+
+/* ── Campaign next button in debrief ────────────────────────── */
+.campaign-next-debrief-btn {
+  margin-bottom: 12px;
+  padding: 13px 36px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  background: linear-gradient(180deg, #c8a030, #8a6018);
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Death flash ─────────────────────────────────────────────── */
+.death-flash {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(4, 4, 16, 0.92);
+  border: 1px solid rgba(180, 60, 60, 0.5);
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #c88080;
+  letter-spacing: 1px;
+  z-index: 9999;
+  pointer-events: none;
+  transition: opacity 0.6s;
+  white-space: nowrap;
+}
+.death-flash-name { color: #e0a080; font-weight: bold; }
+.death-flash-label { color: #806060; margin-left: 6px; }
+.death-flash-fade { opacity: 0; }
+
+/* ── End turn idle nudge ─────────────────────────────────────── */
+.end-turn-nudge {
+  display: none;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  color: #c8a96e;
+  letter-spacing: 1.5px;
+  animation: pulse-nudge 1.5s ease-in-out infinite;
+  margin-top: 6px;
+  text-align: center;
+}
+.end-turn-nudge.visible { display: block; }
+@keyframes pulse-nudge { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+/* ── Rank key ────────────────────────────────────────────────── */
+#rank-key {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(4,4,16,0.88);
+  border: 1px solid rgba(200,169,110,0.2);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  z-index: 20;
+  min-width: 160px;
+  display: none;
+}
+#rank-key.visible { display: block; }
+.rank-key-toggle { color: #6a7a5a; cursor: pointer; letter-spacing: 1.5px; }
+.rank-key-toggle:hover { color: #c8a96e; }
+.rank-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; color: #8a9a7a; border-top: 1px solid rgba(200,169,110,0.06); margin-top: 3px; padding-top: 3px; }
+.rank-row span:first-child { color: #c8a96e; min-width: 36px; }
+
+/* ── Mission info overlay ────────────────────────────────────── */
+.mission-info-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.mission-info-card {
+  background: #0a0c14; border: 1px solid rgba(200,169,110,0.3);
+  border-radius: 12px; padding: 28px 32px; max-width: 480px; width: 90%;
+}
+.mission-info-meta { font-size: 8px; letter-spacing: 3px; color: #6a7a5a; margin-bottom: 14px; font-family: 'Courier New', monospace; }
+.mission-info-body { font-size: 12px; color: #b0b8a8; line-height: 1.8; font-family: 'Courier New', monospace; }
+.mission-info-close {
+  margin-top: 20px; padding: 8px 24px;
+  background: transparent; border: 1px solid #3a3a50; color: #888;
+  font-family: 'Courier New', monospace; font-size: 9px; cursor: pointer;
+  border-radius: 999px; letter-spacing: 1px; display: block;
+  margin-left: auto; margin-right: auto;
+}
+.mission-info-close:hover { border-color: #666; color: #bbb; }
+
+/* ── histCard eyebrow ────────────────────────────────────────── */
+.hist-card-eyebrow {
+  font-size: 7px; letter-spacing: 3px; color: #6a7a5a;
+  margin-bottom: 10px; font-family: 'Courier New', monospace;
+}
+
+/* ── Battle card stakes ──────────────────────────────────────── */
+.battle-card-stakes {
+  font-size: 9px; color: #8a9a7a; font-style: italic;
+  line-height: 1.5; margin-top: 4px; margin-bottom: 6px;
+}
+
+/* ── Mobile additional fixes ─────────────────────────────────── */
+@media (max-width: 600px) {
+  #hist-card { width: calc(100vw - 32px) !important; max-width: none !important; padding: 20px 16px !important; }
+}
 </style>
 </head>
 <body>
@@ -1494,6 +1629,8 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
       </div>
     </div>
     <button id="begin-btn">BEGIN BATTLE</button>
+    <div class="story-mode-hint">Not a gamer? Just watch the history unfold.</div>
+    <button id="watch-story-btn" onclick="enableAutoAndStart()">◀▶ WATCH STORY MODE</button>
   </div>
 </div>
 <div id="screen-debrief" class="screen hidden">
@@ -1611,10 +1748,12 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   </div>
   <button id="auto-pause-btn">⏸ PAUSE AUTO-PLAY</button>
   <button id="end-turn-btn">END TURN →</button>
+  <div id="end-turn-nudge" class="end-turn-nudge">Press END TURN to continue →</div>
 </div>
 <div id="narrative"></div>
 
 <div id="hist-card" class="hidden">
+  <div class="hist-card-eyebrow">HISTORICAL MOMENT</div>
   <div class="hc-tag">✦ HISTORICAL RECORD</div>
   <div class="hc-name" id="hc-name"></div>
   <div class="hc-rank" id="hc-rank"></div>
@@ -1635,7 +1774,22 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   <button id="cam-zoom-out" class="map-ctrl-btn" type="button" title="Zoom out">−</button>
   <button id="cam-fit" class="map-ctrl-btn" type="button" title="Reset view">⌂</button>
 </div>
+<div id="rank-key">
+  <div class="rank-key-toggle" onclick="toggleRankKey()">RANKS ▾</div>
+  <div class="rank-key-body" id="rank-key-body" style="display:none">
+    <div class="rank-row"><span>HAV</span><span>Havildar (Sergeant)</span></div>
+    <div class="rank-row"><span>NK</span><span>Naik (Corporal)</span></div>
+    <div class="rank-row"><span>SEP</span><span>Sepoy (Private)</span></div>
+    <div class="rank-row"><span>CAPT</span><span>Captain</span></div>
+    <div class="rank-row"><span>MAJ</span><span>Major</span></div>
+    <div class="rank-row"><span>LT</span><span>Lieutenant</span></div>
+  </div>
+</div>
 <div id="quick-actions">
+  <button id="mission-info-btn" class="quick-action-btn" title="Mission briefing" style="display:none" onclick="showMissionInfo()">
+    <span class="qa-icon">ℹ</span>
+    <span class="qa-label">Mission</span>
+  </button>
   <button id="theme-toggle-btn" class="quick-action-btn" title="Toggle theme">
     <span class="qa-icon">◐</span>
     <span class="qa-label">Light mode</span>
@@ -1702,6 +1856,14 @@ import { DEBRIEF_DATA } from './battles/debrief-data.js';
 
 // Settings — persisted to localStorage
 const gameSettings = { musicOn:true, musicVol:35, animSpeed:1.0, showDmg:true, theme:'dark', autoPlay:false };
+
+// ── Story mode (auto-play) launcher ─────────────────────────
+function enableAutoAndStart() {
+  gameSettings.autoPlay = true;
+  saveSettings();
+  showScreen(null);
+  startBattle(_currentBattleName);
+}
 
 function loadInsigniaImg(battle, sizePx){
   const img = document.createElement('img');
@@ -3169,7 +3331,7 @@ function _doAttack(atk,def,atkG,defG,cb){
       if(unitGroupMap.has(def))updateHpBar(unitGroupMap.get(def));
       const t1=performance.now();
       function sb(){const el2=performance.now()-t1,t2=Math.min(1,el2/ad(160));atkG.position.lerpVectors(toward,s,t2);if(t2<1){requestAnimationFrame(sb);return;}
-        atkG.position.copy(s);if(!def.alive)removeUnitGroup(def);if(!atk.alive)removeUnitGroup(atk);cb?.();
+        atkG.position.copy(s);if(!def.alive){showDeathFlash(def);removeUnitGroup(def);}if(!atk.alive){showDeathFlash(atk);removeUnitGroup(atk);}cb?.();
       }
       requestAnimationFrame(sb);
     });
@@ -3439,6 +3601,7 @@ function nextRound(){
 }
 function doEndTurn(){
   if(gameState.phase!=='player_turn'||gameState.animating) return;
+  clearIdleNudge();
   deselect(); gameState.phase='enemy_turn'; updatePanel(); setTimeout(enemyTurn,320);
 }
 
@@ -3679,10 +3842,79 @@ function updatePanel(){
     le.innerHTML=log.slice(0,4).map((l,i)=>`<div style="color:${i===0?'#9aaa9a':'#6a7a6a'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l}</div>`).join('');
   }
   updateMobileDock();
+  // Idle nudge: show when player turn, not auto-playing, and all ind units have acted
+  if (gameState.phase === 'player_turn' && !gameState.autoPlaying && gameState.screen === 'battle') {
+    const indAlive = gameState.units.filter(u=>u.alive&&u.side==='ind');
+    if (indAlive.length > 0 && indAlive.every(u=>u.moved&&u.attacked)) {
+      startIdleNudge();
+    } else {
+      clearIdleNudge();
+    }
+  } else {
+    clearIdleNudge();
+  }
 }
 
 let _nt=null;
 function showNarrative(msg){const el=document.getElementById('narrative');el.textContent=msg;el.style.opacity='1';if(_nt)clearTimeout(_nt);_nt=setTimeout(()=>el.style.opacity='0',3800);}
+
+// ── Death flash ──────────────────────────────────────────────
+function showDeathFlash(unit) {
+  if (!unit || !unit.name || unit.side !== 'ind') return;
+  const flash = document.createElement('div');
+  flash.className = 'death-flash';
+  flash.innerHTML = `<span class="death-flash-name">${unit.name}</span><span class="death-flash-label">— fallen</span>`;
+  document.body.appendChild(flash);
+  setTimeout(() => {
+    flash.classList.add('death-flash-fade');
+    setTimeout(() => flash.remove(), 600);
+  }, 1800);
+}
+
+// ── End turn idle nudge ──────────────────────────────────────
+let _idleNudgeTimer = null;
+function startIdleNudge() {
+  clearTimeout(_idleNudgeTimer);
+  _idleNudgeTimer = setTimeout(() => {
+    const nudge = document.getElementById('end-turn-nudge');
+    if (nudge) nudge.classList.add('visible');
+  }, 4000);
+}
+function clearIdleNudge() {
+  clearTimeout(_idleNudgeTimer);
+  const nudge = document.getElementById('end-turn-nudge');
+  if (nudge) nudge.classList.remove('visible');
+}
+
+// ── Rank key toggle ──────────────────────────────────────────
+function toggleRankKey() {
+  const body = document.getElementById('rank-key-body');
+  if (body) body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Mission info overlay ──────────────────────────────────────
+function showMissionInfo() {
+  const bd = activeBattleData;
+  if (!bd) return;
+  const existing = document.querySelector('.mission-info-overlay');
+  if (existing) { existing.remove(); return; }
+  const overlay = document.createElement('div');
+  overlay.className = 'mission-info-overlay';
+  const bodyText = (bd.introText || '')
+    .split(/<br\s*\/?>/i)
+    .map(line => line.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim())
+    .filter(Boolean)
+    .join('\n\n');
+  overlay.innerHTML = `
+    <div class="mission-info-card">
+      <div class="mission-info-meta">${bd.introMeta || _currentBattleName}</div>
+      <div class="mission-info-body" style="white-space:pre-line">${bodyText}</div>
+      <button class="mission-info-close" onclick="this.closest('.mission-info-overlay').remove()">CLOSE ✕</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
 
 let _hcTimer=null;
 function showHistCard(data){
@@ -3775,6 +4007,12 @@ function showScreen(name){
   document.getElementById('panel').classList.toggle('hidden',name!==null);
   if(name!==null || gameState.screen!=='battle') setMobileBattleMode(false);
   else setMobileBattleMode(true);
+  // Show rank key and mission info button only during active battle
+  const isBattle = name === null;
+  const rankKey = document.getElementById('rank-key');
+  if(rankKey) rankKey.classList.toggle('visible', isBattle);
+  const missionBtn = document.getElementById('mission-info-btn');
+  if(missionBtn) missionBtn.style.display = isBattle ? '' : 'none';
 }
 const OPENING_CARDS = [
   '"September 1897. A mud-brick signal post.\n10,000 Pashtun warriors."',
@@ -3879,6 +4117,31 @@ function renderDebriefInfographic(info, color){
   }
 }
 
+function renderDebriefButtons(result) {
+  const backBtn = document.getElementById('back-btn');
+  if (!backBtn) return;
+  // Remove any existing campaign next button
+  const existing = document.getElementById('campaign-next-btn');
+  if (existing) existing.remove();
+  if (result === 'win' && campaignState.active && campaignState.currentIndex < CAMPAIGN_BATTLES.length - 1) {
+    const nextName = CAMPAIGN_BATTLES[campaignState.currentIndex + 1];
+    const btn = document.createElement('button');
+    btn.id = 'campaign-next-btn';
+    btn.className = 'btn-primary campaign-next-debrief-btn';
+    btn.textContent = `NEXT: ${nextName.toUpperCase()} →`;
+    btn.addEventListener('click', () => {
+      // Trigger same flow as back-btn click when campaign is active
+      unitGroups.forEach(g=>scene.remove(g)); unitGroups.length=0; unitGroupMap.clear(); clearHighlights();
+      gameState.units=[]; gameState.screen='select';
+      const justFinished = campaignState.currentIndex;
+      if (!campaignState.completed.includes(justFinished)) campaignState.completed.push(justFinished);
+      campaignState.currentIndex = Math.min(justFinished + 1, CAMPAIGN_BATTLES.length - 1);
+      continueCampaign();
+    });
+    backBtn.parentNode.insertBefore(btn, backBtn);
+  }
+}
+
 function showDebrief(result){
   gameState.screen='debrief'; deselect(); closeHistCard(); showScreen('screen-debrief');
   const ia=gameState.casualties.ind;
@@ -3955,6 +4218,7 @@ function showDebrief(result){
     legacyEl.textContent=isWin?(activeBattle.debriefLegacy||''):'';
     legacyEl.style.display=isWin&&activeBattle.debriefLegacy?'block':'none';
   }
+  renderDebriefButtons(result);
 }
 
 const BATTLE_TERRAIN_ICONS = {
@@ -4055,12 +4319,29 @@ function battleChapterIndex(battleName){
   return BATTLES.findIndex(b=>b.name===battleName);
 }
 
+const BATTLE_STAKES_MAP = {
+  'Saragarhi':        '21 soldiers. 10,000 tribesmen. Not one retreated.',
+  'Haifa':            'The last great cavalry charge in history.',
+  'Kohima':           'A tennis court. Two armies. 15 metres apart.',
+  'Rezang La':        'C Company. −20°C. Every man faced the enemy.',
+  'Asal Uttar':       '97 Pakistani Patton tanks. Patton Nagar.',
+  'Dograi':           'Night assault. Bayonets fixed. No radio.',
+  'Longewala':        '120 soldiers. 45 tanks. One night in the desert.',
+  'Siachen':          'The highest battlefield on earth.',
+  'Tololing':         'The first Kargil peak. Uphill under fire.',
+  'Point 5140':       '"Yeh Dil Maange More." Vikram Batra, age 24.',
+  'Khalubar':         '"Na Chodnu." Manoj Pandey cleared four bunkers alone.',
+  'Tiger Hill':       'Yogendra Yadav climbed the cliff face under fire.',
+  'Operation Sindoor':"India's shield. Drones and missiles intercepted.",
+};
+
 function buildBattleCard(battle){
   const i=battleChapterIndex(battle.name);
   const chap=`CHAPTER ${['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII'][i]||i+1}`;
   const c=battle.color||'#c8a96e';
   const terrainFn=BATTLE_TERRAIN_ICONS[battle.name];
   const terrainHtml=terrainFn?`<div class="battle-card-terrain">${terrainFn(c)}</div>`:'';
+  const stakes=BATTLE_STAKES_MAP[battle.name]||'';
 
   const card=document.createElement('div');
   card.className='battle-card';
@@ -4074,6 +4355,7 @@ function buildBattleCard(battle){
       <div class="battle-card-chapter">${chap}</div>
       <div class="battle-card-title" style="color:${c}">${battle.name.toUpperCase()}</div>
       <div class="battle-card-meta">${battle.year} · ${battle.regiment}</div>
+      ${stakes?`<div class="battle-card-stakes">${stakes}</div>`:''}
       <div class="battle-card-sub">${battle.sub}</div>
       <button class="battle-card-btn" style="background:${c}">▶ PLAY</button>
     </div>`;
@@ -4269,6 +4551,9 @@ Object.assign(window, {
   resetCampaign,
   showScreen,
   showBattleSelect,
+  enableAutoAndStart,
+  toggleRankKey,
+  showMissionInfo,
 });
 
 function showRegiment(battle){
