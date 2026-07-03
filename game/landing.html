@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regiment — India's Finest Hours</title>
+  <meta name="description" content="A living memorial to the Indian Army. Thirteen real battles. Named soldiers. Play, watch, or remember." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Regiment — India's Finest Hours" />
+  <meta property="og:description" content="Thirteen real battles. Named soldiers. A tactical tribute to the Indian Army — from Saragarhi 1897 to Kargil 1999 and beyond." />
+  <meta property="og:url" content="https://regiment-delta.vercel.app/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Regiment — India's Finest Hours" />
+  <meta name="twitter:description" content="Thirteen real battles. Named soldiers. Play, watch, or remember." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080810;
+      --bg-card: #0d0d1a;
+      --gold: #c8a96e;
+      --gold-dim: #8a7050;
+      --gold-faint: #3a2e1e;
+      --text: #d4d0c8;
+      --muted: #7a7870;
+      --border: #1e1e2e;
+      --font-mono: 'Courier New', Courier, monospace;
+      --font-body: Georgia, 'Times New Roman', serif;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+    .section-header {
+      font-family: var(--font-mono);
+      font-size: clamp(11px, 1.4vw, 14px);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2rem;
+    }
+    .narrow { max-width: 660px; margin-left: auto; margin-right: auto; }
+    a { color: var(--gold); text-decoration: none; }
+    .cta {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--gold);
+      padding: 14px 32px;
+      border: 1px solid var(--gold);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .cta:hover { background: transparent; color: var(--gold); }
+    .cta-ghost {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold-dim);
+    }
+    .cta-ghost:hover { background: var(--gold-faint); }
+    .rule { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* Hero */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 2rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, #1a1a0a 0%, #050508 70%);
+      position: relative;
+    }
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 39px,
+        rgba(200, 169, 110, 0.03) 39px, rgba(200, 169, 110, 0.03) 40px
+      );
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 2.5rem;
+    }
+    .hero-title {
+      font-family: var(--font-mono);
+      font-size: clamp(52px, 10vw, 112px);
+      font-weight: bold;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 1.25rem;
+      text-shadow: 0 0 60px rgba(200, 169, 110, 0.15);
+    }
+    .hero-quote {
+      font-style: italic;
+      font-size: clamp(14px, 2vw, 18px);
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.8;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .hero-note {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* Modes */
+    #modes { padding: 6rem 2rem; border-top: 1px solid var(--border); }
+    .modes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .mode-card {
+      background: var(--bg-card);
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: background 0.15s;
+    }
+    .mode-card:hover { background: #10101e; }
+    .mode-icon { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    .mode-title {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      letter-spacing: 0.15em;
+      color: var(--text);
+    }
+    .mode-desc { font-size: 14px; color: var(--muted); line-height: 1.7; flex: 1; }
+    .mode-link {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+
+    /* Battles */
+    #battles { padding: 6rem 2rem; border-top: 1px solid var(--border); }
+    .battles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .battle-card {
+      background: var(--bg-card);
+      padding: 1.5rem;
+      transition: background 0.15s;
+      display: block;
+      color: inherit;
+    }
+    .battle-card:hover { background: #10101e; }
+    .battle-year {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.15em;
+      margin-bottom: 0.4rem;
+    }
+    .battle-name {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--text);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+    .battle-regiment {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.6rem;
+    }
+    .battle-sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* About */
+    #about { padding: 6rem 2rem; border-top: 1px solid var(--border); }
+    #about p {
+      font-size: clamp(15px, 1.7vw, 18px);
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      line-height: 1.9;
+    }
+    #about p:last-child { color: var(--muted); font-style: italic; margin-bottom: 0; }
+
+    /* Footer */
+    footer {
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    footer p {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    footer nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    footer nav a {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <section id="hero">
+    <p class="hero-eyebrow">A living memorial · Educational · Non-commercial</p>
+    <h1 class="hero-title">REGIMENT</h1>
+    <p class="hero-quote">"How can a man die better than facing fearful odds, for the ashes of his fathers, and the temples of his gods."</p>
+    <div class="hero-actions">
+      <a href="./index.html" class="cta">Enter the game →</a>
+      <a href="./vijay-diwas.html" class="cta cta-ghost">Vijay Diwas tribute</a>
+    </div>
+    <p class="hero-note">Thirteen battles · 128 years · Every unit has a name</p>
+  </section>
+
+  <section id="modes">
+    <div style="text-align:center; margin-bottom:2.5rem;">
+      <p class="section-header">Three ways to remember</p>
+    </div>
+    <div class="modes-grid">
+      <div class="mode-card">
+        <div class="mode-icon">⚔</div>
+        <div class="mode-title">All Battles</div>
+        <p class="mode-desc">Pick any era — from Saragarhi 1897 to Operation Sindoor 2025. Play tactically or watch history unfold in auto-play.</p>
+        <a href="./index.html" class="mode-link">Browse eras →</a>
+      </div>
+      <div class="mode-card">
+        <div class="mode-icon">🏔</div>
+        <div class="mode-title">Vijay Diwas Campaign</div>
+        <p class="mode-desc">Five Kargil battles in sequence. Bridge cards, debriefs, and a completion tribute to the 527 who gave their tomorrow.</p>
+        <a href="./index.html#campaign" class="mode-link">Begin campaign →</a>
+      </div>
+      <div class="mode-card">
+        <div class="mode-icon">🗺</div>
+        <div class="mode-title">Campaign Map</div>
+        <p class="mode-desc">Tower-defence meta layer across the Kargil ridgeline. Assign regiments, hold nodes, launch battles.</p>
+        <a href="./campaign-map.html" class="mode-link">Open map →</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="battles">
+    <div style="text-align:center; margin-bottom:2.5rem;">
+      <p class="section-header">Thirteen battles</p>
+    </div>
+    <div class="battles-grid" id="battles-grid"></div>
+  </section>
+
+  <section id="about">
+    <div class="narrow">
+      <p class="section-header">What is Regiment?</p>
+      <p>Regiment is not a war simulator. It is a memorial disguised as a game — each hex on the grid is a real soldier with a biography, a regiment, and often a death. The gameplay makes you feel what they faced, not just read about it.</p>
+      <p>Most war games abstract soldiers into units. Regiment inverts that. When you go home, tell them of us and say — for your tomorrow, we gave our today.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Regiment · In tribute to the Indian Army</p>
+    <nav>
+      <a href="./index.html">Play</a>
+      <a href="./vijay-diwas.html">Vijay Diwas</a>
+      <a href="./campaign-map.html">Campaign Map</a>
+      <a href="./share.html">Share</a>
+      <a href="https://github.com/aaghran/military-game" target="_blank" rel="noopener">Source</a>
+    </nav>
+  </footer>
+
+  <script type="module">
+    import { BATTLES } from './battles/index.js';
+
+    const grid = document.getElementById('battles-grid');
+    const sorted = [...BATTLES].sort((a, b) => a.year - b.year);
+
+    for (const b of sorted) {
+      const slug = encodeURIComponent(b.name);
+      const card = document.createElement('a');
+      card.className = 'battle-card';
+      card.href = `./index.html?battle=${slug}`;
+      card.innerHTML = `
+        <div class="battle-year">${b.year}</div>
+        <div class="battle-name">${b.name}</div>
+        <div class="battle-regiment">${b.regiment}</div>
+        <div class="battle-sub">${b.sub}</div>
+      `;
+      grid.appendChild(card);
+    }
+  </script>
+</body>
+</html>

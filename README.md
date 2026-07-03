@@ -36,9 +36,11 @@ This repository includes a GitHub Pages workflow at `.github/workflows/deploy-pa
 
 On every push to `main`, GitHub Actions deploys the `game/` directory as a static site.
 
-Expected live URL:
+**GitHub Pages:** `https://aaghran.github.io/military-game/`
 
-`https://aaghran.github.io/military-game/`
+**Vercel (production):** `https://regiment-delta.vercel.app/`
+
+The Vercel deployment serves `landing.html` at `/` and the game at `/index.html`. Share links use `/share.html?battle=BattleName`.
 
 ## Repo scope
 
