@@ -4481,6 +4481,22 @@ document.getElementById('s-theme-dark').addEventListener('click',()=>{ gameSetti
 document.getElementById('s-theme-light').addEventListener('click',()=>{ gameSettings.theme='light'; saveSettings(); applySettings(); });
 
 buildSelectScreen(); applySettings(); showOpeningIfNeeded(); gameLoop();
+
+// Auto-launch battle from URL param: index.html?battle=Tololing
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const battleParam = params.get('battle');
+  if (battleParam) {
+    const match = BATTLES.find(b => b.name.toLowerCase() === battleParam.toLowerCase());
+    if (match) {
+      // Small delay to let Three.js scene init complete
+      setTimeout(() => {
+        if (typeof showRegiment === 'function') showRegiment(match);
+      }, 800);
+    }
+  }
+})();
+
 // Start music on first user interaction (browser autoplay policy)
 document.addEventListener('click',()=>startMusic(),{once:true});
 document.addEventListener('keydown',()=>startMusic(),{once:true});
