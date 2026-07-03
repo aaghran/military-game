@@ -526,6 +526,60 @@
     }
 
     /* ════════════════════════════════════════
+       MAP SECTIONS
+    ════════════════════════════════════════ */
+    .map-section {
+      padding: 60px 20px;
+      text-align: center;
+      border-top: 1px solid #1a1c14;
+    }
+
+    .map-section h2 {
+      font-family: 'Courier New', monospace;
+      font-size: clamp(14px, 2vw, 18px);
+      letter-spacing: 4px;
+      color: #c8a96e;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .map-section p {
+      font-size: 11px;
+      color: #5a6a4a;
+      letter-spacing: 1px;
+      margin-bottom: 28px;
+    }
+
+    .battle-map-canvas {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #1e2418;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .map-canvas-wrap {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    #mapTooltip {
+      position: absolute;
+      pointer-events: none;
+      background: #0d1008;
+      border: 1px solid #3a4028;
+      color: #c8a96e;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      padding: 6px 10px;
+      display: none;
+      white-space: nowrap;
+      z-index: 10;
+    }
+
+    /* ════════════════════════════════════════
        RESPONSIVE
     ════════════════════════════════════════ */
     @media (max-width: 600px) {
@@ -585,6 +639,225 @@
       <p>Regiment is a game built around these battles. Every unit is a real soldier. Every battle is a real engagement. You can play it any day — but 26 July is the day it was made for.</p>
     </div>
   </section>
+
+  <!-- ══ MAP 1  INDIA OVERVIEW ══ -->
+  <section class="map-section" id="map-india">
+    <h2>Where They Fought</h2>
+    <p>From the deserts of Rajasthan to the glaciers of Siachen — thirteen battles across a century.</p>
+    <div class="map-canvas-wrap">
+      <canvas id="indiaMapCanvas" class="battle-map-canvas" width="860" height="480"></canvas>
+      <div id="mapTooltip"></div>
+    </div>
+  </section>
+
+  <script>
+  (function () {
+    const canvas = document.getElementById('indiaMapCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+
+    /* ── Background ── */
+    ctx.fillStyle = '#0a0c08';
+    ctx.fillRect(0, 0, W, H);
+
+    /* ── Subtle grid ── */
+    ctx.strokeStyle = 'rgba(42,48,32,0.25)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    /* ── Subcontinent silhouette (India + Pakistan) ── */
+    ctx.beginPath();
+    ctx.moveTo(235, 92);                                     // NW corner (Balochistan/Afghanistan)
+    ctx.bezierCurveTo(260, 80, 350, 68, 455, 70);           // north border W→centre
+    ctx.bezierCurveTo(540, 64, 635, 68, 695, 76);           // centre → NE approach
+    ctx.bezierCurveTo(730, 80, 758, 90, 765, 118);          // NE corner
+    ctx.bezierCurveTo(775, 155, 768, 205, 755, 250);        // east coast top
+    ctx.bezierCurveTo(746, 288, 740, 330, 728, 368);        // east coast mid
+    ctx.bezierCurveTo(715, 400, 695, 426, 668, 442);        // SE coast
+    ctx.bezierCurveTo(645, 455, 618, 462, 590, 460);        // southern sweep
+    ctx.bezierCurveTo(565, 458, 540, 460, 515, 458);        // towards tip
+    ctx.bezierCurveTo(492, 455, 472, 448, 448, 432);        // tip west side
+    ctx.bezierCurveTo(418, 414, 392, 388, 368, 356);        // west coast going up
+    ctx.bezierCurveTo(352, 335, 340, 318, 332, 300);        // Gujarat approach
+    /* Gujarat peninsula protrusion */
+    ctx.bezierCurveTo(318, 290, 296, 290, 278, 308);
+    ctx.bezierCurveTo(262, 322, 268, 348, 285, 362);
+    ctx.bezierCurveTo(298, 372, 316, 368, 328, 350);
+    ctx.bezierCurveTo(336, 337, 330, 315, 322, 300);
+    /* up Pakistan/Sindh coast */
+    ctx.bezierCurveTo(308, 270, 292, 238, 272, 205);
+    ctx.bezierCurveTo(258, 178, 245, 145, 238, 118);
+    ctx.bezierCurveTo(235, 106, 234, 98, 235, 92);
+    ctx.closePath();
+
+    ctx.fillStyle = '#12160e';
+    ctx.fill();
+    ctx.strokeStyle = '#2a3020';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    /* ── Northern mountain ridge (jagged) ── */
+    ctx.beginPath();
+    ctx.strokeStyle = '#1e2218';
+    ctx.lineWidth = 2;
+    const mxStart = 235, mxEnd = 758, myBase = 80;
+    for (let i = 0; i <= 40; i++) {
+      const px = mxStart + (i / 40) * (mxEnd - mxStart);
+      const py = myBase + (i % 2 === 0 ? -7 : 7) + Math.sin(i * 1.1) * 4;
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    /* ── LOC dashed red line ── */
+    ctx.save();
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = '#8a2020';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(330, 100);
+    ctx.bezierCurveTo(360, 94, 410, 90, 455, 93);
+    ctx.bezierCurveTo(490, 95, 525, 88, 560, 91);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = '#6a2020';
+    ctx.font = '8px Courier New';
+    ctx.fillText('LOC', 512, 104);
+
+    /* ── PAKISTAN label (dim, left side) ── */
+    ctx.fillStyle = '#2e3828';
+    ctx.font = 'bold 11px Courier New';
+    ctx.fillText('PAKISTAN', 242, 185);
+
+    /* ── INDIA label ── */
+    ctx.fillStyle = '#2a3820';
+    ctx.font = 'bold 14px Courier New';
+    ctx.fillText('INDIA', 530, 310);
+
+    /* ── Haifa off-map arrow (Israel — left edge) ── */
+    ctx.save();
+    ctx.setLineDash([4, 3]);
+    ctx.strokeStyle = '#6a6040';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(215, 148);
+    ctx.lineTo(50, 148);
+    ctx.stroke();
+    ctx.restore();
+    ctx.beginPath();
+    ctx.fillStyle = '#6a6040';
+    ctx.moveTo(52, 148);
+    ctx.lineTo(62, 143);
+    ctx.lineTo(62, 153);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#8a8050';
+    ctx.font = 'bold 8px Courier New';
+    ctx.fillText('HAIFA', 12, 142);
+    ctx.font = '8px Courier New';
+    ctx.fillText('1918 ←', 12, 153);
+    ctx.fillStyle = '#4a4830';
+    ctx.fillText('(Israel)', 12, 163);
+
+    /* ── Battle dots data ── */
+    const battles = [
+      { name: 'Saragarhi',    year: 1897, era: 'pre',    cx: 0.28*W, cy: 0.18*H, lx: 10,  ly: -12 },
+      { name: 'Kohima',       year: 1944, era: 'pre',    cx: 0.82*W, cy: 0.38*H, lx: 8,   ly: 0   },
+      { name: 'Rezang La',    year: 1962, era: 'mid',    cx: 0.52*W, cy: 0.22*H, lx: 8,   ly: -12 },
+      { name: 'Asal Uttar',   year: 1965, era: 'mid',    cx: 0.38*W, cy: 0.34*H, lx: 8,   ly: 0   },
+      { name: 'Dograi',       year: 1965, era: 'mid',    cx: 0.36*W, cy: 0.31*H, lx: -58, ly: -10 },
+      { name: 'Longewala',    year: 1971, era: 'mid',    cx: 0.34*W, cy: 0.44*H, lx: 8,   ly: 4   },
+      { name: 'Siachen',      year: 1987, era: 'kargil', cx: 0.48*W, cy: 0.18*H, lx: 8,   ly: -12 },
+      { name: 'Tololing',     year: 1999, era: 'kargil', cx: 0.46*W, cy: 0.225*H,lx: -55, ly: 14  },
+      { name: 'Point 5140',   year: 1999, era: 'kargil', cx: 0.44*W, cy: 0.21*H, lx: -58, ly: -10 },
+      { name: 'Khalubar',     year: 1999, era: 'kargil', cx: 0.485*W,cy: 0.245*H,lx: 8,   ly: 14  },
+      { name: 'Tiger Hill',   year: 1999, era: 'kargil', cx: 0.452*W,cy: 0.20*H, lx: 8,   ly: -10 },
+      { name: 'Op Sindoor',   year: 2025, era: 'modern', cx: 0.44*W, cy: 0.27*H, lx: -68, ly: 14  },
+    ];
+
+    const eraColors = { pre: '#a08030', mid: '#4a8a5a', kargil: '#c8a030', modern: '#6a8a9a' };
+
+    /* ── Kargil zoom box ── */
+    const kzx = 374, kzy = 72, kzw = 106, kzh = 66;
+    ctx.save();
+    ctx.setLineDash([4, 3]);
+    ctx.strokeStyle = '#8a7030';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(kzx, kzy, kzw, kzh);
+    ctx.restore();
+    ctx.fillStyle = '#8a7030';
+    ctx.font = '8px Courier New';
+    ctx.fillText('KARGIL SECTOR  SEE BELOW ↓', kzx, kzy + kzh + 11);
+
+    /* ── Draw battle dots ── */
+    battles.forEach(function (b) {
+      const col = eraColors[b.era];
+      ctx.beginPath();
+      ctx.arc(b.cx, b.cy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = col;
+      ctx.fill();
+      ctx.strokeStyle = '#0a0c08';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#c8a96e';
+      ctx.font = '9px Courier New';
+      ctx.fillText(b.name, b.cx + b.lx, b.cy + b.ly);
+      ctx.fillStyle = '#5a6a4a';
+      ctx.font = '8px Courier New';
+      ctx.fillText(String(b.year), b.cx + b.lx, b.cy + b.ly + 10);
+    });
+
+    /* ── Legend box ── */
+    const lx = 24, ly = H - 112;
+    ctx.fillStyle = '#0d110a';
+    ctx.fillRect(lx - 6, ly - 14, 148, 96);
+    ctx.strokeStyle = '#2a3020';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(lx - 6, ly - 14, 148, 96);
+
+    [
+      { key: 'pre',    label: 'PRE-1947' },
+      { key: 'mid',    label: '1962–1971' },
+      { key: 'kargil', label: 'KARGIL 1999' },
+      { key: 'modern', label: 'MODERN' },
+    ].forEach(function (e, i) {
+      ctx.beginPath();
+      ctx.arc(lx + 7, ly + 4 + i * 20, 5, 0, Math.PI * 2);
+      ctx.fillStyle = eraColors[e.key];
+      ctx.fill();
+      ctx.fillStyle = '#c8a96e';
+      ctx.font = '9px Courier New';
+      ctx.fillText(e.label, lx + 18, ly + 8 + i * 20);
+    });
+
+    /* ── Hover tooltip ── */
+    const tooltip = document.getElementById('mapTooltip');
+    canvas.addEventListener('mousemove', function (e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const scaleY = H / rect.height;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const my = (e.clientY - rect.top) * scaleY;
+      let hit = null;
+      battles.forEach(function (b) {
+        const dx = mx - b.cx, dy = my - b.cy;
+        if (Math.sqrt(dx*dx + dy*dy) <= 10) hit = b;
+      });
+      if (hit) {
+        tooltip.textContent = hit.name + '  ·  ' + hit.year;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (e.clientX - canvas.getBoundingClientRect().left + 12) + 'px';
+        tooltip.style.top  = (e.clientY - canvas.getBoundingClientRect().top  - 10) + 'px';
+      } else {
+        tooltip.style.display = 'none';
+      }
+    });
+    canvas.addEventListener('mouseleave', function () { tooltip.style.display = 'none'; });
+  })();
+  </script>
 
   <hr class="rule" />
 
@@ -701,6 +974,176 @@
 
     </div>
   </section>
+
+  <!-- ══ MAP 2  KARGIL ZOOM ══ -->
+  <section class="map-section" id="map-kargil">
+    <h2>The Kargil Peaks</h2>
+    <p>Five summits. June–July 1999. Operation Vijay.</p>
+    <canvas id="kargilMapCanvas" class="battle-map-canvas" width="860" height="360"></canvas>
+  </section>
+
+  <script>
+  (function () {
+    const canvas = document.getElementById('kargilMapCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+
+    /* ── Background ── */
+    ctx.fillStyle = '#0a0c08';
+    ctx.fillRect(0, 0, W, H);
+
+    /* ── Terrain gradient (darker at top = high altitude) ── */
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0,   '#080c06');
+    grad.addColorStop(0.5, '#0e1209');
+    grad.addColorStop(1,   '#12170c');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    /* ── Subtle grid ── */
+    ctx.strokeStyle = 'rgba(30,34,22,0.6)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    /* ── Mountain ridge fills ── */
+    function drawRidge(pts, fillColor, strokeColor) {
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    /* back ridge (darkest) */
+    drawRidge([
+      [0,95],[50,72],[110,55],[180,48],[240,62],[310,42],[370,50],[440,35],
+      [510,48],[580,38],[650,55],[720,45],[790,60],[860,50]
+    ], '#0c100a', '#161c12');
+
+    /* mid ridge */
+    drawRidge([
+      [0,130],[60,110],[130,95],[200,88],[270,100],[340,82],[400,90],[470,75],
+      [540,88],[610,78],[680,92],[750,82],[830,95],[860,90]
+    ], '#0f1410', '#1a2015');
+
+    /* front ridge */
+    drawRidge([
+      [0,175],[80,155],[160,142],[240,158],[320,140],[400,148],[480,132],
+      [560,145],[640,138],[720,155],[800,145],[860,160]
+    ], '#121810', '#1e2418');
+
+    /* ── LOC line (vertical, slightly curved, left ~25% of canvas) ── */
+    ctx.save();
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = '#8a2020';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(215, 0);
+    ctx.bezierCurveTo(220, 90, 210, 180, 218, 360);
+    ctx.stroke();
+    ctx.restore();
+
+    /* LOC labels */
+    ctx.fillStyle = '#6a2020';
+    ctx.font = 'bold 10px Courier New';
+    ctx.save(); ctx.translate(198, 80); ctx.rotate(-Math.PI/2); ctx.fillText('LOC', 0, 0); ctx.restore();
+
+    /* PAKISTAN / INDIA labels */
+    ctx.fillStyle = '#2e2820';
+    ctx.font = 'bold 13px Courier New';
+    ctx.fillText('PAKISTAN', 24, 260);
+
+    ctx.fillStyle = '#1e2e1e';
+    ctx.font = 'bold 13px Courier New';
+    ctx.fillText('INDIA', 680, 260);
+
+    /* ── Battle nodes ── */
+    const nodes = [
+      { name: 'Siachen',    alt: '6,400m', cx: 160, cy: 100, lx: 0,   ly: -22 },
+      { name: 'Tiger Hill', alt: '5,062m', cx: 320, cy: 120, lx: 0,   ly: -22 },
+      { name: 'Tololing',   alt: '4,590m', cx: 400, cy: 150, lx: 0,   ly: -22 },
+      { name: 'Pt 5140',    alt: '5,140m', cx: 490, cy: 110, lx: 0,   ly: -22 },
+      { name: 'Khalubar',   alt: '5,000m', cx: 590, cy: 140, lx: 0,   ly: -22 },
+    ];
+
+    /* connecting path (dashed gold) */
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = '#8a7030';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    nodes.forEach(function (n, i) {
+      i === 0 ? ctx.moveTo(n.cx, n.cy) : ctx.lineTo(n.cx, n.cy);
+    });
+    ctx.stroke();
+    ctx.restore();
+
+    /* node circles and labels */
+    nodes.forEach(function (n) {
+      /* glow ring */
+      ctx.beginPath();
+      ctx.arc(n.cx, n.cy, 20, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,160,48,0.06)';
+      ctx.fill();
+
+      /* filled circle */
+      ctx.beginPath();
+      ctx.arc(n.cx, n.cy, 14, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f1408';
+      ctx.fill();
+      ctx.strokeStyle = '#c8a030';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      /* era dot */
+      ctx.beginPath();
+      ctx.arc(n.cx, n.cy, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#c8a030';
+      ctx.fill();
+
+      /* altitude label (above) */
+      ctx.fillStyle = '#6a7a50';
+      ctx.font = '9px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.alt, n.cx, n.cy - 20);
+
+      /* battle name (below) */
+      ctx.fillStyle = '#c8a96e';
+      ctx.font = 'bold 10px Courier New';
+      ctx.fillText(n.name, n.cx, n.cy + 28);
+    });
+
+    ctx.textAlign = 'left';
+
+    /* ── Header text on canvas ── */
+    ctx.fillStyle = '#3a4828';
+    ctx.font = 'bold 13px Courier New';
+    ctx.letterSpacing = '4px';
+    ctx.textAlign = 'center';
+    ctx.fillText('OPERATION VIJAY  ·  1999', W / 2, 330);
+    ctx.textAlign = 'left';
+
+    /* ── Year labels under each node ── */
+    nodes.forEach(function (n) {
+      ctx.fillStyle = '#4a5838';
+      ctx.font = '8px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText('1999', n.cx, n.cy + 40);
+    });
+    ctx.textAlign = 'left';
+  })();
+  </script>
 
   <!-- ══ § 4  KARGIL CAMPAIGN ══ -->
   <section id="campaign">
