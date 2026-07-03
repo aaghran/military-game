@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regiment — Vijay Diwas Tribute</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:       #080810;
+      --bg-card:  #0d0d1a;
+      --bg-deep:  #050508;
+      --gold:     #c8a96e;
+      --gold-dim: #8a7050;
+      --gold-faint: #3a2e1e;
+      --text:     #d4d0c8;
+      --muted:    #7a7870;
+      --border:   #1e1e2e;
+      --font-mono: 'Courier New', Courier, monospace;
+      --font-body: Georgia, 'Times New Roman', serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Utility ── */
+    .label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+
+    .section-header {
+      font-family: var(--font-mono);
+      font-size: clamp(11px, 1.4vw, 14px);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2rem;
+    }
+
+    .narrow {
+      max-width: 660px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    /* ── CTA Button ── */
+    .cta {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--gold);
+      padding: 14px 32px;
+      border: 1px solid var(--gold);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      text-decoration: none;
+    }
+
+    .cta:hover {
+      background: transparent;
+      color: var(--gold);
+    }
+
+    .cta-ghost {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold-dim);
+    }
+
+    .cta-ghost:hover {
+      background: var(--gold-faint);
+      color: var(--gold);
+    }
+
+    /* ── Rule ── */
+    .rule {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ════════════════════════════════════════
+       § 1  HERO
+    ════════════════════════════════════════ */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 2rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, #1a1a0a 0%, var(--bg-deep) 70%),
+        var(--bg-deep);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 39px,
+          rgba(200, 169, 110, 0.03) 39px,
+          rgba(200, 169, 110, 0.03) 40px
+        );
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-mono);
+      font-size: clamp(52px, 10vw, 112px);
+      font-weight: bold;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 1.25rem;
+      text-shadow: 0 0 60px rgba(200, 169, 110, 0.15);
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-size: clamp(14px, 2.2vw, 20px);
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 2rem;
+    }
+
+    .hero-dateline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-copy {
+      font-size: clamp(14px, 1.8vw, 17px);
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 3rem;
+      line-height: 1.8;
+    }
+
+    /* ════════════════════════════════════════
+       § 2  WHAT IS VIJAY DIWAS
+    ════════════════════════════════════════ */
+    #what {
+      padding: 6rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    #what p {
+      font-size: clamp(15px, 1.7vw, 18px);
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      line-height: 1.9;
+    }
+
+    #what p:last-child {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ════════════════════════════════════════
+       § 3  THE BATTLES
+    ════════════════════════════════════════ */
+    #battles {
+      padding: 6rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .battles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .battle-card {
+      background: var(--bg-card);
+      padding: 1.75rem 1.5rem;
+      position: relative;
+      transition: background 0.15s;
+    }
+
+    .battle-card:hover {
+      background: #10101e;
+    }
+
+    .battle-year {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+    }
+
+    .battle-name {
+      font-family: var(--font-mono);
+      font-size: clamp(15px, 1.8vw, 18px);
+      font-weight: bold;
+      color: var(--text);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
+    }
+
+    .battle-regiment {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+    }
+
+    .battle-desc {
+      font-size: 13px;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .era-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border: 1px solid var(--gold-faint);
+      color: var(--gold-dim);
+    }
+
+    .era-badge.kargil {
+      border-color: rgba(200, 169, 110, 0.3);
+      color: var(--gold);
+    }
+
+    .era-badge.modern {
+      border-color: rgba(200, 169, 110, 0.5);
+      color: var(--gold);
+      background: var(--gold-faint);
+    }
+
+    /* ════════════════════════════════════════
+       § 4  KARGIL CAMPAIGN
+    ════════════════════════════════════════ */
+    #campaign {
+      padding: 6rem 2rem;
+      border-top: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, var(--bg) 0%, #0a0a0e 100%);
+    }
+
+    .campaign-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .campaign-inner .section-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .campaign-inner p {
+      font-size: clamp(14px, 1.7vw, 17px);
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      line-height: 1.9;
+    }
+
+    .battle-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 3rem;
+    }
+
+    .battle-list-item {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding: 0 1.25rem;
+      border-right: 1px solid var(--gold-faint);
+      line-height: 1;
+    }
+
+    .battle-list-item:last-child {
+      border-right: none;
+    }
+
+    /* ════════════════════════════════════════
+       § 5  THE NAMES
+    ════════════════════════════════════════ */
+    #names {
+      padding: 6rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .names-list {
+      list-style: none;
+      max-width: 700px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .names-list li {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: baseline;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .names-list li:first-child {
+      border-top: 1px solid var(--border);
+    }
+
+    .name-soldier {
+      font-family: var(--font-mono);
+      font-size: clamp(12px, 1.4vw, 14px);
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+
+    .name-medal {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--gold-dim);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+
+    .name-battle {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-top: 2px;
+    }
+
+    .names-footer {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .names-footer p {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ════════════════════════════════════════
+       § 6  HOW TO PLAY
+    ════════════════════════════════════════ */
+    #how {
+      padding: 6rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .steps {
+      max-width: 660px;
+      margin: 0 auto 3rem;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      align-items: start;
+    }
+
+    .step-number {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      color: var(--gold-faint);
+      border: 1px solid var(--gold-faint);
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--gold-dim);
+    }
+
+    .step-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 0.4rem;
+    }
+
+    .step-text {
+      font-size: clamp(14px, 1.6vw, 16px);
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .how-note {
+      max-width: 660px;
+      margin: 0 auto 3rem;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      border-left: 2px solid var(--gold-faint);
+      padding-left: 1rem;
+    }
+
+    .how-cta {
+      text-align: center;
+    }
+
+    /* ════════════════════════════════════════
+       § 7  FOOTER
+    ════════════════════════════════════════ */
+    #footer {
+      padding: 4rem 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      background: var(--bg-deep);
+    }
+
+    .footer-primary {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-vijay {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--gold-dim);
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    .footer-links {
+      margin-bottom: 2rem;
+    }
+
+    .footer-links a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--gold-dim);
+      text-decoration: none;
+      border-bottom: 1px solid var(--gold-faint);
+      padding-bottom: 1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .footer-links a:hover {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+    }
+
+    .footer-small {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--border);
+      color: #2e2e3e;
+    }
+
+    /* ════════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════════ */
+    @media (max-width: 600px) {
+      .battles-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .battle-list {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .battle-list-item {
+        border-right: none;
+        border-bottom: 1px solid var(--gold-faint);
+        padding: 0 0 0.75rem;
+        text-align: center;
+      }
+
+      .battle-list-item:last-child {
+        border-bottom: none;
+      }
+
+      .names-list li {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+
+      .step {
+        grid-template-columns: 1fr;
+      }
+
+      .step-number {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ § 1  HERO ══ -->
+  <section id="hero">
+    <p class="hero-eyebrow">A tactical tribute</p>
+    <h1 class="hero-title">REGIMENT</h1>
+    <p class="hero-subtitle">A tribute to the Indian Army</p>
+    <p class="hero-dateline">26 JULY &middot; VIJAY DIWAS</p>
+    <p class="hero-copy">Thirteen battles. One hundred and thirty-two soldiers. Every name remembered.</p>
+    <a href="./index.html" class="cta">PLAY THE TRIBUTE &rarr;</a>
+  </section>
+
+  <!-- ══ § 2  WHAT IS VIJAY DIWAS ══ -->
+  <section id="what">
+    <div class="narrow">
+      <p class="section-header">What is Vijay Diwas</p>
+      <p>On 26 July 1999, Indian forces recaptured the last Pakistani-held peak in Kargil. Operation Vijay was complete. 527 soldiers had given their lives. India calls it Kargil Vijay Diwas — Victory Day.</p>
+      <p>Regiment is a game built around these battles. Every unit is a real soldier. Every battle is a real engagement. You can play it any day — but 26 July is the day it was made for.</p>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- ══ § 3  THE BATTLES ══ -->
+  <section id="battles">
+    <div style="text-align:center; margin-bottom:2.5rem;">
+      <p class="section-header">The Battles</p>
+    </div>
+    <div class="battles-grid">
+
+      <div class="battle-card">
+        <div class="battle-year">1897</div>
+        <div class="battle-name">Saragarhi</div>
+        <div class="battle-regiment">36th Sikh Regiment</div>
+        <div class="battle-desc">"21 against 10,000. Not one retreated."</div>
+        <span class="era-badge">Pre-1947</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1918</div>
+        <div class="battle-name">Haifa</div>
+        <div class="battle-regiment">Jodhpur &amp; Mysore Lancers</div>
+        <div class="battle-desc">"The last great cavalry charge."</div>
+        <span class="era-badge">Pre-1947</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1944</div>
+        <div class="battle-name">Kohima</div>
+        <div class="battle-regiment">Assam Regiment</div>
+        <div class="battle-desc">"The Battle of the Tennis Court."</div>
+        <span class="era-badge">Pre-1947</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1962</div>
+        <div class="battle-name">Rezang La</div>
+        <div class="battle-regiment">13 Kumaon Regiment</div>
+        <div class="battle-desc">"C Company. Frozen at their posts."</div>
+        <span class="era-badge">1962</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1965</div>
+        <div class="battle-name">Asal Uttar</div>
+        <div class="battle-regiment">Poona Horse</div>
+        <div class="battle-desc">"97 Patton tanks. Patton Nagar."</div>
+        <span class="era-badge">1965</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1965</div>
+        <div class="battle-name">Dograi</div>
+        <div class="battle-regiment">3 Jat Regiment</div>
+        <div class="battle-desc">"Night assault. Bayonets fixed."</div>
+        <span class="era-badge">1965</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1971</div>
+        <div class="battle-name">Longewala</div>
+        <div class="battle-regiment">23 Punjab Regiment</div>
+        <div class="battle-desc">"120 soldiers. 45 tanks. One night."</div>
+        <span class="era-badge">1971</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1987</div>
+        <div class="battle-name">Siachen</div>
+        <div class="battle-regiment">Siachen Pioneers</div>
+        <div class="battle-desc">"The highest battlefield on earth."</div>
+        <span class="era-badge kargil">Kargil</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1999</div>
+        <div class="battle-name">Tololing</div>
+        <div class="battle-regiment">2 Rajputana Rifles</div>
+        <div class="battle-desc">"The first Kargil peak. 16,962 ft."</div>
+        <span class="era-badge kargil">Kargil</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1999</div>
+        <div class="battle-name">Point 5140</div>
+        <div class="battle-regiment">13 JAK RIF</div>
+        <div class="battle-desc">"Vikram Batra. Yeh Dil Maange More."</div>
+        <span class="era-badge kargil">Kargil</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1999</div>
+        <div class="battle-name">Khalubar</div>
+        <div class="battle-regiment">1/11 Gorkha Rifles</div>
+        <div class="battle-desc">"Manoj Pandey. Na Chodnu."</div>
+        <span class="era-badge kargil">Kargil</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">1999</div>
+        <div class="battle-name">Tiger Hill</div>
+        <div class="battle-regiment">8 Sikh &amp; 18 Grenadiers</div>
+        <div class="battle-desc">"The highest point. The Bofors gun."</div>
+        <span class="era-badge kargil">Kargil</span>
+      </div>
+
+      <div class="battle-card">
+        <div class="battle-year">2025</div>
+        <div class="battle-name">Operation Sindoor</div>
+        <div class="battle-regiment">Army Air Defence Corps</div>
+        <div class="battle-desc">"India's shield. Drones and missiles."</div>
+        <span class="era-badge modern">Modern</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ § 4  KARGIL CAMPAIGN ══ -->
+  <section id="campaign">
+    <div class="campaign-inner">
+      <p class="section-header">Vijay Diwas Campaign</p>
+      <p>Five battles. One campaign. Play Siachen to Tiger Hill in sequence — the story of how India recaptured the peaks.</p>
+      <div class="battle-list">
+        <span class="battle-list-item">Siachen</span>
+        <span class="battle-list-item">Tololing</span>
+        <span class="battle-list-item">Point 5140</span>
+        <span class="battle-list-item">Khalubar</span>
+        <span class="battle-list-item">Tiger Hill</span>
+      </div>
+      <a href="./index.html" class="cta cta-ghost">PLAY THE CAMPAIGN &rarr;</a>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- ══ § 5  THE NAMES ══ -->
+  <section id="names">
+    <div style="text-align:center; margin-bottom:2.5rem;">
+      <p class="section-header">The Names</p>
+    </div>
+    <ul class="names-list">
+
+      <li>
+        <div>
+          <div class="name-soldier">Havildar Ishar Singh</div>
+          <div class="name-battle">Saragarhi &middot; 1897</div>
+        </div>
+        <div class="name-medal">Indian Order of Merit</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Major Dalpat Singh</div>
+          <div class="name-battle">Haifa &middot; 1918</div>
+        </div>
+        <div class="name-medal">Indian Order of Merit</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Major Shaitan Singh</div>
+          <div class="name-battle">Rezang La &middot; 1962</div>
+        </div>
+        <div class="name-medal">Param Vir Chakra</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Lt Col Ardeshir Tarapore</div>
+          <div class="name-battle">Asal Uttar &middot; 1965</div>
+        </div>
+        <div class="name-medal">Param Vir Chakra</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Major Kuldeep Singh Chandpuri</div>
+          <div class="name-battle">Longewala &middot; 1971</div>
+        </div>
+        <div class="name-medal">Maha Vir Chakra</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Major Vivek Gupta</div>
+          <div class="name-battle">Tololing &middot; 1999</div>
+        </div>
+        <div class="name-medal">Maha Vir Chakra</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Captain Vikram Batra</div>
+          <div class="name-battle">Point 5140 &middot; 1999</div>
+        </div>
+        <div class="name-medal">Param Vir Chakra</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Havildar Sanjay Kumar</div>
+          <div class="name-battle">Point 5140 &middot; 1999</div>
+        </div>
+        <div class="name-medal">Param Vir Chakra</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Captain Manoj Kumar Pandey</div>
+          <div class="name-battle">Khalubar &middot; 1999</div>
+        </div>
+        <div class="name-medal">Param Vir Chakra</div>
+      </li>
+
+      <li>
+        <div>
+          <div class="name-soldier">Havildar Yogendra Singh Yadav</div>
+          <div class="name-battle">Tiger Hill &middot; 1999</div>
+        </div>
+        <div class="name-medal">Param Vir Chakra</div>
+      </li>
+
+    </ul>
+    <div class="names-footer">
+      <p>And 527 more, in the Kargil War alone.</p>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- ══ § 6  HOW TO PLAY ══ -->
+  <section id="how">
+    <div style="text-align:center; margin-bottom:2.5rem;">
+      <p class="section-header">How to Play</p>
+    </div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-number">01</div>
+        <div>
+          <div class="step-label">Step 1</div>
+          <p class="step-text">Choose a battle from the era map — from Saragarhi 1897 to Operation Sindoor 2025.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">02</div>
+        <div>
+          <div class="step-label">Step 2</div>
+          <p class="step-text">Command your regiment — move units and attack on the hex grid. Every unit has a name.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">03</div>
+        <div>
+          <div class="step-label">Step 3</div>
+          <p class="step-text">Hold the line, capture the peak, or survive the night. The outcome follows history — how you get there is yours.</p>
+        </div>
+      </div>
+
+    </div>
+    <p class="how-note">Auto-play mode lets you watch each battle unfold historically.</p>
+    <div class="how-cta">
+      <a href="./index.html" class="cta">BEGIN &rarr;</a>
+    </div>
+  </section>
+
+  <!-- ══ § 7  FOOTER ══ -->
+  <footer id="footer">
+    <p class="footer-primary">Regiment is a tribute project. Built to remember.</p>
+    <p class="footer-vijay">Every 26th of July, India remembers. So do we.</p>
+    <div class="footer-links">
+      <a href="https://github.com/aaghran/military-game" target="_blank" rel="noopener">github.com/aaghran/military-game</a>
+    </div>
+    <p class="footer-small">No ads. No accounts. Just the battles.</p>
+  </footer>
+
+</body>
+</html>
