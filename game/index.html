@@ -2060,11 +2060,6 @@ function buildStructures(){
       // Weapon silhouette at center
       const wpn=sm(new THREE.Mesh(new THREE.BoxGeometry(0.06,0.14,0.06),new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.8,metalness:0.3})));
       wpn.position.set(p.x,ty+0.10,p.z);
-      // Flagpole + saffron flag (observation/command post marker)
-      const pole=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.5,4),new THREE.MeshStandardMaterial({color:0x888888,roughness:0.6,metalness:0.2})));
-      pole.position.set(p.x+0.18,ty+0.29,p.z-0.18);
-      const flag=sm(new THREE.Mesh(new THREE.BoxGeometry(0.13,0.08,0.01),new THREE.MeshStandardMaterial({color:0xe8a020,roughness:0.8,metalness:0})));
-      flag.position.set(p.x+0.265,ty+0.475,p.z-0.18);
     } else if(s.type==='lmg'){
       // Inner floor disc
       const fl=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.26,0.03,8),new THREE.MeshStandardMaterial({color:0x3a2a18,roughness:0.9,metalness:0})));
@@ -2881,6 +2876,15 @@ function createUnitMesh(unit) {
   const hpBar = new THREE.Mesh(new THREE.BoxGeometry(0.60,0.06,0.08), hpMat);
   hpBar.position.y = hpY; g.add(hpBar);
 
+  // ── SAFFRON IDENTIFIER DISC (Indian units only) ───────────────
+  if(isInd){
+    const markerMat = new THREE.MeshStandardMaterial({color:0xe8a020,roughness:0.6,emissive:0xe8a020,emissiveIntensity:0.3});
+    const marker = new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,0.03,16), markerMat);
+    marker.position.y = bodyH + 0.97;
+    g.add(marker);
+    unit._marker = marker;
+  }
+
   // ── CLICK DISC ────────────────────────────────────────────────
   const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.1,8),
     new THREE.MeshBasicMaterial({visible:false}));
@@ -3141,6 +3145,7 @@ function flashHit(tg,cb){
 }
 function removeUnitGroup(unit){
   const g=unitGroupMap.get(unit); if(!g) return;
+  if(unit._marker) unit._marker.visible=false;
   const sr=g.rotation.z,td=(unit.col%2===0?1:-1)*Math.PI*0.44;
   g.children.forEach(c=>{if(c.material){c.material.transparent=true;c.material.opacity=1;}});
   const t0=performance.now();
