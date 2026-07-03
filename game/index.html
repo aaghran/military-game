@@ -2291,46 +2291,113 @@ function buildStructures(){
     const [col,row]=key.split(',').map(Number);
     const p=hexWorldPos(col,row), ty=tileTopY(col,row);
     const sm=m=>{ scene.add(m); structureMeshes.push(m); return m; };
+    const cx=p.x, cz=p.z;
+    // Hex edge geometry — pointy-top, HEX_R=1.0
+    const edgeDist = HEX_R * Math.sqrt(3) / 2; // ~0.866
+    const edgeMidAngles = [0, Math.PI/3, 2*Math.PI/3, Math.PI, 4*Math.PI/3, 5*Math.PI/3];
+    const edges = edgeMidAngles.map((a,i)=>({
+      x: cx + edgeDist * Math.cos(a),
+      y: ty,
+      z: cz + edgeDist * Math.sin(a),
+      angle: a, i,
+    }));
+
     if(s.type==='sangar'){
-      // Inner floor disc — dark packed earth
-      const fl=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.03,8),new THREE.MeshStandardMaterial({color:0x4a3a28,roughness:0.9,metalness:0})));
-      fl.position.set(p.x,ty+0.015,p.z);
-      // 6 sandbag boxes in hexagonal ring
-      for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2;
-        const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.22,0.12,0.10),new THREE.MeshStandardMaterial({color:0x8a7a60,roughness:0.9,metalness:0})));
-        sb.position.set(p.x+Math.cos(a)*0.4,ty+0.06,p.z+Math.sin(a)*0.4); sb.rotation.y=a;}
-      // Weapon silhouette at center
-      const wpn=sm(new THREE.Mesh(new THREE.BoxGeometry(0.06,0.14,0.06),new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.8,metalness:0.3})));
-      wpn.position.set(p.x,ty+0.10,p.z);
+      const isEnemy = !!(s.label||'').toLowerCase().match(/pak|enemy|bunker/);
+      const sbCol  = isEnemy ? 0x505058 : 0x8a7a60;
+      const sbCol2 = isEnemy ? 0x404048 : 0x7a6a50;
+      const flCol  = isEnemy ? 0x3a3a42 : 0x4a3a28;
+      // Floor disc
+      sm(new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,0.03,8),
+        new THREE.MeshStandardMaterial({color:flCol,roughness:0.9,metalness:0}))).position.set(cx,ty+0.015,cz);
+      // Sandbag walls on hex edges (friendly: skip edge 3 = entrance; enemy: all 6)
+      const skipEdge = isEnemy ? -1 : 3;
+      for(let i=0;i<6;i++){
+        if(i===skipEdge) continue;
+        const em=edges[i];
+        // Layer 1
+        const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.45,0.12,0.12),
+          new THREE.MeshStandardMaterial({color:sbCol,roughness:0.9,metalness:0})));
+        sb.position.set(em.x,ty+0.10,em.z); sb.rotation.y=em.angle+Math.PI/2;
+        // Layer 2 (slightly inset)
+        const sb2=sm(new THREE.Mesh(new THREE.BoxGeometry(0.45,0.12,0.12),
+          new THREE.MeshStandardMaterial({color:sbCol2,roughness:0.9,metalness:0})));
+        sb2.position.set(em.x,ty+0.22,em.z); sb2.rotation.y=em.angle+Math.PI/2; sb2.scale.set(0.9,0.9,0.9);
+      }
+      if(isEnemy){
+        // Concrete roof overhang on front edge
+        const em=edges[3];
+        const roof=sm(new THREE.Mesh(new THREE.BoxGeometry(0.45,0.05,0.18),
+          new THREE.MeshStandardMaterial({color:0x404048,roughness:0.8,metalness:0.05})));
+        roof.position.set(em.x,ty+0.30,em.z); roof.rotation.y=em.angle+Math.PI/2;
+      } else {
+        // Weapon silhouette at center
+        const wpn=sm(new THREE.Mesh(new THREE.BoxGeometry(0.06,0.14,0.06),
+          new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.8,metalness:0.3})));
+        wpn.position.set(cx,ty+0.10,cz);
+      }
+
     } else if(s.type==='lmg'){
-      // Inner floor disc
-      const fl=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.26,0.26,0.03,8),new THREE.MeshStandardMaterial({color:0x3a2a18,roughness:0.9,metalness:0})));
-      fl.position.set(p.x,ty+0.015,p.z);
-      // 5 sandbag boxes in ring (lower profile than sangar)
-      for(let i=0;i<5;i++){const a=(i/5)*Math.PI*2;
-        const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.22,0.10,0.10),new THREE.MeshStandardMaterial({color:0x8a7a60,roughness:0.9,metalness:0})));
-        sb.position.set(p.x+Math.cos(a)*0.36,ty+0.05,p.z+Math.sin(a)*0.36); sb.rotation.y=a;}
-      // LMG barrel — long box pointing outward along +z
-      const brl=sm(new THREE.Mesh(new THREE.BoxGeometry(0.04,0.04,0.35),new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.7,metalness:0.4})));
-      brl.position.set(p.x,ty+0.12,p.z+0.14);
-      // 2 bipod legs
-      for(let i=0;i<2;i++){
-        const leg=sm(new THREE.Mesh(new THREE.BoxGeometry(0.025,0.10,0.025),new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.7,metalness:0.3})));
-        leg.position.set(p.x+(i*2-1)*0.05,ty+0.06,p.z+0.04); leg.rotation.x=0.35;}
+      // Floor
+      sm(new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,0.03,8),
+        new THREE.MeshStandardMaterial({color:0x3a2a18,roughness:0.9,metalness:0}))).position.set(cx,ty+0.015,cz);
+      // Sandbag arc on back (0) and sides (1, 5)
+      for(const i of [0,1,5]){
+        const em=edges[i];
+        const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.45,0.10,0.12),
+          new THREE.MeshStandardMaterial({color:0x8a7a60,roughness:0.9,metalness:0})));
+        sb.position.set(em.x,ty+0.08,em.z); sb.rotation.y=em.angle+Math.PI/2;
+      }
+      // LMG barrel on edge 3 (front), pointing outward — use Group to orient correctly
+      const em3=edges[3];
+      const barrelGrp=new THREE.Group();
+      barrelGrp.position.set(em3.x,ty+0.12,em3.z);
+      barrelGrp.rotation.y=em3.angle; // local X now points outward along edge 3
+      const barrelCyl=new THREE.Mesh(
+        new THREE.CylinderGeometry(0.03,0.03,0.5,6),
+        new THREE.MeshStandardMaterial({color:0x303030,roughness:0.7,metalness:0.4}));
+      barrelCyl.rotation.z=Math.PI/2; // lay horizontal along local X
+      barrelGrp.add(barrelCyl);
+      scene.add(barrelGrp); structureMeshes.push(barrelGrp);
+      // Gun mount/bipod box at base of barrel
+      const mount=sm(new THREE.Mesh(new THREE.BoxGeometry(0.10,0.08,0.08),
+        new THREE.MeshStandardMaterial({color:0x252525,roughness:0.8,metalness:0.3})));
+      mount.position.set(em3.x,ty+0.08,em3.z);
+
     } else if(s.type==='mortar'){
-      // Dug-in pit — dark earth, slightly sunken
-      const pit=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.28,0.08,8),new THREE.MeshStandardMaterial({color:0x2a1e14,roughness:0.95,metalness:0})));
-      pit.position.set(p.x,ty+0.02,p.z);
+      // Full sandbag ring — all 6 edges
+      for(let i=0;i<6;i++){
+        const em=edges[i];
+        const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.45,0.10,0.12),
+          new THREE.MeshStandardMaterial({color:0x7a6a50,roughness:0.9,metalness:0})));
+        sb.position.set(em.x,ty+0.08,em.z); sb.rotation.y=em.angle+Math.PI/2;
+      }
+      // Dug pit floor
+      sm(new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.40,0.08,8),
+        new THREE.MeshStandardMaterial({color:0x2a1e14,roughness:0.95,metalness:0}))).position.set(cx,ty+0.02,cz);
       // Base plate
-      const base=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.13,0.03,6),new THREE.MeshStandardMaterial({color:0x404040,roughness:0.7,metalness:0.3})));
-      base.position.set(p.x,ty+0.065,p.z);
-      // Mortar tube at 45°
-      const tube=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.28,6),new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.7,metalness:0.4})));
-      tube.rotation.x=-Math.PI/4; tube.position.set(p.x,ty+0.20,p.z+0.06);
-      // 2 ammo boxes around the pit
-      for(let i=0;i<2;i++){const a=i*Math.PI+0.8;
-        const box=sm(new THREE.Mesh(new THREE.BoxGeometry(0.10,0.07,0.07),new THREE.MeshStandardMaterial({color:0x3a3a28,roughness:0.9,metalness:0})));
-        box.position.set(p.x+Math.cos(a)*0.26,ty+0.035,p.z+Math.sin(a)*0.26);}
+      sm(new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,0.03,8),
+        new THREE.MeshStandardMaterial({color:0x404040,roughness:0.7,metalness:0.3}))).position.set(cx,ty+0.065,cz);
+      // Mortar tube angled ~55° from horizontal
+      const tube=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.06,0.4,8),
+        new THREE.MeshStandardMaterial({color:0x404040,roughness:0.7,metalness:0.4})));
+      tube.rotation.x=-Math.PI*0.3; tube.position.set(cx,ty+0.20,cz+0.06);
+
+    } else if(s.type==='fort'){
+      // Stone parapet walls on all 6 edges
+      for(let i=0;i<6;i++){
+        const em=edges[i];
+        const wall=sm(new THREE.Mesh(new THREE.BoxGeometry(0.55,0.45,0.14),
+          new THREE.MeshStandardMaterial({color:0x5a4a38,roughness:0.95,metalness:0})));
+        wall.position.set(em.x,ty+0.22,em.z); wall.rotation.y=em.angle+Math.PI/2;
+      }
+      // Corner posts at 4 of 6 vertices
+      const vertAngles=[Math.PI/6,Math.PI/2,5*Math.PI/6,7*Math.PI/6];
+      for(const a of vertAngles){
+        const post=sm(new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.5,6),
+          new THREE.MeshStandardMaterial({color:0x4a3a28,roughness:0.9,metalness:0})));
+        post.position.set(cx+HEX_R*Math.cos(a),ty+0.25,cz+HEX_R*Math.sin(a));
+      }
     }
     // Glow ring for this structure
     _addStructureGlowRing(col, row, _structGlowColor(s));
@@ -2350,15 +2417,7 @@ function buildTerrainProps(){
     const ox=_rnd(-0.14,0.14), oz=_rnd(-0.14,0.14);
     if(type==='s'){
       const c=td.color, blue=c&0xff, red=(c>>16)&0xff;
-      if(c>0xc0a000){
-        // Sand dunes — 2-3 flat torus ridges
-        const n=2+Math.floor(Math.random()*2);
-        for(let i=0;i<n;i++){
-          const m=add(new THREE.Mesh(new THREE.TorusGeometry(0.18,0.06,4,8),new THREE.MeshLambertMaterial({color:0xd4aa58})));
-          m.rotation.x=Math.PI/2; m.rotation.z=_rnd(0,Math.PI*2);
-          m.position.set(p.x+_rnd(-0.14,0.14),ty+0.02,p.z+_rnd(-0.14,0.14));
-        }
-      } else if(blue>red){
+      if(blue>red){
         // Snow mounds
         for(let i=0;i<2;i++){
           const m=add(new THREE.Mesh(new THREE.SphereGeometry(0.1,6,4),new THREE.MeshLambertMaterial({color:0xe0eeff})));
