@@ -118,6 +118,22 @@
 - Fort parapets: stone walls on all 6 edges, corner posts at 4 vertices (wired for future fort battles)
 - Removed `TorusGeometry(0.18, 0.06, 4, 8)` sand-dune coil props from open sand tiles — were producing confusing golden ring symbols on empty terrain
 
+### Sandbag Geometry Fixes (commits `4c585e3`, `79b92fa`, `efc86ad`)
+- Edge radius pulled from 0.866 (outside tile boundary) to 0.78 (inside) — sandbags now sit on the tile surface, not over the cliff
+- Y offsets corrected: layer 1 at `ty+0.05` (box h=0.10), bottom flush with tile top
+- **Rotation bug fixed**: `rotation.y = em.angle + PI/2` was only correct for the a=0 edge; for all other 5 edges the box was at the wrong angle. Correct formula: `rotation.y = -(em.angle + PI/2)` — mathematically derived from Three.js rotation matrix
+- Colour: `0xb09060` (sandy tan, blended with desert) → `0x6a7840` (olive drab) — readable on all map themes
+- Removed concrete bunker block from `'b'` terrain tiles (was wrongly stamping bunker on all rocky-approach hexes; bunkers are handled by `buildStructures()` only)
+- Reduced rock clusters on `'r'` and `'t'` tiles from 2+ meshes to 1 small stone
+
+### Asal Uttar Historical Fix (commit `bb503bd`)
+- Removed Lt Arun Khetrapal — he belongs to the 1971 Battle of Basantar, NOT Asal Uttar 1965
+- Added CQMH Abdul Hamid PVC correctly — jeep-mounted RCL gun, destroyed 7 Pattons, killed on 8th engagement; age 32
+- Added Maj Ranjit Singh Dayal MVC (3 Cavalry)
+- Updated all unit bios to reflect Centurion tank crew context
+- Added new histCard #2 dedicated to Abdul Hamid's story
+- Renamed histCard #3→#4 (Patton Nagar)
+
 ## Queued / Planned
 - **Content enrichment** — richer unit bios (ages, hometowns), real battlefield quotes as dispatch messages, post-debrief legacy card, memorial heroes scroll screen
 - **Unit death ceremony** — named soldiers who die mid-battle get a brief ceremony at battle end (name + medal if posthumous)
