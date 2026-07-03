@@ -110,10 +110,15 @@
 
 ---
 
-## Queued / Planned
+### Boundary-Geometry Structures (commit `fe29d7f`)
+- Hex radius confirmed: `HEX_R = 1.0`; edge midpoint distance = `√3/2 ≈ 0.866` world units
+- Sangar: 2-layer sandbag walls at all 6 hex edge midpoints; edge 3 open as entrance on friendly sangars; enemy sangars fully enclosed with concrete roof overhang on edge 3
+- LMG post: sandbag arc on edges 0/1/5 (back + sides); LMG barrel (`THREE.Group`) on edge 3 pointing outward; gun mount block at base
+- Mortar pit: full 6-edge sandbag ring + dug pit floor + base plate + tube angled 54° from horizontal
+- Fort parapets: stone walls on all 6 edges, corner posts at 4 vertices (wired for future fort battles)
+- Removed `TorusGeometry(0.18, 0.06, 4, 8)` sand-dune coil props from open sand tiles — were producing confusing golden ring symbols on empty terrain
 
-- **Boundary-geometry structures** — sandbags/walls placed along hex edge midpoints not just tile center; LMG barrel protruding outward; mortar tube in center of ring; fort parapets along all 6 edges
-- **Remove noisy terrain props** — strip random coil/ring symbols from open terrain tiles; keep only contextually meaningful props (ice spikes on glacier, sandbags on sangar tiles)
+## Queued / Planned
 - **Content enrichment** — richer unit bios (ages, hometowns), real battlefield quotes as dispatch messages, post-debrief legacy card, memorial heroes scroll screen
 - **Unit death ceremony** — named soldiers who die mid-battle get a brief ceremony at battle end (name + medal if posthumous)
 - **Audio** — war cries on battle start, ambient terrain sound (glacier wind, desert silence, monsoon rain)
