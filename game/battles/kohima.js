@@ -66,7 +66,7 @@ export default {
       body:  '"When you go home, tell them of us and say — for your tomorrow, we gave our today." The Kohima Epitaph, inscribed at the war cemetery, is among the most recognised in the world. Kohima is called the "Stalingrad of the East." The Japanese 31st Division was destroyed.',
     },
   },
-  winCondition:  {type:'rounds', rounds:7},
+  winCondition:  {type:'rounds', n:7},
   defensiveAI:   false,
   autoPlayForceWin: true,
   autoPlayStyle: 'defensive',

@@ -3221,7 +3221,7 @@ function spawnWave(wi){
   applyWaveAtmosphere(wi);
   const spawns=[];
   PLA_WAVES[wi].forEach(s=>{
-    let col=s.col,row=1;
+    let col=s.col,row=s.row??1;
     for(let t=0;t<6&&unitAt(col,row);t++) col=Math.max(2,Math.min(MC-3,col+(t%2?1:-1)));
     if(unitAt(col,row)) return;
     const st=STATS[s.type];
@@ -3421,7 +3421,15 @@ function nextRound(){
     setTimeout(()=>showHistCard(activeBattleData.histCards[gameState.round]),1200);
   // For non-round-win: check if all enemies dead (Tololing style)
   const pa=gameState.units.filter(u=>u.alive&&u.side==='pla').length;
-  if(pa===0){ checkWinLoss(); return; }
+  if(pa===0){
+    // For rounds-type with all waves exhausted: don't return — fall through to phase reset
+    // so the round timer keeps running until wc.n is reached.
+    if(wc.type==='rounds'&&gameState.waveIndex>=PLA_WAVES.length){
+      // intentional fall-through — no enemies left, no waves left, just tick rounds
+    } else {
+      checkWinLoss(); return;
+    }
+  }
   gameState.phase='player_turn';
   gameState.units.filter(u=>u.side==='ind').forEach(u=>{u.moved=false;u.attacked=false;});
   gameState.units.forEach(u=>{u._defBonus=0;u._atkBonus=0;u._suppressed=false;u._diggingIn=false;u._coveringFire=false;});
