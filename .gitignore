@@ -3,9 +3,6 @@
 !README.md
 !index.html
 !vercel.json
-!.github/
-!.github/workflows/
-!.github/workflows/deploy-pages.yml
 !docs/
 !docs/**
 !game/

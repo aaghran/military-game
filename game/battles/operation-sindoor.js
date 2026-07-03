@@ -27,22 +27,18 @@ export default {
     '7,5':{type:'sangar',label:'Sector Radar E',  atkMul:1.2,defMul:1.0,rngBonus:1},
   },
   indStarts: [
-    {col:5,row:8,type:'hero',       name:'Maj Vikrant Nair',    platoon:0,bio:'Battery Commander. Directed S-400 intercepts from the command post. Held the radar live through 4 waves of Pakistani drones and missiles.'},
-    {col:3,row:7,type:'section_cdr',name:'Capt Suresh Tomar',   platoon:9,bio:'Akash battery, western arc. First to lock on to the Fatah-II missile track.'},
-    {col:7,row:7,type:'section_cdr',name:'Nb Sub Rajesh Kumar', platoon:9,bio:'Akash battery, eastern arc. Downed two JF-17s in the final wave.'},
-    {col:2,row:8,type:'rifleman',   name:'Gnr Dalbir Singh',    platoon:9,bio:'MANPAD team, western perimeter. Engaged Songar drones at close range.'},
-    {col:5,row:9,type:'rifleman',   name:'Gnr Pradeep Rao',     platoon:9,bio:'MANPAD team, centre. Held the last line of defence at the launch pad.'},
-    {col:8,row:8,type:'rifleman',   name:'Gnr Anil Chauhan',    platoon:9,bio:'MANPAD team, eastern perimeter. Intercepted the kamikaze drone that got through radar coverage.'},
+    {col:5,row:8,type:'s400',  name:'Maj Vikrant Nair',    platoon:0,bio:'Battery Commander. Directed S-400 intercepts from the command post. Held the radar live through 4 waves of Pakistani drones and missiles.'},
+    {col:3,row:7,type:'akash', name:'Capt Suresh Tomar',   platoon:9,bio:'Akash battery, western arc. First to lock on to the Fatah-II missile track.'},
+    {col:7,row:7,type:'akash', name:'Nb Sub Rajesh Kumar', platoon:9,bio:'Akash battery, eastern arc. Downed two JF-17s in the final wave.'},
+    {col:2,row:8,type:'manpad',name:'Gnr Dalbir Singh',    platoon:9,bio:'MANPAD team, western perimeter. Engaged Songar drones at close range.'},
+    {col:5,row:9,type:'manpad',name:'Gnr Pradeep Rao',     platoon:9,bio:'MANPAD team, centre. Held the last line of defence at the launch pad.'},
+    {col:8,row:8,type:'manpad',name:'Gnr Anil Chauhan',    platoon:9,bio:'MANPAD team, eastern perimeter. Intercepted the kamikaze drone that got through radar coverage.'},
   ],
   plaWaves: [
-    // Wave 1 — Songar UAV swarm
-    [{col:3,type:'drone'},{col:5,type:'drone'},{col:7,type:'drone'}],
-    // Wave 2 — heavier drone swarm
-    [{col:2,type:'drone'},{col:4,type:'drone'},{col:5,type:'drone'},{col:6,type:'drone'},{col:8,type:'drone'}],
-    // Wave 3 — Fatah-II ballistic missiles + drones
-    [{col:3,type:'missile'},{col:5,type:'drone'},{col:7,type:'missile'},{col:4,type:'drone'},{col:6,type:'drone'}],
-    // Wave 4 — JF-17 + missiles + kamikaze drones
-    [{col:2,type:'aircraft'},{col:4,type:'missile'},{col:5,type:'drone'},{col:6,type:'missile'},{col:8,type:'aircraft'},{col:3,type:'drone'},{col:7,type:'drone'}],
+    [{col:3,row:0,type:'drone'},{col:5,row:1,type:'drone'},{col:7,row:0,type:'drone'}],
+    [{col:2,row:1,type:'drone'},{col:4,row:0,type:'drone'},{col:5,row:1,type:'drone'},{col:6,row:0,type:'drone'},{col:8,row:1,type:'drone'}],
+    [{col:3,row:0,type:'missile'},{col:5,row:1,type:'drone'},{col:7,row:0,type:'missile'},{col:4,row:1,type:'drone'},{col:6,row:0,type:'drone'}],
+    [{col:2,row:0,type:'aircraft'},{col:4,row:1,type:'missile'},{col:5,row:0,type:'drone'},{col:6,row:1,type:'missile'},{col:8,row:0,type:'aircraft'},{col:3,row:1,type:'drone'},{col:7,row:1,type:'drone'}],
   ],
   initialEnemies: [],
   roundEvents: {
@@ -52,6 +48,7 @@ export default {
     1:  '10 May 2025 · 23:00 IST — Pakistan launches Operation Bunyan-um-Marsoos. Songar drones inbound.',
     2:  'Second drone wave detected on radar. Akash batteries engaging.',
     3:  'Fatah-II ballistic missile tracks confirmed. S-400 locking.',
+    4:  'Multiple tracks on scope. Layered defence — S-400, Akash, MANPAD.',
     5:  '⚡ S-400 salvo. Multiple simultaneous intercepts. All tracks hit.',
     6:  'JF-17s and final missile salvo inbound. This is the last wave.',
   },
@@ -73,7 +70,7 @@ export default {
     },
   },
   winCondition:  {type:'waves'},
-  defensiveAI:   false,
+  defensiveAI:   true,
   enemyLabels:   {drone:'Songar UAV', missile:'Fatah-II Missile', aircraft:'JF-17 Thunder'},
   enemyBio:      'Pakistani air assault: Songar kamikaze UAVs, Fatah-II ballistic missiles, JF-17 Thunder fighters.',
   introMeta:     '2025 · OPERATION SINDOOR · ADAMPUR',

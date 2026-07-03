@@ -8,7 +8,7 @@
 - **Public repo:** `git@github.com:aaghran/military-game.git`
 - **Local path:** `/Users/aaghran/projects/jarvis/projects/regiment/`
 - **Push:** Always `git -C /Users/aaghran/projects/jarvis/projects/regiment push origin main` — never use jarvis subtree
-- **Game URL:** https://aaghran.github.io/military-game/game/ (GitHub Pages, auto-deploys on push to main)
+- **Game URL:** https://regiment-delta.vercel.app (Vercel, deploy via `npx vercel deploy --prod`)
 - **Tech:** Single HTML file (`game/index.html`, ~3800+ lines), Three.js r160 ES modules, no build step
 
 ---

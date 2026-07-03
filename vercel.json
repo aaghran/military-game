@@ -1,9 +1,13 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/game/landing.html" }
+    { "source": "/", "destination": "/game/landing.html" },
+    { "source": "/play", "destination": "/game/index.html" },
+    { "source": "/share", "destination": "/game/share/index.html" },
+    { "source": "/share/:battle", "destination": "/game/share/:battle.html" }
   ],
   "redirects": [
     { "source": "/game", "destination": "/game/landing.html", "permanent": false },
-    { "source": "/game/", "destination": "/game/landing.html", "permanent": false }
+    { "source": "/game/", "destination": "/game/landing.html", "permanent": false },
+    { "source": "/game/share.html", "destination": "/share", "permanent": false }
   ]
 }

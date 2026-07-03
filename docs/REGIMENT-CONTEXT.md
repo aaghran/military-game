@@ -43,7 +43,7 @@ Most war games abstract soldiers into units. Regiment inverts this: each hex on 
 - **Single HTML file** (`game/index.html`, ~3500+ lines)
 - **Hex grid** (pointy-top, odd-r offset coordinate system)
 - **Browser only** — no server, no accounts, no backend
-- **Public GitHub Pages** deployment (auto-deploy via `.github/workflows/deploy-pages.yml`)
+- **Vercel** deployment (see `vercel.json` at repo root)
 
 ### Core Mechanics
 

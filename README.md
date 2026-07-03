@@ -6,12 +6,7 @@ The current build is a static HTML/JavaScript game with no backend and no build 
 
 ## Included battles
 
-- `Saragarhi` - 36th Sikh Infantry
-- `Rezang La` - 13 Kumaon
-- `Longewala` - 23 Punjab
-- `Tololing` - 2 Rajputana Rifles
-- `Siachen` - 19 JAK RIF
-- `Operation Sindoor` - Army Air Defence Corps
+13 battles from Saragarhi (1897) to Operation Sindoor (2025). See `game/battles/index.js` for the full roster.
 
 ## Tech
 
@@ -28,26 +23,28 @@ cd game
 python3 -m http.server 4173
 ```
 
-Then open `http://127.0.0.1:4173`.
+Then open `http://127.0.0.1:4173/landing.html`.
 
-## Deploy
+## Deploy (Vercel)
 
-This repository includes a GitHub Pages workflow at `.github/workflows/deploy-pages.yml`.
+**Production:** https://regiment-delta.vercel.app
 
-On every push to `main`, GitHub Actions deploys the `game/` directory as a static site.
+| URL | Page |
+|-----|------|
+| `/` | Landing |
+| `/play` | Game |
+| `/share/tololing` | Battle share card (OG meta) |
+| `/game/vijay-diwas.html` | Vijay Diwas tribute |
 
-**GitHub Pages:** `https://aaghran.github.io/military-game/`
-
-**Vercel (production):** `https://regiment-delta.vercel.app/game/landing.html`
-
-The Vercel deployment uses `/game/` as the site path. Landing at `/game/landing.html`, game at `/game/index.html`, share at `/game/share.html?battle=BattleName`. Root `/` redirects to landing.
+```bash
+git push origin main
+npx vercel deploy --prod --yes
+```
 
 ## Repo scope
 
-This public repo is intentionally narrow:
+- `game/` — playable site
+- `vercel.json` — routing
+- `README.md` — this file
 
-- `game/` contains the playable site
-- `.github/workflows/` contains deployment automation
-- `README.md` documents the project
-
-Project planning notes, local context files, and internal working docs stay in the private Jarvis workspace and are not pushed to this repository.
+Project planning notes stay in the private Jarvis workspace.
