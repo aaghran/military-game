@@ -2305,8 +2305,8 @@ function buildStructures(){
 
     if(s.type==='sangar'){
       const isEnemy = !!(s.label||'').toLowerCase().match(/pak|enemy|bunker/);
-      const sbCol  = isEnemy ? 0x505058 : 0x8a7a60;
-      const sbCol2 = isEnemy ? 0x404048 : 0x7a6a50;
+      const sbCol  = isEnemy ? 0x4a5258 : 0xb09060;
+      const sbCol2 = isEnemy ? 0x3a3e44 : 0x8a7048;
       const flCol  = isEnemy ? 0x3a3a42 : 0x4a3a28;
       // Floor disc
       sm(new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,0.03,8),
@@ -2346,7 +2346,7 @@ function buildStructures(){
       for(const i of [0,1,5]){
         const em=edges[i];
         const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.48,0.10,0.14),
-          new THREE.MeshStandardMaterial({color:0x8a7a60,roughness:0.9,metalness:0})));
+          new THREE.MeshStandardMaterial({color:0xb09060,roughness:0.9,metalness:0})));
         sb.position.set(em.x,ty+0.05,em.z); sb.rotation.y=em.angle+Math.PI/2;
       }
       // LMG barrel on edge 3 (front), pointing outward — use Group to orient correctly
@@ -2370,7 +2370,7 @@ function buildStructures(){
       for(let i=0;i<6;i++){
         const em=edges[i];
         const sb=sm(new THREE.Mesh(new THREE.BoxGeometry(0.48,0.10,0.14),
-          new THREE.MeshStandardMaterial({color:0x7a6a50,roughness:0.9,metalness:0})));
+          new THREE.MeshStandardMaterial({color:0xa08858,roughness:0.9,metalness:0})));
         sb.position.set(em.x,ty+0.05,em.z); sb.rotation.y=em.angle+Math.PI/2;
       }
       // Dug pit floor
@@ -2433,12 +2433,10 @@ function buildTerrainProps(){
         m.rotation.x=_rnd(-0.2,0.2); m.rotation.z=_rnd(-0.15,0.15);
       }
     } else if(type==='r'){
-      // Rock clusters — 2 icosahedra
-      for(let i=0;i<2;i++){
-        const m=add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.1),new THREE.MeshLambertMaterial({color:0x888880})));
-        m.position.set(p.x+_rnd(-0.2,0.2),ty+0.05,p.z+_rnd(-0.2,0.2));
-        m.rotation.set(_rnd(0,Math.PI),_rnd(0,Math.PI),_rnd(0,Math.PI));
-      }
+      // Single small rock — keep subtle, don't clutter elevated tiles
+      const m=add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.07),new THREE.MeshLambertMaterial({color:0x706860})));
+      m.position.set(p.x+ox,ty+0.04,p.z+oz);
+      m.rotation.set(_rnd(0,Math.PI),_rnd(0,Math.PI),0);
     } else if(type==='g'){
       const c=td.color, blue=c&0xff, red=(c>>16)&0xff;
       if(blue>red){
@@ -2460,15 +2458,13 @@ function buildTerrainProps(){
       const step=add(new THREE.Mesh(new THREE.BoxGeometry(0.65,0.04,0.08),new THREE.MeshStandardMaterial({color:0x3a2a18,roughness:0.95,metalness:0})));
       step.position.set(p.x,ty+0.02,p.z-0.11);
     } else if(type==='b'){
-      // Enemy bunker — concrete block, firing slit, snow cap (Kargil high-altitude)
-      const blk=add(new THREE.Mesh(new THREE.BoxGeometry(0.55,0.22,0.45),new THREE.MeshStandardMaterial({color:0x505060,roughness:0.8,metalness:0.05})));
-      blk.position.set(p.x,ty+0.11,p.z);
-      // Firing slit on front face
-      const slit=add(new THREE.Mesh(new THREE.BoxGeometry(0.30,0.04,0.02),new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.9,metalness:0})));
-      slit.position.set(p.x,ty+0.14,p.z-0.23);
-      // Snow cap on top
-      const snow=add(new THREE.Mesh(new THREE.BoxGeometry(0.58,0.04,0.48),new THREE.MeshStandardMaterial({color:0xd0e0f0,roughness:0.7,metalness:0})));
-      snow.position.set(p.x,ty+0.24,p.z);
+      // Rocky approach tile — just a couple of small stones, no concrete block
+      // (Actual bunkers are placed by buildStructures() on STRUCTURE tiles only)
+      for(let i=0;i<2;i++){
+        const m=add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.06),new THREE.MeshLambertMaterial({color:0x5a4a40})));
+        m.position.set(p.x+_rnd(-0.18,0.18),ty+0.03,p.z+_rnd(-0.18,0.18));
+        m.rotation.set(_rnd(0,Math.PI),_rnd(0,Math.PI),0);
+      }
     } else if(type==='P'){
       // Fort rampart parapet with crenellations (Saragarhi — non-blocking P tiles only)
       for(let i=0;i<4;i++){const a=(i/4)*Math.PI*2+Math.PI/8;
@@ -2480,14 +2476,10 @@ function buildTerrainProps(){
           const cr=add(new THREE.Mesh(new THREE.BoxGeometry(0.10,0.10,0.09),new THREE.MeshStandardMaterial({color:0x6a5a40,roughness:1.0,metalness:0})));
           cr.position.set(p.x+Math.cos(a)*0.28+px2*off,ty+0.30,p.z+Math.sin(a)*0.28+pz2*off); cr.rotation.y=a;}}
     } else if(type==='t'){
-      // 2 small rocks + 1 low log
-      for(let i=0;i<2;i++){
-        const m=add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.06),new THREE.MeshLambertMaterial({color:0x888880})));
-        m.position.set(p.x+_rnd(-0.22,0.22),ty+0.03,p.z+_rnd(-0.22,0.22));
-        m.rotation.set(_rnd(0,Math.PI),_rnd(0,Math.PI),0);
-      }
-      const log=add(new THREE.Mesh(new THREE.BoxGeometry(0.12,0.04,0.05),new THREE.MeshLambertMaterial({color:0x6a5030})));
-      log.position.set(p.x+ox,ty+0.02,p.z+oz); log.rotation.y=_rnd(0,Math.PI);
+      // Single low stone — keep minimal so terrain reads as clear
+      const m=add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.06),new THREE.MeshLambertMaterial({color:0x706858})));
+      m.position.set(p.x+ox,ty+0.03,p.z+oz);
+      m.rotation.set(_rnd(0,Math.PI),_rnd(0,Math.PI),0);
     }
   }
 }
