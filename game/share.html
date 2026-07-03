@@ -137,12 +137,14 @@
     const debrief = battle ? DEBRIEF_DATA[battle.name] : null;
     const content = document.getElementById('content');
 
+    const base = location.pathname.includes('/game/') ? '/game' : '';
+
     const playUrl = battle
-      ? `${location.origin}${location.pathname.replace(/share\.html.*$/, 'index.html')}?battle=${encodeURIComponent(battle.name)}`
+      ? `${location.origin}${base}/index.html?battle=${encodeURIComponent(battle.name)}`
       : './index.html';
 
     const shareUrl = battle
-      ? `${location.origin}${location.pathname}?battle=${encodeURIComponent(battle.name)}`
+      ? `${location.origin}${base}/share.html?battle=${encodeURIComponent(battle.name)}`
       : location.href;
 
     if (battle) {
