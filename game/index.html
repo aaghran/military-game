@@ -332,10 +332,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
   flex-direction:column;
 }
 .intro-map-hero{
+  align-self:stretch;
+  flex-shrink:0;
+  height:80vh;
+  min-height:300px;
   position:relative;
   overflow:hidden;
-  max-height:88vh;
-  min-height:280px;
   background:#07071099;
 }
 .intro-title-overlay{
@@ -363,9 +365,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
   backdrop-filter:blur(4px);
 }
 #intro-map-grid{
-  width:100%;
-  line-height:0;
-  display:block;
+  position:absolute;
+  inset:0;
+  overflow:hidden;
 }
 .intro-map-legend{
   position:absolute;
@@ -5307,7 +5309,7 @@ function renderIntroMap(bd){
   const arrowEls = [], markerDefs = [];
 
   const mkDef = (id, col) =>
-    `<marker id="${id}" markerWidth="7" markerHeight="6" refX="6.5" refY="3" orient="auto"><polygon points="0 0,7 3,0 6" fill="${col}"/></marker>`;
+    `<marker id="${id}" markerWidth="9" markerHeight="8" refX="8.5" refY="4" orient="auto"><polygon points="0 0,9 4,0 8" fill="${col}"/></marker>`;
 
   if(mapPhases && mapPhases.length){
     mapPhases.forEach((ph, i) => {
@@ -5315,10 +5317,12 @@ function renderIntroMap(bd){
       const mkId= `mkph${i}`;
       markerDefs.push(mkDef(mkId, c));
       const pts = ph.path.map(p=>`${((p.col)+0.5)*TW},${((p.row)+0.5)*TH}`).join(' ');
-      arrowEls.push(`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="2.5" stroke-dasharray="5,3.5" stroke-linejoin="round" marker-end="url(#${mkId})"/>`);
-      if(ph.label && ph.path.length >= 2){
+      arrowEls.push(`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="3.0" stroke-linejoin="round" stroke-linecap="round" filter="url(#f-glow)" marker-end="url(#${mkId})"/>`);
+      const opacity = parseFloat((c.match(/[\d.]+\)$/) || ['1'])[0]) || 1;
+      if(ph.label && ph.path.length >= 3 && opacity >= 0.65){
         const mid = ph.path[Math.floor(ph.path.length/2)];
-        arrowEls.push(`<text x="${(mid.col+1)*TW}" y="${(mid.row+0.5)*TH-2}" font-size="4" fill="${c}" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(5,5,15,0.75)" stroke-width="2">${ph.label}</text>`);
+        const lx = (mid.col+1.2)*TW, ly = (mid.row+0.5)*TH-2;
+        arrowEls.push(`<text x="${lx}" y="${ly}" font-size="3.8" fill="${c}" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(5,5,15,0.92)" stroke-width="2.2" stroke-linejoin="round">${ph.label}</text>`);
       }
     });
   } else {
@@ -5335,20 +5339,20 @@ function renderIntroMap(bd){
       const picks  = sorted.length>=3 ? [sorted[0],sorted[Math.floor(sorted.length/2)],sorted[sorted.length-1]] : [sorted[Math.floor(sorted.length/2)]];
       picks.forEach(u=>{
         const x1=(u.col+0.5)*TW,y1=(u.row+0.5)*TH,x2=(tCol+0.5)*TW,y2=(tRow+0.5)*TH;
-        arrowEls.push(`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(216,200,136,0.55)" stroke-width="2.2" stroke-dasharray="5,3.5" marker-end="url(#mkarrow)"/>`);
+        arrowEls.push(`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(216,200,136,0.65)" stroke-width="2.5" filter="url(#f-glow)" marker-end="url(#mkarrow)"/>`);
       });
     }
     if(isDefensive && unitStarts.length){
       const avgFRow=unitStarts.reduce((s,u)=>s+u.row,0)/unitStarts.length;
       const eCols=structCols.length?structCols:[Math.floor(cols*0.3),Math.floor(cols/2),Math.floor(cols*0.7)];
-      eCols.forEach(ec=>arrowEls.push(`<line x1="${(ec+0.5)*TW}" y1="${TH*0.5}" x2="${(ec+0.5)*TW}" y2="${(avgFRow+0.5)*TH}" stroke="rgba(200,70,70,0.50)" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#mkenemy)"/>`));
+      eCols.forEach(ec=>arrowEls.push(`<line x1="${(ec+0.5)*TW}" y1="${TH*0.5}" x2="${(ec+0.5)*TW}" y2="${(avgFRow+0.5)*TH}" stroke="rgba(200,70,70,0.65)" stroke-width="2.5" filter="url(#f-glow)" marker-end="url(#mkenemy)"/>`));
     }
   }
 
   /* ── terrain feature labels ── */
   const featureEls = mapFeatures.map(f => {
     const x=(f.col+0.5)*TW, y=(f.row+0.5)*TH;
-    return `<text x="${x}" y="${y}" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.72)" font-family="monospace" font-style="italic" font-weight="bold" paint-order="stroke" stroke="rgba(5,5,15,0.7)" stroke-width="2.5">${f.label}</text>`;
+    return `<text x="${x}" y="${y}" text-anchor="middle" font-size="4.2" fill="rgba(255,255,255,0.82)" font-family="monospace" font-style="italic" font-weight="bold" paint-order="stroke" stroke="rgba(5,5,15,0.88)" stroke-width="2.5" stroke-linejoin="round">${f.label}</text>`;
   }).join('');
 
   /* ── structure icons — map pin style (circle + downward spike) ── */
@@ -5374,17 +5378,27 @@ function renderIntroMap(bd){
   }).join('');
 
   /* ── zone labels ── */
+  const zoneTxt = (txt, x, y, col) =>
+    `<text x="${x}" y="${y}" font-size="4.8" fill="${col}" font-family="monospace" font-weight="bold" letter-spacing="0.8" paint-order="stroke" stroke="rgba(0,0,5,0.85)" stroke-width="2.5" stroke-linejoin="round">${txt}</text>`;
   const zoneLabels = isDefensive
-    ? [`<text x="3" y="10" font-size="5" fill="rgba(210,70,70,0.85)" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2">ENEMY</text>`,
-       `<text x="3" y="${H-4}" font-size="5" fill="rgba(216,200,136,0.85)" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2">DEFENCE</text>`]
-    : [`<text x="3" y="10" font-size="5" fill="rgba(210,70,70,0.85)" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2">OBJECTIVE</text>`,
-       `<text x="3" y="${H-4}" font-size="5" fill="rgba(216,200,136,0.85)" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2">ASSAULT</text>`];
+    ? [zoneTxt('ENEMY',   3, 11,     'rgba(210,70,70,0.95)'),
+       zoneTxt('DEFENCE', 3, H-5,    'rgba(216,200,136,0.95)')]
+    : [zoneTxt('OBJECTIVE',3, 11,    'rgba(210,70,70,0.95)'),
+       zoneTxt('ASSAULT',  3, H-5,   'rgba(216,200,136,0.95)')];
 
-  /* ── SVG ── */
-  mapEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+  /* ── SVG — explicit px dims bypass CSS % resolution issues ── */
+  const heroW = window.innerWidth;
+  const heroH = Math.max(300, Math.round(window.innerHeight * 0.80));
+  const natH  = Math.round(heroW * H / W);
+  const par   = natH <= heroH ? 'xMidYMin meet' : 'xMidYMin slice';
+  mapEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${heroW}" height="${heroH}" preserveAspectRatio="${par}" style="display:block;position:absolute;inset:0">
   <defs>
     ${gradEls.join('')}
     ${markerDefs.join('')}
+    <filter id="f-terrain" x="-10%" y="-10%" width="120%" height="120%">
+      <feColorMatrix type="saturate" values="0.55"/>
+      <feGaussianBlur stdDeviation="6.5"/>
+    </filter>
     <filter id="f-glow"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     <pattern id="pat-ice"    x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse"><line x1="0" y1="5" x2="5" y2="0" stroke="rgba(255,255,255,0.22)" stroke-width="0.9"/></pattern>
     <pattern id="pat-snow"   x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.55" fill="rgba(255,255,255,0.28)"/></pattern>
@@ -5394,9 +5408,8 @@ function renderIntroMap(bd){
     <pattern id="pat-glacier" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse"><line x1="0" y1="6" x2="6" y2="0" stroke="rgba(200,230,255,0.2)" stroke-width="1"/><line x1="0" y1="3" x2="3" y2="0" stroke="rgba(200,230,255,0.12)" stroke-width="0.5"/></pattern>
     <pattern id="pat-dune"   x="0" y="0" width="6" height="4" patternUnits="userSpaceOnUse"><path d="M0 4 Q3 1 6 4" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="0.6"/></pattern>
   </defs>
-  ${tiles.join('')}
+  <g filter="url(#f-terrain)">${tiles.join('')}</g>
   ${contourEls.join('')}
-  ${gridEls.join('')}
   ${featureEls}
   ${arrowEls.join('')}
   ${strIcons.join('')}
