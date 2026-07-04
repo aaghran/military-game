@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <title>Regiment</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
-canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; touch-action:none; }
+#c { position:fixed; top:0; left:0; width:100%; height:100%; display:block; touch-action:none; }
 
 /* ── Overlay screens ─────────────────────────────────────────── */
 .screen {
@@ -277,7 +277,21 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 .era-detail-years { font-size: 9px; letter-spacing: 3px; color: #6f756a; margin-bottom: 4px; }
 .era-detail-name { font-size: 20px; font-weight: bold; letter-spacing: 4px; }
 .era-detail-blurb { font-size: 10px; color: #8a8a9a; margin-top: 8px; line-height: 1.7; max-width: 480px; margin-left: auto; margin-right: auto; }
-#era-battle-list { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; width: 100%; }
+#era-battle-list,
+#campaign-battles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  width: 100%;
+}
+#campaign-battles-list {
+  padding: 20px 0 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  align-content: flex-start;
+}
 .battle-card {
   width: 185px; border-radius: 14px; overflow: hidden;
   background: linear-gradient(180deg, rgba(16,16,28,0.96) 0%, rgba(10,10,18,0.98) 100%);
@@ -298,6 +312,8 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 .battle-card-meta { font-size: 9px; color: #869181; margin-bottom: 10px; letter-spacing: 0.8px; }
 .battle-card-sub { font-size: 10px; color: #b0b0bf; line-height: 1.65; min-height: 44px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .battle-card-btn { margin-top: 12px; width: 100%; padding: 11px 0; font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; border: none; border-radius: 999px; cursor: pointer; letter-spacing: 1.3px; color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+.battle-card-done { opacity: 0.92; }
+.battle-card-done .battle-card-chapter::after { content: ' · ✓'; color: #6a9040; }
 .era-campaign-cta {
   width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 10px; text-align: center; cursor: pointer;
   background: linear-gradient(135deg, #3a2800 0%, #5a4000 40%, #3a2800 100%);
@@ -548,6 +564,30 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 .debrief-legacy { font-size: 9px; line-height: 1.8; color: #81819a; margin-top: 10px; max-width: 560px; text-align: center; font-style: italic; }
 #back-btn { margin-top: 24px; padding: 11px 38px; background: transparent; border: 1px solid #3a3a50; color: #999; font-family: 'Courier New', monospace; font-size: 10px; cursor: pointer; letter-spacing: 1px; transition: border-color 0.15s, color 0.15s; }
 #back-btn:hover { border-color: #666; color: #bbb; }
+.db-beat{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease;}
+.db-beat.shown{opacity:1;transform:none;}
+#db-continue{margin:18px auto 0;display:block;background:none;border:none;color:#c8a96e;font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;min-height:44px;cursor:pointer;animation:dbPulse 1.6s ease-in-out infinite;}
+#db-continue.hidden{display:none;}
+@keyframes dbPulse{0%,100%{opacity:.5}50%{opacity:1}}
+#db-share-btn{display:block;margin:14px auto 10px;min-height:48px;padding:0 28px;border-radius:999px;border:1px solid rgba(200,169,110,.6);background:rgba(200,169,110,.12);color:#c8a96e;font-family:'Courier New',monospace;font-size:12px;font-weight:bold;letter-spacing:2px;cursor:pointer;}
+#db-share-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom));background:rgba(10,10,20,.94);border:1px solid rgba(200,169,110,.5);border-radius:8px;padding:10px 18px;font-family:'Courier New',monospace;font-size:11px;color:#e8e0d0;z-index:600;transition:opacity .3s;}
+#db-share-toast.hidden{opacity:0;pointer-events:none;}
+#boot-loader{position:fixed;inset:0;z-index:900;background:#0a0a14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:'Courier New',monospace;transition:opacity .4s;}
+#boot-loader .boot-star{color:#c8a96e;font-size:18px;}
+#boot-loader .boot-title{color:#c8a96e;font-size:22px;letter-spacing:8px;}
+#boot-loader .boot-quote{color:#869181;font-size:11px;line-height:1.7;text-align:center;padding:0 28px;font-style:italic;}
+#boot-loader .boot-bar{width:140px;height:2px;background:rgba(200,169,110,.15);border-radius:2px;overflow:hidden;}
+#boot-loader .boot-bar-fill{width:40%;height:100%;background:#c8a96e;animation:bootSlide 1.1s ease-in-out infinite alternate;}
+@keyframes bootSlide{from{margin-left:0}to{margin-left:60%}}
+#boot-loader.done{opacity:0;pointer-events:none;}
+#first-visit-card{max-width:420px;margin:0 auto 18px;padding:18px 20px;border:1px solid rgba(200,169,110,.45);border-radius:10px;background:linear-gradient(180deg,rgba(200,169,110,.10),rgba(200,169,110,.03));text-align:center;}
+#first-visit-card.hidden{display:none;}
+#first-visit-card .fv-label{font-size:9px;letter-spacing:3px;color:#c8a96e;margin-bottom:8px;}
+#first-visit-card .fv-title{font-size:16px;font-weight:bold;letter-spacing:2px;color:#e8e0d0;margin-bottom:6px;}
+#first-visit-card .fv-sub{font-size:11px;color:#b0b0bf;line-height:1.6;margin-bottom:12px;}
+#first-visit-card #fv-start-btn{width:100%;min-height:48px;border:none;border-radius:999px;background:#c8a96e;color:#141410;font-family:'Courier New',monospace;font-weight:bold;font-size:12px;letter-spacing:2px;cursor:pointer;}
+#tutorial-tip{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));z-index:350;background:rgba(10,10,20,.92);border:1px solid rgba(200,169,110,.55);border-radius:8px;padding:10px 16px;font-family:'Courier New',monospace;font-size:12px;color:#e8e0d0;letter-spacing:.5px;max-width:320px;text-align:center;transition:opacity .3s;}
+#tutorial-tip.hidden{opacity:0;pointer-events:none;}
 
 /* ── Select screen polish ────────────────────────────────────── */
 .select-bg { position:absolute;inset:0;pointer-events:none;
@@ -783,7 +823,7 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
   body.mobile-battle #panel.panel-collapsed #auto-pause-btn {
     grid-column: 3;
     margin: 0; padding: 8px 10px;
-    min-height: 38px; font-size: 9px; letter-spacing: 1px;
+    min-height: 44px; font-size: 9px; letter-spacing: 1px;
     border-radius: 8px;
   }
   body.mobile-battle #panel.panel-collapsed #panel-toggle {
@@ -914,7 +954,17 @@ canvas { position:fixed; top:0; left:0; width:100%; height:100%; display:block; 
 
   /* Select screen — era navigation */
   #screen-select{padding:24px 14px max(80px, env(safe-area-inset-bottom));}
-  .select-header{gap:12px;margin-bottom:10px;}
+  .select-header{gap:12px;margin-bottom:10px;padding-top:env(safe-area-inset-top);}
+  .opening-skip-btn{min-height:44px;padding:12px 18px;padding-top:max(12px,env(safe-area-inset-top));}
+  .opening-begin-btn{min-height:48px;}
+  .opening-card{max-width:calc(100vw - 32px);padding:0 16px;word-wrap:break-word;}
+  #campaign-banner{min-height:44px;}
+  .hc-close{min-height:44px;padding:10px 18px;}
+  #back-btn{min-height:48px;width:100%;max-width:320px;}
+  #watch-story-btn{min-height:44px;margin-top:14px;}
+  .debrief-shell{min-height:100dvh;padding-bottom:calc(24px + env(safe-area-inset-bottom));}
+  #debrief-epitaph{font-size:12px;}
+  .debrief-fallen-name{font-size:11px;}
   .select-title{font-size:28px;letter-spacing:6px;text-align:center;}
   .select-subtitle{font-size:10px;letter-spacing:3px;text-align:center;}
   .select-quote{
@@ -1339,37 +1389,8 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
 .campaign-header-title { font-size:1.4rem; font-weight:bold; letter-spacing:0.15em; color:#f0c850; font-family:'Courier New',monospace; }
 .campaign-header-sub { font-size:0.75rem; color:#806830; margin-top:6px; letter-spacing:0.05em; }
 .campaign-quote { text-align:center; font-style:italic; color:#907850; font-size:0.8rem; padding:12px 20px 16px; border-bottom:1px solid #2a2210; flex-shrink: 0; }
-#campaign-battles-list { display:none; }
-.campaign-map-wrap {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 0 8px;
-  min-height: 240px;
-  width: 100%;
-}
-#campaign-map-canvas {
-  display: block;
-  width: 100%;
-  max-width: 860px;
-  height: auto;
-  aspect-ratio: 860 / 360;
-  border: 1px solid rgba(200,169,110,0.25);
-  border-radius: 8px;
-  cursor: pointer;
-  background: #0a0c08;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-}
-.campaign-map-hint {
-  font-size: 0.65rem;
-  letter-spacing: 0.2em;
-  color: #806830;
-  text-align: center;
-  padding: 10px 20px 4px;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
+.campaign-map-wrap,
+.campaign-map-hint { display: none !important; }
 #intro-situation {
   margin:0 0 1rem; padding:12px 14px;
   border-left:2px solid rgba(200,169,110,0.45);
@@ -1383,22 +1404,66 @@ body.light .quick-action-btn:hover{background:#fffaf2;border-color:#8b6b39;color
   font-size:0.9rem; line-height:1.6;
 }
 .campaign-battle-row {
-  display:flex; align-items:center; gap:14px; padding:12px 16px;
-  border-radius:6px; border:1px solid #2a2215;
-  background:#110e08;
-  transition: border-color 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid #2a2215;
+  background: #110e08;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  text-align: left;
 }
-.campaign-battle-row.unlocked { border-color:#3a3020; cursor:default; }
-.campaign-battle-row.completed { border-color:#3a5020; background:#0a100a; }
-.campaign-battle-row.locked { opacity:0.4; }
-.campaign-battle-num { width:28px; height:28px; border-radius:50%; border:1px solid #604820; display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#806830; font-family:'Courier New',monospace; flex-shrink:0; }
-.campaign-battle-row.completed .campaign-battle-num { border-color:#4a8030; color:#8aba50; background:#0a1a08; }
-.campaign-battle-info { flex:1; }
-.campaign-battle-name { font-size:0.9rem; font-weight:bold; color:#c8a030; letter-spacing:0.08em; font-family:'Courier New',monospace; }
-.campaign-battle-row.completed .campaign-battle-name { color:#6a9040; }
-.campaign-battle-regiment-label { font-size:0.7rem; color:#604820; margin-top:2px; }
-.campaign-battle-status { font-size:0.7rem; color:#504020; }
-.campaign-battle-row.completed .campaign-battle-status { color:#4a8030; }
+.campaign-battle-row.ready {
+  border-color: #806830;
+  background: #1a1408;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(200,169,110,0.12);
+}
+.campaign-battle-row.ready:hover {
+  border-color: #c8a030;
+  background: #221a0a;
+  box-shadow: 0 4px 20px rgba(200,169,110,0.15);
+}
+.campaign-battle-row.unlocked:not(.ready) { border-color: #3a3020; }
+.campaign-battle-row.completed { border-color: #3a5020; background: #0a100a; opacity: 0.85; }
+.campaign-battle-row.locked { opacity: 0.45; pointer-events: none; }
+.campaign-battle-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid #604820;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; color: #806830;
+  font-family: 'Courier New', monospace; flex-shrink: 0;
+  margin-top: 2px;
+}
+.campaign-battle-row.ready .campaign-battle-num {
+  border-color: #c8a030; color: #f0c850; background: #2a2010;
+}
+.campaign-battle-row.completed .campaign-battle-num { border-color: #4a8030; color: #8aba50; background: #0a1a08; }
+.campaign-battle-info { flex: 1; min-width: 0; }
+.campaign-battle-name {
+  font-size: 1rem; font-weight: bold; color: #e8c860;
+  letter-spacing: 0.06em; font-family: 'Courier New', monospace;
+  line-height: 1.3;
+}
+.campaign-battle-row.ready .campaign-battle-name { color: #f0d878; }
+.campaign-battle-row.completed .campaign-battle-name { color: #6a9040; }
+.campaign-battle-regiment-label {
+  font-size: 0.72rem; color: #907858; margin-top: 4px;
+  letter-spacing: 0.04em; line-height: 1.4;
+}
+.campaign-battle-stakes {
+  font-size: 0.78rem; color: #706040; margin-top: 8px;
+  font-style: italic; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.campaign-battle-status {
+  font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: #504020; flex-shrink: 0; padding-top: 4px;
+  font-family: 'Courier New', monospace;
+}
+.campaign-battle-row.ready .campaign-battle-status { color: #c8a030; font-weight: bold; }
+.campaign-battle-row.completed .campaign-battle-status { color: #4a8030; }
 .campaign-footer {
   display: flex;
   justify-content: center;
@@ -1413,9 +1478,14 @@ body.light #campaign-screen { background: linear-gradient(180deg, #efe8dc 0%, #e
 body.light .campaign-header-title { color: #5a4020; }
 body.light .campaign-header-sub { color: #7a6040; }
 body.light .campaign-quote { color: #6a5840; border-bottom-color: #d8d0c0; }
-body.light .campaign-map-hint { color: #7a6040; }
+body.light .campaign-battle-row { background: #fffdf9; border-color: #d0c8b8; }
+body.light .campaign-battle-row.ready { background: #f8f0e4; border-color: #b89860; }
+body.light .campaign-battle-row.ready:hover { background: #f0e8d8; border-color: #9a7840; }
+body.light .campaign-battle-name { color: #5a4020; }
+body.light .campaign-battle-row.ready .campaign-battle-name { color: #3a2808; }
+body.light .campaign-battle-regiment-label { color: #6a5840; }
+body.light .campaign-battle-stakes { color: #7a6848; }
 body.light .campaign-footer { border-top-color: #d8d0c0; }
-body.light #campaign-map-canvas { border-color: rgba(90,64,32,0.25); box-shadow: 0 12px 32px rgba(48,33,16,0.12); }
 
 /* Bridge screen */
 #campaign-bridge-screen:not(.hidden) { display:flex; align-items:center; justify-content:center; background:#080604; }
@@ -1623,6 +1693,12 @@ body.light #campaign-map-canvas { border-color: rgba(90,64,32,0.25); box-shadow:
 </style>
 </head>
 <body>
+<div id="boot-loader">
+  <div class="boot-star">✦</div>
+  <div class="boot-title">REGIMENT</div>
+  <div class="boot-quote">"When you go home, tell them of us and say —<br>for your tomorrow, we gave our today."</div>
+  <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+</div>
 <div id="screen-opening" class="screen hidden">
   <div id="opening-card" class="opening-card"></div>
   <div id="opening-title" class="opening-title hidden">
@@ -1644,12 +1720,18 @@ body.light #campaign-map-canvas { border-color: rgba(90,64,32,0.25); box-shadow:
   <div class="select-quote">"How can a man die better than facing fearful odds, for the ashes of his fathers, and the temples of his gods."</div>
 
   <div id="select-home" class="select-home-shell">
+    <div id="first-visit-card" class="hidden">
+      <div class="fv-label">YOUR FIRST BATTLE</div>
+      <div class="fv-title">SARAGARHI · 1897</div>
+      <div class="fv-sub">21 soldiers. 10,000 attackers. They all chose to stand.</div>
+      <button id="fv-start-btn">START HERE →</button>
+    </div>
     <div id="campaign-banner" onclick="startCampaign()">
       <div class="campaign-banner-inner">
         <div class="campaign-icon">🏔</div>
         <div class="campaign-text">
           <div class="campaign-title">VIJAY DIWAS CAMPAIGN</div>
-          <div class="campaign-sub">5 Kargil battles in sequence · 26 July tribute</div>
+          <div class="campaign-sub">4 Kargil peaks · play any order · 26 July tribute</div>
         </div>
         <div class="campaign-arrow">▶</div>
       </div>
@@ -1695,6 +1777,7 @@ body.light #campaign-map-canvas { border-color: rgba(90,64,32,0.25); box-shadow:
 <div id="war-cry-overlay">
   <div class="wc-text" id="wc-text"></div>
 </div>
+<div id="tutorial-tip" class="hidden"><span id="tutorial-tip-text"></span></div>
 <div id="screen-intro" class="screen hidden">
   <div class="intro-shell">
     <div id="intro-title"></div>
@@ -1756,12 +1839,15 @@ body.light #campaign-map-canvas { border-color: rgba(90,64,32,0.25); box-shadow:
 </div>
 <div id="screen-debrief" class="screen hidden">
   <div class="debrief-shell">
-    <div class="debrief-header">
-      <div id="debrief-insignia"></div>
-      <div id="debrief-title"></div>
-      <div id="debrief-regiment-label" class="debrief-regiment-label"></div>
+    <div class="db-beat">
+      <div class="debrief-header">
+        <div id="debrief-insignia"></div>
+        <div id="debrief-title"></div>
+        <div id="debrief-regiment-label" class="debrief-regiment-label"></div>
+      </div>
+      <div id="debrief-epitaph"></div>
     </div>
-    <div class="debrief-body">
+    <div class="db-beat">
       <div class="debrief-panel">
         <div class="debrief-panel-label">YOUR BATTLE</div>
         <div class="debrief-stat-row">
@@ -1780,18 +1866,24 @@ body.light #campaign-map-canvas { border-color: rgba(90,64,32,0.25); box-shadow:
         </div>
         <div id="debrief-fallen" class="debrief-fallen"></div>
       </div>
+    </div>
+    <div class="db-beat">
       <div class="debrief-panel">
         <div class="debrief-panel-label">WHAT HAPPENED</div>
         <div id="debrief-infographic"></div>
       </div>
+      <div id="debrief-hero-card" class="debrief-hero-card"></div>
     </div>
-    <div id="debrief-hero-card" class="debrief-hero-card"></div>
-    <div id="debrief-epitaph"></div>
-    <div id="debrief-history" class="debrief-history"></div>
-    <div id="debrief-legacy" class="debrief-legacy"></div>
-    <button id="back-btn">← RETURN TO MAP</button>
+    <div class="db-beat">
+      <div id="debrief-history" class="debrief-history"></div>
+      <div id="debrief-legacy" class="debrief-legacy"></div>
+      <button id="db-share-btn">⤴ SHARE YOUR BATTLE</button>
+      <button id="back-btn">← RETURN TO CAMPAIGN</button>
+    </div>
+    <button id="db-continue">TAP TO CONTINUE ▾</button>
   </div>
 </div>
+<div id="db-share-toast" class="hidden">Link copied — paste it anywhere</div>
 <!-- ── CAMPAIGN SCREENS ────────────────────────────────────── -->
 <div id="campaign-screen" class="screen hidden">
   <div class="campaign-shell">
@@ -1803,10 +1895,6 @@ body.light #campaign-map-canvas { border-color: rgba(90,64,32,0.25); box-shadow:
     "Every 26th of July, India remembers. These are the battles that made Kargil Vijay Diwas."
   </div>
   <div id="campaign-battles-list"></div>
-  <div class="campaign-map-wrap">
-    <canvas id="campaign-map-canvas" width="860" height="360"></canvas>
-  </div>
-  <p class="campaign-map-hint" id="campaign-map-hint">Select a ready peak on the map</p>
   <div class="campaign-footer">
     <button class="btn-secondary" onclick="showBattleSelect()">← Back</button>
     <button class="btn-primary hidden" id="campaign-start-btn" onclick="showCampaignComplete()">VIEW TRIBUTE ▶</button>
@@ -1984,7 +2072,7 @@ body.light #campaign-map-canvas { border-color: rgba(90,64,32,0.25); box-shadow:
 import * as THREE from 'three';
 import { BATTLE_DATA, BATTLES } from './battles/index.js';
 import { DEBRIEF_DATA } from './battles/debrief-data.js';
-import { KARGIL_PEAKS, CAMPAIGN_BRIDGE_COPY, drawKargilMap, hitTestPeak } from './kargil-map.js';
+import { CAMPAIGN_BRIDGE_COPY } from './kargil-map.js';
 
 // Settings — persisted to localStorage
 const gameSettings = { musicOn:true, musicVol:35, animSpeed:1.0, showDmg:true, theme:'dark', autoPlay:false };
@@ -3516,7 +3604,7 @@ function showMoveHighlights(unit) {
   gameState.moveable.forEach(h=>addHighlight(h.col,h.row,0x4488ff,0.40));
   gameState.attackable.forEach(h=>{ const u=unitAt(h.col,h.row); if(u?.side==='pla') addHighlight(h.col,h.row,0xff3333,0.38); });
 }
-function selectUnit(unit){gameState.selected=unit;showMoveHighlights(unit);updatePanel();}
+function selectUnit(unit){gameState.selected=unit;showMoveHighlights(unit);updatePanel();tutorialStep('select');}
 function deselect(){gameState.selected=null;gameState.moveable=[];gameState.attackable=[];clearHighlights();updatePanel();}
 
 // Movement
@@ -3530,7 +3618,7 @@ function executeMove(unit,tc,tr){
     const el=performance.now()-t0;
     if(el<P1){const t=el/P1,e=t*t;g.position.x=sp.x+(tp.x-sp.x)*e*0.5;g.position.y=sp.y+(peakY-sp.y)*e;g.position.z=sp.z+(tp.z-sp.z)*e*0.5;requestAnimationFrame(step);}
     else if(el<P1+P2){const t=(el-P1)/P2,e=1-Math.pow(1-t,2);g.position.x=sp.x+(tp.x-sp.x)*(0.5+e*0.5);g.position.y=peakY+(tp.y-peakY)*e;g.position.z=sp.z+(tp.z-sp.z)*(0.5+e*0.5);requestAnimationFrame(step);}
-    else{g.position.copy(tp);unit.col=tc;unit.row=tr;unit.moved=true;gameState.animating=false;showMoveHighlights(unit);updatePanel();}
+    else{g.position.copy(tp);unit.col=tc;unit.row=tr;unit.moved=true;gameState.animating=false;showMoveHighlights(unit);updatePanel();tutorialStep('move');}
   }
   requestAnimationFrame(step);
 }
@@ -3641,6 +3729,7 @@ function executeAttack(atk,def){
   }
   const ag=unitGroupMap.get(atk),dg=unitGroupMap.get(def);
   spawnWeaponEffect(atk,def);
+  tutorialStep('attack');
   _doAttack(atk,def,ag,dg,()=>{atk.attacked=true;gameState.animating=false;gameState.selected=null;updatePanel();checkWinLoss();});
 }
 function executeAttack_pla(atk,def,cb){
@@ -3894,6 +3983,12 @@ function nextRound(){
     }
   }
   gameState.phase='player_turn';
+  if(gameState.round===2) tutorialStep('round2');
+  if(gameState.round===3 && tutorialActive()){
+    _tutorialIdx=TUTORIAL_STEPS.length;
+    localStorage.setItem('regiment_tutorial_done','1');
+    document.getElementById('tutorial-tip').classList.add('hidden');
+  }
   gameState.units.filter(u=>u.side==='ind').forEach(u=>{u.moved=false;u.attacked=false;});
   gameState.units.forEach(u=>{u._defBonus=0;u._atkBonus=0;u._suppressed=false;u._diggingIn=false;u._coveringFire=false;});
   gameState.selected=null; updatePanel();
@@ -3903,7 +3998,8 @@ function nextRound(){
 function doEndTurn(){
   if(gameState.phase!=='player_turn'||gameState.animating) return;
   clearIdleNudge();
-  deselect(); gameState.phase='enemy_turn'; updatePanel(); setTimeout(enemyTurn,320);
+  deselect(); tutorialStep('endturn');
+  gameState.phase='enemy_turn'; updatePanel(); setTimeout(enemyTurn,320);
 }
 
 // Input
@@ -4260,6 +4356,36 @@ function showDeathFlash(unit) {
 
 // ── End turn idle nudge ──────────────────────────────────────
 let _idleNudgeTimer = null;
+const TUTORIAL_STEPS=[
+  {key:'select', text:'Tap one of your soldiers'},
+  {key:'move',   text:'Blue tiles = move. Tap one to advance'},
+  {key:'attack', text:'Red tiles = enemy in range. Tap to attack'},
+  {key:'endturn',text:'Done? Tap END TURN — the enemy moves next'},
+  {key:'round2', text:'Hold the fort. Every soldier here was real.'},
+];
+let _tutorialIdx=-1;
+function tutorialActive(){ return _tutorialIdx>=0 && _tutorialIdx<TUTORIAL_STEPS.length; }
+function startTutorial(){
+  if(localStorage.getItem('regiment_tutorial_done')||gameSettings.autoPlay) return;
+  _tutorialIdx=0; showTutorialTip();
+}
+function showTutorialTip(){
+  const el=document.getElementById('tutorial-tip');
+  if(!tutorialActive()){ el.classList.add('hidden'); return; }
+  document.getElementById('tutorial-tip-text').textContent=TUTORIAL_STEPS[_tutorialIdx].text;
+  el.classList.remove('hidden');
+}
+function tutorialStep(key){
+  if(!tutorialActive()) return;
+  if(TUTORIAL_STEPS[_tutorialIdx].key!==key) return;
+  _tutorialIdx++;
+  if(!tutorialActive()){
+    localStorage.setItem('regiment_tutorial_done','1');
+    document.getElementById('tutorial-tip').classList.add('hidden');
+    return;
+  }
+  showTutorialTip();
+}
 function startIdleNudge() {
   clearTimeout(_idleNudgeTimer);
   _idleNudgeTimer = setTimeout(() => {
@@ -4385,14 +4511,12 @@ function startBattle(name){
   setMapToolsOpen(false);
   updateCompass();
   updateMobileDock();
+  localStorage.setItem('regiment_seen','1');
+  startTutorial();
 }
 
 // Screen flow
 function showScreen(name){
-  if (name !== 'campaign-screen' && _campaignMapAnim) {
-    cancelAnimationFrame(_campaignMapAnim);
-    _campaignMapAnim = null;
-  }
   ['screen-select','screen-regiment','screen-intro','screen-debrief','screen-opening','campaign-screen','campaign-bridge-screen','campaign-complete-screen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
   if(name) document.getElementById(name).classList.remove('hidden');
   document.getElementById('panel').classList.toggle('hidden',name!==null);
@@ -4444,8 +4568,9 @@ function showOpeningIfNeeded(){
   document.getElementById('opening-begin-btn').addEventListener('click', done);
   skipBtn.addEventListener('click', done);
 
-  // Show skip button after 3s
-  setTimeout(()=>{ if(!cancelled) skipBtn.classList.remove('hidden'); }, 3000);
+  // Show skip button after delay (faster on mobile)
+  setTimeout(()=>{ if(!cancelled) skipBtn.classList.remove('hidden'); }, isMobileView()?600:3000);
+  if(isMobileView()) document.getElementById('screen-opening').addEventListener('click', done);
 
   // Sequence cards
   let ci = 0;
@@ -4527,14 +4652,18 @@ function renderDebriefInfographic(info, color){
   }
 }
 
+const RECOMMENDED_ORDER=['Saragarhi','Longewala','Rezang La','Tololing','Point 5140','Tiger Hill','Kohima','Haifa','Asal Uttar','Dograi','Khalubar','Siachen','Operation Sindoor'];
+
 function renderDebriefButtons(result) {
   const backBtn = document.getElementById('back-btn');
   if (!backBtn) return;
   // Remove any existing campaign next button
   const existing = document.getElementById('campaign-next-btn');
   if (existing) existing.remove();
-  if (result === 'win' && campaignState.active && campaignState.currentIndex < CAMPAIGN_BATTLES.length - 1) {
-    const nextName = CAMPAIGN_BATTLES[campaignState.currentIndex + 1];
+  const existingNext = document.getElementById('next-battle-btn');
+  if (existingNext) existingNext.remove();
+  if (result === 'win' && campaignState.active && campaignState.playingIndex < CAMPAIGN_BATTLES.length - 1) {
+    const nextName = CAMPAIGN_BATTLES[campaignState.playingIndex + 1];
     const btn = document.createElement('button');
     btn.id = 'campaign-next-btn';
     btn.className = 'btn-primary campaign-next-debrief-btn';
@@ -4542,14 +4671,74 @@ function renderDebriefButtons(result) {
     btn.addEventListener('click', () => {
       unitGroups.forEach(g=>scene.remove(g)); unitGroups.length=0; unitGroupMap.clear(); clearHighlights();
       gameState.units=[]; gameState.screen='select';
-      const justFinished = campaignState.currentIndex;
+      const justFinished = campaignState.playingIndex;
       if (!campaignState.completed.includes(justFinished)) campaignState.completed.push(justFinished);
-      campaignState.currentIndex = Math.min(justFinished + 1, CAMPAIGN_BATTLES.length - 1);
+      campaignState.playingIndex = Math.min(justFinished + 1, CAMPAIGN_BATTLES.length - 1);
       if (campaignState.completed.length === CAMPAIGN_BATTLES.length) showCampaignComplete();
-      else returnToCampaignMap();
+      else {
+        const nextBattle = BATTLES.find(x => x.name === CAMPAIGN_BATTLES[campaignState.playingIndex]);
+        if (nextBattle) showMissionBrief(nextBattle, campaignState.playingIndex);
+      }
     });
     backBtn.parentNode.insertBefore(btn, backBtn);
   }
+  if(result==='win'&&!campaignState.active){
+    const idx=RECOMMENDED_ORDER.indexOf(_currentBattleName);
+    const nextName=RECOMMENDED_ORDER[(idx+1)%RECOMMENDED_ORDER.length];
+    const next=BATTLES.find(b=>b.name===nextName);
+    if(next){
+      const btn=document.createElement('button');
+      btn.id='next-battle-btn';
+      btn.className='btn-primary campaign-next-debrief-btn';
+      btn.textContent=`NEXT BATTLE: ${nextName.toUpperCase()} →`;
+      btn.addEventListener('click',()=>{
+        unitGroups.forEach(g=>scene.remove(g));unitGroups.length=0;unitGroupMap.clear();clearHighlights();
+        gameState.units=[];gameState.screen='select';
+        showMissionBrief(next);
+      });
+      backBtn.parentNode.insertBefore(btn,backBtn);
+    }
+  }
+}
+
+function revealDebrief(){
+  const beats=[...document.querySelectorAll('#screen-debrief .db-beat')];
+  const cont=document.getElementById('db-continue');
+  beats.forEach(b=>b.classList.remove('shown'));
+  let i=0;
+  function show(){
+    if(i<beats.length){ beats[i++].classList.add('shown'); beats[i-1].scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    cont.classList.toggle('hidden', i>=beats.length);
+  }
+  cont.onclick=show;
+  show();
+  if(!isMobileView()){
+    const t=setInterval(()=>{ show(); if(i>=beats.length) clearInterval(t); },900);
+  }
+}
+
+function battleShareText(){
+  const b=BATTLES.find(x=>x.name===_currentBattleName)||{};
+  const dd=DEBRIEF_DATA[_currentBattleName]||{};
+  const odds=dd.infographic&&dd.infographic.type==='odds'?` ${dd.infographic.indian} vs ${dd.infographic.enemy}.`:'';
+  const wc=activeBattleData?.winCondition||{};
+  const line=wc.type==='rounds'
+    ?`I held ${_currentBattleName} for ${gameState.round>wc.n?wc.n:gameState.round} rounds.${odds}`
+    :`I fought ${_currentBattleName} — ${gameState.casualties.pla} enemy stopped.${odds}`;
+  return {
+    title:`Regiment — ${_currentBattleName} ${b.year||''}`.trim(),
+    text:line+' Can you hold the line?',
+    url:`https://regiment-delta.vercel.app/?battle=${encodeURIComponent(_currentBattleName)}`,
+  };
+}
+function shareBattleResult(){
+  const payload=battleShareText();
+  if(navigator.share){ navigator.share(payload).catch(()=>{}); return; }
+  navigator.clipboard.writeText(`${payload.text} ${payload.url}`).then(()=>{
+    const t=document.getElementById('db-share-toast');
+    t.classList.remove('hidden');
+    setTimeout(()=>t.classList.add('hidden'),2200);
+  }).catch(()=>{});
 }
 
 function showDebrief(result){
@@ -4629,6 +4818,7 @@ function showDebrief(result){
     legacyEl.style.display=isWin&&activeBattle.debriefLegacy?'block':'none';
   }
   renderDebriefButtons(result);
+  revealDebrief();
 }
 
 const BATTLE_TERRAIN_ICONS = {
@@ -4745,7 +4935,8 @@ const BATTLE_STAKES_MAP = {
   'Operation Sindoor':"India's shield. Drones and missiles intercepted.",
 };
 
-function buildBattleCard(battle){
+function buildBattleCard(battle, opts = {}){
+  const { onPlay, replay = false } = opts;
   const i=battleChapterIndex(battle.name);
   const chap=`CHAPTER ${['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII'][i]||i+1}`;
   const c=battle.color||'#c8a96e';
@@ -4754,7 +4945,7 @@ function buildBattleCard(battle){
   const stakes=BATTLE_STAKES_MAP[battle.name]||'';
 
   const card=document.createElement('div');
-  card.className='battle-card';
+  card.className='battle-card'+(replay?' battle-card-done':'');
   card.innerHTML=`
     <div class="battle-card-accent" style="background:linear-gradient(90deg,${c},transparent)"></div>
     <div class="battle-card-visual">
@@ -4767,10 +4958,14 @@ function buildBattleCard(battle){
       <div class="battle-card-meta">${battle.year} · ${battle.regiment}</div>
       ${stakes?`<div class="battle-card-stakes">${stakes}</div>`:''}
       <div class="battle-card-sub">${battle.sub}</div>
-      <button class="battle-card-btn" style="background:${c}">▶ PLAY</button>
+      <button class="battle-card-btn" style="background:${c}">${replay?'▶ REPLAY':'▶ PLAY'}</button>
     </div>`;
   card.querySelector('.battle-card-icon').appendChild(loadInsigniaImg(battle, 48));
-  card.addEventListener('click',()=>{ if(battle.unlocked) showMissionBrief(battle); });
+  card.addEventListener('click',()=>{
+    if(battle.unlocked===false) return;
+    if(onPlay) onPlay();
+    else showMissionBrief(battle);
+  });
   return card;
 }
 
@@ -4812,7 +5007,7 @@ function showEraDetail(eraId){
   if(era.campaign){
     const cta=document.createElement('div');
     cta.className='era-campaign-cta';
-    cta.innerHTML=`<div class="era-campaign-cta-title">▶ VIJAY DIWAS CAMPAIGN</div><div class="era-campaign-cta-sub">Play all 5 Kargil battles in sequence</div>`;
+    cta.innerHTML=`<div class="era-campaign-cta-title">▶ VIJAY DIWAS CAMPAIGN</div><div class="era-campaign-cta-sub">4 Kargil peaks — Tololing to Tiger Hill</div>`;
     cta.addEventListener('click', startCampaign);
     list.appendChild(cta);
   }
@@ -4849,75 +5044,48 @@ let _currentBattleName = 'Rezang La';
 let _pendingBattle = null;
 
 // ── VIJAY DIWAS CAMPAIGN ──────────────────────────────────
-const CAMPAIGN_BATTLES = ['Siachen','Tololing','Point 5140','Khalubar','Tiger Hill'];
+const CAMPAIGN_BATTLES = ['Tololing','Point 5140','Khalubar','Tiger Hill'];
 let campaignState = {
   active: false,
-  currentIndex: 0,
+  playingIndex: 0,
   completed: [],
 };
-
-let _campaignMapPulse = 0;
-let _campaignMapAnim = null;
-
-function getCampaignPeaks() {
-  return CAMPAIGN_BATTLES.map(bName => KARGIL_PEAKS.find(p => p.battle === bName)).filter(Boolean);
-}
 
 function startCampaign() {
   showScreen('campaign-screen');
   renderCampaignScreen();
 }
 
-function renderCampaignScreen() {
-  const canvas = document.getElementById('campaign-map-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const peaks = getCampaignPeaks();
-  const allDone = campaignState.completed.length === CAMPAIGN_BATTLES.length;
-  const btn = document.getElementById('campaign-start-btn');
-  const hint = document.getElementById('campaign-map-hint');
-  if (allDone) {
-    btn?.classList.remove('hidden');
-    if (hint) hint.textContent = 'All peaks recaptured — view the tribute';
-  } else {
-    btn?.classList.add('hidden');
-    const bName = CAMPAIGN_BATTLES[campaignState.currentIndex];
-    if (hint) hint.textContent = `Deploy to ${bName.toUpperCase()} — click the glowing peak`;
-  }
-  if (_campaignMapAnim) cancelAnimationFrame(_campaignMapAnim);
-  function frame() {
-    _campaignMapPulse += 0.04;
-    drawKargilMap(ctx, peaks, {
-      currentIndex: campaignState.currentIndex,
-      completed: campaignState.completed,
-      pulse: _campaignMapPulse,
-    }, canvas.width, canvas.height);
-    _campaignMapAnim = requestAnimationFrame(frame);
-  }
-  frame();
+function launchCampaignBattleAt(index) {
+  campaignState.active = true;
+  campaignState.playingIndex = index;
+  const bName = CAMPAIGN_BATTLES[index];
+  const b = BATTLES.find(x => x.name === bName);
+  if (b) showMissionBrief(b, index);
 }
 
-function onCampaignMapClick(e) {
-  const canvas = document.getElementById('campaign-map-canvas');
-  if (!canvas) return;
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const x = (e.clientX - rect.left) * scaleX;
-  const y = (e.clientY - rect.top) * scaleY;
-  const peaks = getCampaignPeaks();
-  const idx = hitTestPeak(x, y, peaks);
-  if (idx === null) return;
-  if (campaignState.completed.includes(idx)) return;
-  if (idx !== campaignState.currentIndex) return;
-  campaignState.active = true;
-  const bName = CAMPAIGN_BATTLES[idx];
-  const b = BATTLES.find(x => x.name === bName);
-  if (b) showMissionBrief(b, idx);
+function renderCampaignScreen() {
+  const list = document.getElementById('campaign-battles-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const allDone = campaignState.completed.length === CAMPAIGN_BATTLES.length;
+  const btn = document.getElementById('campaign-start-btn');
+
+  CAMPAIGN_BATTLES.forEach((bName, i) => {
+    const b = BATTLES.find(x => x.name === bName);
+    if (!b) return;
+    const done = campaignState.completed.includes(i);
+    list.appendChild(buildBattleCard(b, {
+      replay: done,
+      onPlay: () => launchCampaignBattleAt(i),
+    }));
+  });
+
+  if (allDone) btn?.classList.remove('hidden');
+  else btn?.classList.add('hidden');
 }
 
 function returnToCampaignMap() {
-  if (_campaignMapAnim) cancelAnimationFrame(_campaignMapAnim);
   unitGroups.forEach(g => scene.remove(g));
   unitGroups.length = 0;
   unitGroupMap.clear();
@@ -4944,12 +5112,26 @@ function showCampaignComplete() {
 }
 
 function resetCampaign() {
-  campaignState = { active: false, currentIndex: 0, completed: [] };
+  campaignState = { active: false, playingIndex: 0, completed: [] };
 }
 
 function showBattleSelect(){
   showScreen('screen-select');
   showSelectHome();
+  renderFirstVisitCard();
+}
+
+function renderFirstVisitCard(){
+  const card=document.getElementById('first-visit-card'); if(!card) return;
+  const firstVisit=!localStorage.getItem('regiment_seen');
+  card.classList.toggle('hidden',!firstVisit);
+  if(firstVisit&&!card._wired){
+    card._wired=true;
+    document.getElementById('fv-start-btn').addEventListener('click',()=>{
+      const b=BATTLES.find(x=>x.name==='Saragarhi');
+      if(b) showMissionBrief(b);
+    });
+  }
 }
 
 // Inline onclick handlers need globals — module scope is not window
@@ -4976,7 +5158,11 @@ function populateIntroScreen(battle) {
     storyEl.innerHTML = parsed.story.map(line => `<p>${line}</p>`).join('');
   }
   if(howEl){
-    howEl.innerHTML = parsed.how.map(line => `<div class="intro-step">${line}</div>`).join('');
+    if(localStorage.getItem('regiment_tutorial_done')){
+      howEl.innerHTML = parsed.how.map(line => `<div class="intro-step">${line}</div>`).join('');
+    } else {
+      howEl.innerHTML = '';
+    }
   }
   renderIntroMap(bd);
   renderIntroFacts(battle, bd);
@@ -5100,16 +5286,16 @@ function showIntro(battle){
   showMissionBrief(battle);
 }
 document.getElementById('begin-btn').addEventListener('click',()=>{showScreen(null);startBattle(_currentBattleName);});
+document.getElementById('db-share-btn').addEventListener('click',shareBattleResult);
 document.getElementById('back-btn').addEventListener('click',()=>{
   unitGroups.forEach(g=>scene.remove(g));unitGroups.length=0;unitGroupMap.clear();clearHighlights();
   gameState.units=[];gameState.screen='select';
   // Campaign-advance hook: if we're in campaign mode, mark battle complete and advance
   if (campaignState.active) {
-    const justFinished = campaignState.currentIndex;
+    const justFinished = campaignState.playingIndex;
     if (!campaignState.completed.includes(justFinished)) {
       campaignState.completed.push(justFinished);
     }
-    campaignState.currentIndex = Math.min(justFinished + 1, CAMPAIGN_BATTLES.length - 1);
     if (campaignState.completed.length === CAMPAIGN_BATTLES.length) {
       showCampaignComplete();
     } else {
@@ -5124,12 +5310,13 @@ document.getElementById('back-btn').addEventListener('click',()=>{
 
 // Loop
 const clock=new THREE.Clock();
+let _glowFrame = 0;
 function gameLoop(){
   const dt=clock.getDelta();
   updateSnow(dt);
   if(_activeEffects.length)_activeEffects=_activeEffects.filter(fn=>fn());
-  // Pulse structure glow rings
-  if(_glowRingMeshes.length){
+  // Pulse structure glow rings (every 3rd frame on mobile for perf)
+  if(_glowRingMeshes.length && (++_glowFrame % (isMobileView() ? 3 : 1) === 0)){
     const _t=performance.now()/1000;
     _glowRingMeshes.forEach(m=>{
       if(m._glowRing){
@@ -5141,6 +5328,7 @@ function gameLoop(){
   renderer.render(scene,camera);
   requestAnimationFrame(gameLoop);
 }
+function dismissBootLoader(){const b=document.getElementById('boot-loader');if(!b)return;b.classList.add('done');setTimeout(()=>b.remove(),450);}
 // Settings panel wiring
 document.getElementById('theme-toggle-btn').addEventListener('click',e=>{
   e.stopPropagation();
@@ -5181,9 +5369,7 @@ document.getElementById('s-dmg-off').addEventListener('click',()=>{ gameSettings
 document.getElementById('s-theme-dark').addEventListener('click',()=>{ gameSettings.theme='dark';  saveSettings(); applySettings(); });
 document.getElementById('s-theme-light').addEventListener('click',()=>{ gameSettings.theme='light'; saveSettings(); applySettings(); });
 
-document.getElementById('campaign-map-canvas')?.addEventListener('click', onCampaignMapClick);
-
-buildSelectScreen(); applySettings(); showOpeningIfNeeded(); gameLoop();
+buildSelectScreen(); applySettings(); showOpeningIfNeeded(); dismissBootLoader(); gameLoop();
 
 if (sessionStorage.getItem('_openCampaign')) {
   sessionStorage.removeItem('_openCampaign');

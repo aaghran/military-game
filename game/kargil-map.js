@@ -2,7 +2,6 @@
 // Used by campaign screen in index.html.
 
 export const KARGIL_PEAKS = [
-  { battle: 'Siachen',    cx: 160, cy: 100, alt: '6,400m', ly: -22 },
   { battle: 'Tiger Hill', cx: 320, cy: 120, alt: '5,062m', ly: -22 },
   { battle: 'Tololing',   cx: 400, cy: 150, alt: '4,590m', ly: -22 },
   { battle: 'Point 5140', cx: 490, cy: 110, alt: '5,140m', ly: -22 },
@@ -181,8 +180,7 @@ export function hitTestPeak(x, y, peaks, scaleX = 1, scaleY = 1) {
 }
 
 export const CAMPAIGN_BRIDGE_COPY = [
-  { meta: '1999 · KARGIL WAR · INDIA', title: 'OPERATION VIJAY BEGINS', body: 'May 1999. Pakistani forces had secretly occupied Indian peaks along the Line of Control in Kargil. Operation Vijay was launched — every peak was to be recaptured. The first battle begins in the glaciers of Siachen.' },
-  { meta: '1999 · KARGIL · SIACHEN', title: 'THE RIDGE ABOVE SIACHEN', body: 'The Siachen sector has been contested since 1984. In 1999, Pakistani forces again probed the ridgelines. Indian defenders held. Now, Tololing — a near-vertical ridgeline at 16,962 ft — is the next objective.' },
+  { meta: '1999 · KARGIL WAR · INDIA', title: 'OPERATION VIJAY BEGINS', body: 'May 1999. Pakistani forces had secretly occupied Indian peaks along the Line of Control in Kargil. Operation Vijay was launched — every peak was to be recaptured. The first objective: Tololing, a near-vertical ridgeline at 16,962 ft.' },
   { meta: '1999 · KARGIL · TOLOLING TAKEN', title: 'THE FIRST PEAK FALLS', body: 'Tololing was captured on 13 June 1999 by 2 Rajputana Rifles. The Tricolour was raised at 16,962 ft. Point 5140 in the Drass sector is held by the enemy.' },
   { meta: '1999 · KARGIL · DRASS', title: 'POINT 5140 TAKEN', body: '"Yeh Dil Maange More." Point 5140 fell on 20 June. Capt Vikram Batra became the face of Operation Vijay. The Batalik sector now demands attention — 1/11 Gorkha Rifles moves toward Khalubar.' },
   { meta: '1999 · KARGIL · BATALIK', title: 'KHALUBAR CLEARED', body: '"Na Chodnu." Capt Manoj Pandey cleared four bunkers before falling at the fifth. Khalubar was captured on 4 July 1999. One battle remains — Tiger Hill, the highest fortified position in the war.' },
