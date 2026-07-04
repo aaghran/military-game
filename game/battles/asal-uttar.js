@@ -69,6 +69,29 @@ export default {
       body:  'Pakistan\'s 1st Armoured Division — equipped with the M48 Patton, called "the best tank in Asia" — drove into a carefully prepared killing ground at Asal Uttar. The waterlogged paddy trapped the tanks. 97 Pakistani Pattons were destroyed or captured. The field is still called "Patton Nagar."',
     },
   },
+  introMap: {
+    // 10 Sep 1965 — Asal Uttar; Centurion tanks vs Pakistani 1st Armoured Division Pattons
+    // Pakistani M48 Pattons advanced from north through sugarcane onto soft paddy ground — trapped
+    features: [
+      {col:5,   row:4.5, label:'PADDY KILLING GROUND'},
+      {col:5,   row:1.5, label:'PATTON ADVANCE'},
+      {col:5,   row:8.5, label:'GRAND TRUNK ROAD BUND'},
+    ],
+    phases: [
+      // Pakistani 1st Armoured Division — main axis down the centre
+      {label:'PATTON MAIN THRUST', color:'rgba(200,70,70,0.65)',
+       path:[{col:5,row:0.5},{col:5,row:2.5},{col:5,row:4},{col:5,row:5}]},
+      // Pakistani western column — into the waterlogged paddy fields
+      {label:'PAK W COLUMN', color:'rgba(200,70,70,0.45)',
+       path:[{col:3,row:0.5},{col:3,row:3},{col:3,row:5}]},
+      // Pakistani eastern column
+      {label:'PAK E COLUMN', color:'rgba(200,70,70,0.45)',
+       path:[{col:7,row:0.5},{col:7,row:3},{col:7,row:5}]},
+      // CQMH Abdul Hamid — jeep RCL stalking the Patton column from the sugarcane
+      {label:'HAMID — RCL JEEP', color:'rgba(220,200,130,0.75)',
+       path:[{col:3,row:3.5},{col:4,row:2.5},{col:5.5,row:1.5}]},
+    ],
+  },
   winCondition:  {type:'waves'},
   defensiveAI:   false,
   autoPlayForceWin: true,

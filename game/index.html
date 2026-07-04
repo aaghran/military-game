@@ -324,136 +324,97 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
 .era-campaign-cta-sub { font-size: 8px; color: #a08840; margin-top: 4px; letter-spacing: 0.5px; }
 
 /* ── Intro screen ────────────────────────────────────────────── */
+/* ── Intro (pre-battle) screen — full-width map + bottom sheet ── */
 #screen-intro{
   overflow-y:auto;
   justify-content:flex-start;
-  padding:44px 24px 28px;
-}
-.intro-shell{
-  width:min(100%, 980px);
-  display:flex;
+  padding:0;
   flex-direction:column;
-  align-items:center;
 }
-#intro-title { font-size:30px; font-weight:bold; letter-spacing:5px; text-align:center; }
-#intro-meta  { font-size:9px; color:#7a7a8a; letter-spacing:3px; margin-top:10px; text-align:center; }
-#intro-hr    { width:min(100%, 420px); border:none; border-top:1px solid rgba(200,169,110,0.14); margin:18px 0 24px; }
-.intro-briefing{
-  width:100%;
-  display:grid;
-  grid-template-columns:minmax(280px, 360px) minmax(0, 1fr);
-  gap:20px;
-  align-items:stretch;
-}
-.intro-panel{
-  border:1px solid rgba(200,169,110,0.14);
-  border-radius:20px;
-  background:linear-gradient(180deg, rgba(16,16,28,0.92) 0%, rgba(9,9,18,0.96) 100%);
-  box-shadow:0 20px 40px rgba(0,0,0,0.26);
+.intro-map-hero{
+  position:relative;
   overflow:hidden;
+  max-height:88vh;
+  min-height:280px;
+  background:#07071099;
 }
-.intro-panel-body{ padding:18px; }
+.intro-title-overlay{
+  position:absolute;
+  top:0; left:0; right:0;
+  z-index:5;
+  text-align:center;
+  padding:max(22px,env(safe-area-inset-top)) 16px 60px;
+  background:linear-gradient(180deg,rgba(5,5,15,0.90) 0%,rgba(5,5,15,0.4) 65%,rgba(5,5,15,0) 100%);
+  pointer-events:none;
+}
+#intro-title{ font-size:28px; font-weight:bold; letter-spacing:5px; text-align:center; }
+#intro-meta { font-size:8px; color:rgba(200,169,110,0.85); letter-spacing:3px; margin-top:8px; text-align:center; }
+.intro-map-regiment-tag{
+  display:inline-block;
+  margin-top:14px;
+  padding:5px 14px;
+  background:rgba(7,7,16,0.62);
+  border:1px solid rgba(200,169,110,0.25);
+  border-radius:999px;
+  font-size:9px;
+  letter-spacing:1.5px;
+  color:#dbc38a;
+  font-family:'Courier New',monospace;
+  backdrop-filter:blur(4px);
+}
+#intro-map-grid{
+  width:100%;
+  line-height:0;
+  display:block;
+}
+.intro-map-legend{
+  position:absolute;
+  bottom:0; left:0; right:0;
+  padding:6px 14px;
+  display:flex;
+  gap:6px 12px;
+  flex-wrap:wrap;
+  font-size:7px;
+  letter-spacing:0.8px;
+  color:#8a8fa0;
+  background:linear-gradient(0deg,rgba(5,5,15,0.72) 0%,transparent 100%);
+}
+.intro-map-legend span{ display:inline-flex; align-items:center; gap:5px; }
+.intro-dot{ width:7px; height:7px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.intro-dot.ind{ background:#d8c888; box-shadow:0 0 6px rgba(216,200,136,0.45); }
+/* Bottom sheet — scrolls naturally below the map */
+.intro-sheet{
+  position:relative;
+  z-index:10;
+  margin-top:-20px;
+  border-radius:20px 20px 0 0;
+  background:rgba(7,7,16,0.99);
+  padding:0 22px max(110px,env(safe-area-inset-bottom));
+  box-shadow:0 -6px 36px rgba(0,0,0,0.6);
+}
+.intro-sheet-handle{
+  width:34px; height:3px;
+  background:rgba(200,169,110,0.22);
+  border-radius:2px;
+  margin:10px auto 18px;
+}
 .intro-section-label{
   font-size:8px;
   letter-spacing:2.6px;
-  color:#8a917e;
-  margin-bottom:12px;
-}
-.intro-overview{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-.intro-map-card{
-  border:1px solid rgba(200,169,110,0.10);
-  border-radius:14px;
-  background:rgba(255,255,255,0.02);
-  padding:12px;
-}
-#intro-map-grid{
-  display:grid;
-  grid-template-columns:repeat(11, minmax(0,1fr));
-  gap:3px;
-  aspect-ratio:11 / 10;
-}
-.intro-map-tile{
-  position:relative;
-  border-radius:4px;
-  min-height:18px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);
-}
-.intro-map-tile.ind::after,
-.intro-map-tile.struct::before{
-  content:'';
-  position:absolute;
-  border-radius:50%;
-}
-.intro-map-tile.ind::after{
-  width:8px; height:8px;
-  background:#d8c888;
-  top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  box-shadow:0 0 10px rgba(216,200,136,0.55);
-}
-.intro-map-tile.struct::before{
-  width:6px; height:6px;
-  background:#78a0d8;
-  right:3px; bottom:3px;
-  opacity:0.9;
-}
-.intro-map-legend{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-top:10px;
-  font-size:8px;
-  letter-spacing:1.2px;
-  color:#8a8fa0;
-}
-.intro-map-legend span{ display:inline-flex; align-items:center; gap:6px; }
-.intro-dot{
-  width:8px; height:8px; border-radius:50%;
-  display:inline-block;
-}
-.intro-dot.ind{ background:#d8c888; box-shadow:0 0 8px rgba(216,200,136,0.45); }
-.intro-dot.struct{ background:#78a0d8; }
-.intro-facts{
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0,1fr));
-  gap:8px 14px;
-}
-.intro-fact-k{
-  font-size:7px;
-  letter-spacing:2px;
-  color:#7b8578;
-  margin-bottom:4px;
-}
-.intro-fact-v{
-  font-size:12px;
-  color:#d5d3c8;
-  line-height:1.45;
-}
-.intro-story-stack{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-.intro-copy-card{
-  padding:18px 20px;
-}
-.intro-brief-card{
-  padding:0;
+  color:#6a7862;
+  margin-bottom:8px;
 }
 .intro-brief-header{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
+  justify-content:space-between;
   gap:16px;
-  padding:18px 20px 14px;
+  padding-bottom:12px;
+  margin-bottom:4px;
   border-bottom:1px solid rgba(200,169,110,0.10);
 }
 .intro-brief-insignia{
-  width:56px;
-  height:56px;
+  width:52px; height:52px;
   flex-shrink:0;
   display:flex;
   align-items:center;
@@ -462,38 +423,24 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
   opacity:0.9;
 }
 .intro-brief-insignia img,
-.intro-brief-insignia svg{
-  max-width:100%;
-  max-height:100%;
-  object-fit:contain;
-}
-.intro-brief-title{
-  min-width:0;
-}
+.intro-brief-insignia svg{ max-width:100%; max-height:100%; object-fit:contain; }
+.intro-brief-title{ min-width:0; }
 .intro-brief-regiment{
   font-size:15px;
   font-weight:bold;
-  letter-spacing:1.1px;
+  letter-spacing:1px;
   color:#e2d4b0;
   line-height:1.4;
 }
 .intro-brief-sub{
   font-size:8px;
-  letter-spacing:2px;
-  color:#8d9586;
+  letter-spacing:1.8px;
+  color:#7d8c72;
   margin-top:5px;
 }
-.intro-copy{
-  color:#b7b6c5;
-  font-size:12px;
-  line-height:1.9;
-}
-.intro-copy p + p{ margin-top:12px; }
-.intro-howto{
-  display:grid;
-  gap:8px;
-  margin-top:14px;
-}
+.intro-copy{ color:#b7b6c5; font-size:12px; line-height:1.9; }
+.intro-copy p + p{ margin-top:10px; }
+.intro-howto{ display:grid; gap:8px; margin-top:12px; }
 .intro-step{
   padding:10px 0;
   border-top:1px solid rgba(255,255,255,0.06);
@@ -503,8 +450,70 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
 }
 .intro-step:first-child{ border-top:none; padding-top:0; }
 .intro-step strong{ color:#dbc38a; }
-#begin-btn { margin-top:24px; padding:14px 40px; background:linear-gradient(180deg,#d0af6f 0%,#a98143 100%); border:1px solid rgba(225,201,150,0.6); color:#120f08; font-family:'Courier New',monospace; font-size:11px; font-weight:bold; cursor:pointer; letter-spacing:2px; transition:background 0.15s, box-shadow 0.15s, transform 0.15s; touch-action:manipulation; border-radius:999px; box-shadow:0 12px 30px rgba(200,169,110,0.18); }
-#begin-btn:hover { background:linear-gradient(180deg,#d9bb80 0%,#b18a4d 100%); box-shadow:0 14px 34px rgba(200,169,110,0.26); transform:translateY(-1px); }
+.intro-facts{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  margin-top:14px;
+  border-top:1px solid rgba(200,169,110,0.08);
+}
+.intro-fact{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding:6px 0;
+  border-bottom:1px solid rgba(200,169,110,0.07);
+  gap:8px;
+}
+.intro-fact-k{ font-size:7px; letter-spacing:2px; color:#7b8578; flex-shrink:0; }
+.intro-fact-v{ font-size:11px; color:#c8c6bc; line-height:1.4; text-align:right; }
+/* Sticky CTA bar */
+.intro-cta-bar{
+  position:fixed;
+  bottom:0; left:0; right:0;
+  padding:12px 20px max(22px,env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,rgba(7,7,17,0.98) 0%,rgba(7,7,17,0.95) 55%,transparent 100%);
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  z-index:200;
+  pointer-events:none;
+}
+.intro-cta-bar > * { pointer-events:auto; }
+#begin-btn{
+  padding:16px;
+  background:linear-gradient(180deg,#d0af6f 0%,#a98143 100%);
+  border:1px solid rgba(225,201,150,0.6);
+  color:#120f08;
+  font-family:'Courier New',monospace;
+  font-size:11px;
+  font-weight:bold;
+  cursor:pointer;
+  letter-spacing:3px;
+  transition:background 0.15s,box-shadow 0.15s;
+  touch-action:manipulation;
+  border-radius:6px;
+  box-shadow:0 8px 24px rgba(200,169,110,0.22);
+  width:100%;
+  text-align:center;
+}
+#begin-btn:hover{ background:linear-gradient(180deg,#d9bb80 0%,#b18a4d 100%); box-shadow:0 10px 28px rgba(200,169,110,0.30); }
+#take-control-btn{
+  background:transparent;
+  border:none;
+  color:#c8a96e;
+  font-family:'Courier New',monospace;
+  font-size:8px;
+  letter-spacing:2.5px;
+  cursor:pointer;
+  padding:2px;
+  text-align:center;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  transition:color 0.15s;
+}
+#take-control-btn:hover{ color:#e2d4b0; }
 
 /* ── Debrief screen ──────────────────────────────────────────── */
 #screen-debrief { overflow-y: auto; justify-content: flex-start; padding: 40px 20px 32px; }
@@ -704,20 +713,20 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
 
 /* Regiment identity strip on intro screen */
 .intro-regiment {
-  width:340px; border:1px solid rgba(200,169,110,0.14); border-radius:16px;
-  overflow:hidden; margin-bottom:0;
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid rgba(200,169,110,0.10);
   font-family:'Courier New',monospace;
-  background:linear-gradient(180deg, rgba(18,18,30,0.9) 0%, rgba(10,10,18,0.94) 100%);
-  box-shadow:0 20px 40px rgba(0,0,0,0.22);
 }
-.ir-colour-bar { height:2px; width:100%; }
-.ir-body { padding:16px 18px 15px; }
+.ir-colour-bar { height:2px; width:100%; margin-bottom:12px; }
+.ir-body { }
 .ir-regiment-name { font-size:11px; font-weight:bold; letter-spacing:2px; color:#c8a96e; margin-bottom:10px; }
-.ir-label { font-size:7px; letter-spacing:2px; color:#7a8a7a; min-width:60px; display:inline-block; }
+.ir-label { font-size:7px; letter-spacing:2px; color:#7a8a7a; display:block; margin-bottom:4px; }
 .ir-val { font-size:10px; color:#aaaaa0; font-style:italic; }
-.ir-eng { font-size:8px; color:#7a7a8a; margin-top:2px; margin-bottom:8px; padding-left:64px; }
+.ir-eng { font-size:8px; color:#7a7a8a; margin-top:2px; }
 .ir-row { margin-bottom:4px; }
-.ir-cry { font-size:11px; color:#c8a96e; font-weight:bold; letter-spacing:0.5px; }
+.ir-cry { font-size:12px; color:#c8a96e; font-weight:bold; letter-spacing:0.5px; }
+.ir-two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px 16px; }
 
 /* ── Mobile layout ───────────────────────────────────────────── */
 @media (max-width: 700px) {
@@ -991,17 +1000,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
   .debrief-stat-val{font-size:26px;}
   #screen-debrief{padding:24px 14px max(32px, env(safe-area-inset-bottom));}
 
-  /* Intro screen padding */
-  #screen-intro{padding:24px 14px max(100px, env(safe-area-inset-bottom));}
-  .intro-shell{width:100%;}
-  .intro-briefing{grid-template-columns:1fr;gap:14px;}
-  .intro-regiment { width:100%; }
-  #intro-hr { width:90vw; }
-  .intro-panel-body,.intro-copy-card{padding:16px;}
-  .intro-facts{grid-template-columns:1fr 1fr;}
+  /* Intro screen */
+  .intro-sheet{padding-left:16px;padding-right:16px;}
   .intro-copy{font-size:11px;line-height:1.8;}
   .intro-step{font-size:10px;line-height:1.7;}
-  #begin-btn { width:100%; max-width:320px; padding:14px 24px; min-height:48px; }
+  #begin-btn{min-height:50px;}
 
   /* Regiment screen: stack insignia above text on mobile */
   #screen-regiment{padding:18px 14px max(96px, env(safe-area-inset-bottom));}
@@ -1139,17 +1142,19 @@ body.light .rgt-val{color:#2a1a0a !important;}
 body.light .rgt-bio{color:#4a3820 !important;}
 body.light .rgt-btn{background:linear-gradient(180deg,#2f2416 0%,#241b10 100%);color:#f5ecdb !important;box-shadow:0 10px 24px rgba(48,33,16,0.14);}
 body.light .rgt-insignia{opacity:0.75;filter:drop-shadow(0 0 10px currentColor);}
-body.light #screen-intro{background:linear-gradient(180deg,#efe8dc 0%,#e7dfd1 100%);}
 body.light #intro-title{color:#1a1505;}
 body.light #intro-meta{color:#8a7860;}
-body.light #intro-hr{border-top-color:#d8d0c0;}
-body.light .intro-regiment{background:linear-gradient(180deg,#f8f2e8 0%,#e5dccd 100%);border-color:#c8bfaa;box-shadow:0 18px 36px rgba(48,33,16,0.10);}
+body.light .intro-regiment{border-top-color:#d8cfc0;}
+body.light .intro-sheet{background:rgba(236,228,214,0.99);}
+body.light .intro-cta-bar{background:linear-gradient(0deg,rgba(235,226,210,0.98) 0%,rgba(235,226,210,0.92) 55%,transparent 100%);}
+body.light #take-control-btn{color:#8a7a60;}
+body.light #take-control-btn:hover{color:#806020;}
+body.light .intro-fact{border-bottom-color:rgba(160,140,110,0.2);}
+body.light .intro-facts{border-top-color:rgba(160,140,110,0.2);}
 body.light .ir-regiment-name{color:#1a1505;}
 body.light .ir-label{color:#9a8870;}
 body.light .ir-val{color:#2a1a0a;}
 body.light .ir-eng{color:#6a5a40;}
-body.light .intro-panel{background:linear-gradient(180deg,rgba(255,251,245,0.88) 0%,rgba(241,234,223,0.92) 100%);border-color:#d1c5b2;box-shadow:0 24px 50px rgba(48,33,16,0.12);}
-body.light .intro-map-card{background:rgba(255,255,255,0.45);border-color:#d8cdbc;}
 body.light .intro-section-label{color:#8a7860;}
 body.light .intro-fact-k{color:#8a7860;}
 body.light .intro-fact-v,
@@ -1779,62 +1784,53 @@ body.light .campaign-footer { border-top-color: #d8d0c0; }
 </div>
 <div id="tutorial-tip" class="hidden"><span id="tutorial-tip-text"></span></div>
 <div id="screen-intro" class="screen hidden">
-  <div class="intro-shell">
-    <div id="intro-title"></div>
-    <div id="intro-meta"></div>
-    <hr id="intro-hr">
-    <div class="intro-briefing">
-      <div class="intro-overview">
-        <div class="intro-panel">
-          <div class="intro-panel-body">
-            <div class="intro-section-label">BATTLE MAP</div>
-            <div class="intro-map-card">
-              <div id="intro-map-grid"></div>
-              <div class="intro-map-legend">
-                <span><i class="intro-dot ind"></i> <span id="intro-map-friendly-label">Regimental positions</span></span>
-                <span><i class="intro-dot struct"></i> fortified posts</span>
-              </div>
-            </div>
-            <div class="intro-section-label">AT A GLANCE</div>
-            <div id="intro-facts" class="intro-facts"></div>
-          </div>
-        </div>
+  <!-- Full-width tactical map hero -->
+  <div class="intro-map-hero">
+    <div class="intro-title-overlay">
+      <div id="intro-title"></div>
+      <div id="intro-meta"></div>
+      <div id="intro-map-regiment-tag" class="intro-map-regiment-tag"></div>
+    </div>
+    <div id="intro-map-grid"></div>
+    <div class="intro-map-legend" id="intro-map-legend">
+      <span><i class="intro-dot ind"></i> <span id="intro-map-friendly-label">Positions</span></span>
+    </div>
+  </div>
+  <!-- Bottom sheet: scrollable briefing -->
+  <div class="intro-sheet">
+    <div class="intro-sheet-handle"></div>
+    <div class="intro-brief-header">
+      <div class="intro-brief-title">
+        <div id="ir-regiment-name" class="intro-brief-regiment"></div>
+        <div id="intro-brief-sub" class="intro-brief-sub"></div>
       </div>
-      <div class="intro-story-stack">
-        <div class="intro-panel intro-brief-card">
-          <div class="ir-colour-bar" id="ir-colour-bar"></div>
-          <div class="intro-brief-header">
-            <div id="intro-brief-insignia" class="intro-brief-insignia"></div>
-            <div class="intro-brief-title">
-              <div id="ir-regiment-name" class="intro-brief-regiment"></div>
-              <div id="intro-brief-sub" class="intro-brief-sub"></div>
-            </div>
-          </div>
-          <div class="intro-copy-card">
-            <div id="intro-situation"></div>
-            <div class="intro-section-label">THE STORY</div>
-            <div id="intro-story" class="intro-copy"></div>
-            <div id="intro-howto" class="intro-howto"></div>
-          </div>
-        </div>
-        <div id="intro-regiment" class="intro-regiment">
-          <div class="ir-body">
-            <div class="ir-row">
-              <span class="ir-label">MOTTO</span>
-              <span class="ir-val" id="ir-motto"></span>
-            </div>
+      <div id="intro-brief-insignia" class="intro-brief-insignia"></div>
+    </div>
+    <div class="ir-colour-bar" id="ir-colour-bar"></div>
+    <div id="intro-situation"></div>
+    <div id="intro-story" class="intro-copy"></div>
+    <div id="intro-howto" class="intro-howto"></div>
+    <div id="intro-regiment" class="intro-regiment">
+      <div class="ir-body">
+        <div class="ir-two-col">
+          <div>
+            <span class="ir-label">MOTTO</span>
+            <span class="ir-val" id="ir-motto"></span>
             <div class="ir-eng" id="ir-motto-eng"></div>
-            <div class="ir-row ir-row-cry">
-              <span class="ir-label">WAR CRY</span>
-              <span class="ir-cry" id="ir-warcry"></span>
-            </div>
+          </div>
+          <div>
+            <span class="ir-label">WAR CRY</span>
+            <span class="ir-cry" id="ir-warcry"></span>
           </div>
         </div>
       </div>
     </div>
+    <div id="intro-facts" class="intro-facts"></div>
+  </div>
+  <!-- Sticky CTA -->
+  <div class="intro-cta-bar">
     <button id="begin-btn">BEGIN BATTLE</button>
-    <div class="story-mode-hint">Not a gamer? Just watch the history unfold.</div>
-    <button id="watch-story-btn" onclick="enableAutoAndStart()">◀▶ WATCH STORY MODE</button>
+    <button id="take-control-btn">TAKE CONTROL</button>
   </div>
 </div>
 <div id="screen-debrief" class="screen hidden">
@@ -5181,6 +5177,8 @@ function populateIntroScreen(battle) {
   if(wc){ wc.textContent=battle.warCry||''; wc.style.color=battle.color||'#c8a96e'; }
   const mapLabel = document.getElementById('intro-map-friendly-label');
   if(mapLabel) mapLabel.textContent = battleMapFriendlyLabel(battle);
+  const regTag = document.getElementById('intro-map-regiment-tag');
+  if(regTag) regTag.textContent = (battle.regimentFull || battle.regiment || '').toUpperCase();
   const briefInsignia = document.getElementById('intro-brief-insignia');
   if(briefInsignia){
     briefInsignia.innerHTML = '';
@@ -5232,24 +5230,195 @@ function plainIntroLines(html){
   };
 }
 
+const TERRAIN_LABELS = {
+  'P':'Peak','R':'High ridge','r':'Rocky slope','s':'Snow',
+  'i':'Ice face','b':'Bunker','f':'Fortified ledge','d':'Dune',
+  'g':'Glacier','.':'Open ground'
+};
+const TERRAIN_PATTERNS = {
+  'i':'pat-ice','s':'pat-snow','r':'pat-rock',
+  'P':'pat-peak','R':'pat-ridge','g':'pat-glacier','d':'pat-dune'
+};
+
 function renderIntroMap(bd){
-  const mapEl = document.getElementById('intro-map-grid');
+  const mapEl  = document.getElementById('intro-map-grid');
+  const legEl  = document.getElementById('intro-map-legend');
   if(!mapEl) return;
-  mapEl.innerHTML = '';
-  const map = bd?.map || [];
+
+  const map        = bd?.map || [];
   const structures = bd?.structures || {};
-  const starts = new Set((bd?.indStarts || []).map(u => `${u.col},${u.row}`));
-  map.forEach((row, rowIdx) => {
-    row.forEach((tileKey, colIdx) => {
-      const tile = document.createElement('div');
-      tile.className = 'intro-map-tile';
-      const terrain = (bd?.terrain || TERRAIN)?.[tileKey];
-      tile.style.background = `#${(terrain?.color || 0x333344).toString(16).padStart(6,'0')}`;
-      if(starts.has(`${colIdx},${rowIdx}`)) tile.classList.add('ind');
-      if(structures[`${colIdx},${rowIdx}`]) tile.classList.add('struct');
-      mapEl.appendChild(tile);
+  const unitStarts = bd?.indStarts || [];
+  const terrainDef = bd?.terrain || TERRAIN;
+  const isDefensive= bd?.autoPlayStyle === 'defensive';
+  const introMap   = bd?.introMap || {};
+  const mapPhases  = introMap.phases || null;
+  const mapFeatures= introMap.features || [];
+  const rows = map.length || 10;
+  const cols = map[0]?.length || 11;
+  const TW = 10, TH = 18;
+  const W  = cols * TW, H = rows * TH;
+  const usedTerrain = new Map();
+
+  /* ── terrain tiles ── */
+  const tiles = [];
+  map.forEach((row, ri) => row.forEach((key, ci) => {
+    const t   = terrainDef[key];
+    const hex = t ? `#${t.color.toString(16).padStart(6,'0')}` : '#333344';
+    usedTerrain.set(key, hex);
+    tiles.push(`<rect x="${ci*TW}" y="${ri*TH}" width="${TW}" height="${TH}" fill="${hex}"/>`);
+    const pat = TERRAIN_PATTERNS[key];
+    if(pat) tiles.push(`<rect x="${ci*TW}" y="${ri*TH}" width="${TW}" height="${TH}" fill="url(#${pat})"/>`);
+  }));
+
+  /* ── topographic contour lines ── */
+  const contourEls = [];
+  for(let ri=1; ri<rows; ri+=2){
+    const y = ri * TH;
+    const pts = [];
+    for(let xi=0; xi<=cols*4; xi++){
+      const cx2 = xi * TW * 0.25;
+      const wave = Math.sin(xi * 0.55 + ri * 1.1) * 0.6;
+      pts.push(`${xi===0?'M':'L'}${cx2.toFixed(1)},${(y+wave).toFixed(2)}`);
+    }
+    contourEls.push(`<path d="${pts.join(' ')}" fill="none" stroke="rgba(255,255,255,0.055)" stroke-width="0.35"/>`);
+  }
+
+  /* ── elevation gradient overlay ── */
+  const allH = map.flat().map(k=>(terrainDef[k]?.height||1));
+  const heightRange = Math.max(...allH) - Math.min(...allH);
+  const gradEls = [];
+  if(heightRange > 1.5){
+    gradEls.push(`<linearGradient id="elvGrd" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="rgba(0,0,14,0.22)"/>
+      <stop offset="0.5" stop-color="rgba(0,0,10,0.06)"/>
+      <stop offset="1" stop-color="rgba(0,0,0,0)"/>
+    </linearGradient>`);
+    tiles.push(`<rect x="0" y="0" width="${W}" height="${H}" fill="url(#elvGrd)"/>`);
+  }
+
+  /* ── tile grid (subtle borders between tiles) ── */
+  const gridEls = [];
+  for(let ci=1; ci<cols; ci++)
+    gridEls.push(`<line x1="${ci*TW}" y1="0" x2="${ci*TW}" y2="${H}" stroke="rgba(0,0,0,0.18)" stroke-width="0.4"/>`);
+  for(let ri=1; ri<rows; ri++)
+    gridEls.push(`<line x1="0" y1="${ri*TH}" x2="${W}" y2="${ri*TH}" stroke="rgba(0,0,0,0.18)" stroke-width="0.4"/>`);
+
+  /* ── phase arrows (from introMap or auto) ── */
+  const arrowEls = [], markerDefs = [];
+
+  const mkDef = (id, col) =>
+    `<marker id="${id}" markerWidth="7" markerHeight="6" refX="6.5" refY="3" orient="auto"><polygon points="0 0,7 3,0 6" fill="${col}"/></marker>`;
+
+  if(mapPhases && mapPhases.length){
+    mapPhases.forEach((ph, i) => {
+      const c   = ph.color || 'rgba(216,200,136,0.68)';
+      const mkId= `mkph${i}`;
+      markerDefs.push(mkDef(mkId, c));
+      const pts = ph.path.map(p=>`${((p.col)+0.5)*TW},${((p.row)+0.5)*TH}`).join(' ');
+      arrowEls.push(`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="2.5" stroke-dasharray="5,3.5" stroke-linejoin="round" marker-end="url(#${mkId})"/>`);
+      if(ph.label && ph.path.length >= 2){
+        const mid = ph.path[Math.floor(ph.path.length/2)];
+        arrowEls.push(`<text x="${(mid.col+1)*TW}" y="${(mid.row+0.5)*TH-2}" font-size="4" fill="${c}" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(5,5,15,0.75)" stroke-width="2">${ph.label}</text>`);
+      }
     });
+  } else {
+    // fallback: auto-arrows from starts toward structures
+    markerDefs.push(mkDef('mkarrow','rgba(216,200,136,0.7)'));
+    markerDefs.push(mkDef('mkenemy','rgba(200,70,70,0.65)'));
+    const structKeys = Object.keys(structures);
+    const structCols = structKeys.map(k=>+k.split(',')[0]);
+    const structRows = structKeys.map(k=>+k.split(',')[1]);
+    const tCol = structCols.length ? structCols.reduce((s,c)=>s+c,0)/structCols.length : cols/2;
+    const tRow = structRows.length ? Math.min(...structRows) : rows*0.15;
+    if(unitStarts.length){
+      const sorted = [...unitStarts].sort((a,b)=>a.col-b.col);
+      const picks  = sorted.length>=3 ? [sorted[0],sorted[Math.floor(sorted.length/2)],sorted[sorted.length-1]] : [sorted[Math.floor(sorted.length/2)]];
+      picks.forEach(u=>{
+        const x1=(u.col+0.5)*TW,y1=(u.row+0.5)*TH,x2=(tCol+0.5)*TW,y2=(tRow+0.5)*TH;
+        arrowEls.push(`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(216,200,136,0.55)" stroke-width="2.2" stroke-dasharray="5,3.5" marker-end="url(#mkarrow)"/>`);
+      });
+    }
+    if(isDefensive && unitStarts.length){
+      const avgFRow=unitStarts.reduce((s,u)=>s+u.row,0)/unitStarts.length;
+      const eCols=structCols.length?structCols:[Math.floor(cols*0.3),Math.floor(cols/2),Math.floor(cols*0.7)];
+      eCols.forEach(ec=>arrowEls.push(`<line x1="${(ec+0.5)*TW}" y1="${TH*0.5}" x2="${(ec+0.5)*TW}" y2="${(avgFRow+0.5)*TH}" stroke="rgba(200,70,70,0.50)" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#mkenemy)"/>`));
+    }
+  }
+
+  /* ── terrain feature labels ── */
+  const featureEls = mapFeatures.map(f => {
+    const x=(f.col+0.5)*TW, y=(f.row+0.5)*TH;
+    return `<text x="${x}" y="${y}" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.72)" font-family="monospace" font-style="italic" font-weight="bold" paint-order="stroke" stroke="rgba(5,5,15,0.7)" stroke-width="2.5">${f.label}</text>`;
+  }).join('');
+
+  /* ── structure icons — map pin style (circle + downward spike) ── */
+  const strIcons = [];
+  const PR = 5.5, SH = 4; // pin radius, offset above tile centre
+  Object.entries(structures).forEach(([pos,s]) => {
+    const [sc,sr]=pos.split(',').map(Number);
+    const cx=(sc+0.5)*TW, cy=(sr+0.5)*TH;
+    const fill=s.type==='lmg'?'#c83030':s.type==='mortar'?'#df5810':'#c8a030';
+    const icon=s.type==='lmg'?'⊕':s.type==='mortar'?'◎':'★';
+    const cy_c = cy - SH;
+    const sx1 = cx - 2, sx2 = cx + 2, sy_base = cy_c + PR * 0.72;
+    strIcons.push(`<circle cx="${cx}" cy="${cy_c}" r="${PR}" fill="${fill}" fill-opacity="0.95" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>`);
+    strIcons.push(`<path d="M${sx1},${sy_base} L${cx},${cy+2} L${sx2},${sy_base} Z" fill="${fill}" fill-opacity="0.95"/>`);
+    strIcons.push(`<text x="${cx}" y="${cy_c+2}" text-anchor="middle" dominant-baseline="middle" font-size="7" fill="white">${icon}</text>`);
   });
+
+  /* ── unit dots ── */
+  const unitDots = unitStarts.map(u=>{
+    const cx=(u.col+0.5)*TW, cy=(u.row+0.5)*TH, hero=u.type==='hero';
+    return (hero?`<circle cx="${cx}" cy="${cy}" r="10" fill="none" stroke="rgba(216,200,136,0.18)" stroke-width="1.2"/><circle cx="${cx}" cy="${cy}" r="7.5" fill="none" stroke="rgba(216,200,136,0.30)" stroke-width="0.9"/>`:'') +
+      `<circle cx="${cx}" cy="${cy}" r="${hero?5.5:3.8}" fill="${hero?'#d8c888':'rgba(216,200,136,0.75)'}" stroke="rgba(255,255,255,0.50)" stroke-width="1"/>`;
+  }).join('');
+
+  /* ── zone labels ── */
+  const zoneLabels = isDefensive
+    ? [`<text x="3" y="10" font-size="5" fill="rgba(210,70,70,0.85)" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2">ENEMY</text>`,
+       `<text x="3" y="${H-4}" font-size="5" fill="rgba(216,200,136,0.85)" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2">DEFENCE</text>`]
+    : [`<text x="3" y="10" font-size="5" fill="rgba(210,70,70,0.85)" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2">OBJECTIVE</text>`,
+       `<text x="3" y="${H-4}" font-size="5" fill="rgba(216,200,136,0.85)" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2">ASSAULT</text>`];
+
+  /* ── SVG ── */
+  mapEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+  <defs>
+    ${gradEls.join('')}
+    ${markerDefs.join('')}
+    <filter id="f-glow"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="pat-ice"    x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse"><line x1="0" y1="5" x2="5" y2="0" stroke="rgba(255,255,255,0.22)" stroke-width="0.9"/></pattern>
+    <pattern id="pat-snow"   x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.55" fill="rgba(255,255,255,0.28)"/></pattern>
+    <pattern id="pat-rock"   x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="0" y1="4" x2="4" y2="0" stroke="rgba(0,0,0,0.14)" stroke-width="0.7"/></pattern>
+    <pattern id="pat-peak"   x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="0" y1="4" x2="4" y2="0" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/><line x1="0" y1="0" x2="4" y2="4" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/></pattern>
+    <pattern id="pat-ridge"  x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse"><line x1="0" y1="5" x2="5" y2="0" stroke="rgba(0,0,0,0.15)" stroke-width="0.8"/><line x1="0" y1="0" x2="5" y2="5" stroke="rgba(0,0,0,0.07)" stroke-width="0.5"/></pattern>
+    <pattern id="pat-glacier" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse"><line x1="0" y1="6" x2="6" y2="0" stroke="rgba(200,230,255,0.2)" stroke-width="1"/><line x1="0" y1="3" x2="3" y2="0" stroke="rgba(200,230,255,0.12)" stroke-width="0.5"/></pattern>
+    <pattern id="pat-dune"   x="0" y="0" width="6" height="4" patternUnits="userSpaceOnUse"><path d="M0 4 Q3 1 6 4" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="0.6"/></pattern>
+  </defs>
+  ${tiles.join('')}
+  ${contourEls.join('')}
+  ${gridEls.join('')}
+  ${featureEls}
+  ${arrowEls.join('')}
+  ${strIcons.join('')}
+  ${unitDots}
+  ${zoneLabels.join('')}
+</svg>`;
+
+  /* ── legend ── */
+  if(legEl){
+    const structTypes=[...new Set(Object.values(structures).map(s=>s.type))];
+    const structLeg=structTypes.map(t=>{
+      const fill=t==='lmg'?'#c83030':t==='mortar'?'#df5810':'#c8a030';
+      const lbl =t==='lmg'?'LMG bunker':t==='mortar'?'Mortar pit':'Sangar/fort';
+      return `<span><i class="intro-dot" style="background:${fill};border-radius:50%"></i> ${lbl}</span>`;
+    }).join('');
+    const terrainLeg=['P','R','r','s','i','g','b','d','f'].filter(k=>usedTerrain.has(k)&&k!=='.').map(k=>
+      `<span><i class="intro-dot" style="background:${usedTerrain.get(k)};border-radius:2px"></i> ${TERRAIN_LABELS[k]}</span>`
+    ).join('');
+    legEl.innerHTML=
+      `<span><i class="intro-dot ind"></i> <span id="intro-map-friendly-label">Regimental positions</span></span>`+
+      structLeg+terrainLeg;
+  }
 }
 
 function renderIntroFacts(battle, bd){
@@ -5269,8 +5438,8 @@ function renderIntroFacts(battle, bd){
   ];
   factsEl.innerHTML = facts.map(([k,v]) => `
     <div class="intro-fact">
-      <div class="intro-fact-k">${k.toUpperCase()}</div>
-      <div class="intro-fact-v">${v}</div>
+      <span class="intro-fact-k">${k.toUpperCase()}</span>
+      <span class="intro-fact-v">${v}</span>
     </div>
   `).join('');
 }
@@ -5285,7 +5454,8 @@ function battleMapFriendlyLabel(battle){
 function showIntro(battle){
   showMissionBrief(battle);
 }
-document.getElementById('begin-btn').addEventListener('click',()=>{showScreen(null);startBattle(_currentBattleName);});
+document.getElementById('begin-btn').addEventListener('click',()=>{ enableAutoAndStart(); });
+document.getElementById('take-control-btn').addEventListener('click',()=>{ gameSettings.autoPlay=false; showScreen(null); startBattle(_currentBattleName); });
 document.getElementById('db-share-btn').addEventListener('click',shareBattleResult);
 document.getElementById('back-btn').addEventListener('click',()=>{
   unitGroups.forEach(g=>scene.remove(g));unitGroups.length=0;unitGroupMap.clear();clearHighlights();

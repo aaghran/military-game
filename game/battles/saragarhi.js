@@ -72,6 +72,33 @@ export default {
       body:  'The last man standing. He operated the heliograph throughout, keeping Fort Lockhart informed in real-time. His final heliograph message: "I am now about to fight the enemy. Give my salaams to all." He then picked up his rifle.',
     },
   },
+  introMap: {
+    // 12 Sep 1897 — 21 Sikhs of 36th Sikh Infantry; 7-hour defensive stand
+    // Map: rows 0-1 = open ground outside, row 2 = north wall, rows 3-7 = fort interior, row 8 = south wall
+    features: [
+      {col:5,   row:2,   label:'NORTH GATE'},
+      {col:5,   row:5,   label:'SIGNAL TOWER'},
+      {col:1.5, row:5,   label:'WEST WALL'},
+      {col:8.5, row:5,   label:'EAST WALL'},
+    ],
+    phases: [
+      // Orakzai/Afridi frontal assault on the north wall — primary attack axis
+      {label:'FRONTAL ASSAULT', color:'rgba(200,70,70,0.6)',
+       path:[{col:5,row:0.5},{col:5,row:1.8}]},
+      // West wall pressure — second wave tried to flank
+      {label:'W FLANK', color:'rgba(200,70,70,0.45)',
+       path:[{col:0.5,row:2.5},{col:1.8,row:3.5}]},
+      // East wall pressure
+      {label:'E FLANK', color:'rgba(200,70,70,0.45)',
+       path:[{col:10,row:2.5},{col:8.2,row:3.5}]},
+      // NW corner breach — the tribals broke through here late in the battle
+      {label:'NW BREACH', color:'rgba(200,70,70,0.7)',
+       path:[{col:1.5,row:2},{col:2.5,row:3.5}]},
+      // Defenders contracted to Signal Tower for last stand
+      {label:'LAST STAND', color:'rgba(220,200,130,0.75)',
+       path:[{col:3,row:3},{col:5,row:5}]},
+    ],
+  },
   winCondition:  {type:'rounds',n:12},
   defensiveAI:   false,
   enemyLabels:   {pla:'Pashtun Warrior', pla_cdr:'Orakzai Commander'},

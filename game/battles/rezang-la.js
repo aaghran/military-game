@@ -73,6 +73,29 @@ export default {
       body:  'When ammunition was exhausted, Khem Chand led his section in hand-to-hand combat with bayonets. He continued fighting after being wounded, refusing to leave his position. His platoon held the line to the last man.',
     },
   },
+  introMap: {
+    // 18 Nov 1962 — C Company 13 Kumaon; 114 soldiers vs Chinese 3rd Infantry Division at 16,000 ft
+    // Three platoons held a semicircular perimeter; Chinese attacked from three directions
+    features: [
+      {col:5,   row:0.5, label:'REZANG LA PASS'},
+      {col:5,   row:7,   label:'INDIAN PERIMETER'},
+      {col:5,   row:2.5, label:'CHUSHUL APPROACHES'},
+    ],
+    phases: [
+      // PLA frontal assault from north, through the pass
+      {label:'PLA FRONTAL', color:'rgba(200,70,70,0.58)',
+       path:[{col:5,row:0.5},{col:5,row:2.5},{col:5,row:5.5}]},
+      // PLA eastern flanking movement — tried to encircle
+      {label:'PLA E FLANK', color:'rgba(200,70,70,0.45)',
+       path:[{col:9,row:1},{col:7.5,row:3.5},{col:7,row:6}]},
+      // PLA western pressure
+      {label:'PLA W FLANK', color:'rgba(200,70,70,0.45)',
+       path:[{col:2,row:1},{col:3,row:3.5},{col:4,row:6}]},
+      // Maj Shaitan Singh moved between all positions rallying each section
+      {label:'SHAITAN SINGH — RALLYING', color:'rgba(220,200,130,0.6)',
+       path:[{col:5,row:9},{col:3.5,row:7.5},{col:5,row:6.5},{col:6.5,row:7.5},{col:5,row:8.5}]},
+    ],
+  },
   winCondition:  {type:'waves'},
   defensiveAI:   false,
   enemyLabels:   {pla:'PLA Soldier', pla_cdr:'PLA Officer'},

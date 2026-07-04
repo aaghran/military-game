@@ -70,6 +70,29 @@ export default {
       body:  'Pakistan lost ~200 soldiers, 36 tanks, and 100+ vehicles. India lost 2 soldiers. General Sam Manekshaw called it "a perfect example of army-air force cooperation." The battle was dramatized in the film Border (1997). The post at Longewala still stands.',
     },
   },
+  introMap: {
+    // 5-6 Dec 1971 — 23 Punjab; 120 soldiers vs ~2,000 Pakistani troops and 45 Patton tanks
+    // Flat Thar Desert; Pakistani column approached from west/northwest; IAF struck at dawn
+    features: [
+      {col:5,   row:5.5, label:'LONGEWALA POST'},
+      {col:5,   row:1.5, label:'PAKISTANI STAGING'},
+      {col:5,   row:3.5, label:'DUNE BELT'},
+    ],
+    phases: [
+      // Pakistani infantry first wave — probing attack
+      {label:'PAK INFANTRY', color:'rgba(200,70,70,0.5)',
+       path:[{col:4,row:0.5},{col:4,row:2.5},{col:4.5,row:4.5}]},
+      // Pakistani Patton tank column — main thrust down the track from NW
+      {label:'PATTON COLUMN', color:'rgba(200,70,70,0.75)',
+       path:[{col:5,row:0.5},{col:5,row:1.5},{col:5,row:3},{col:5,row:4.5}]},
+      // Second infantry axis — eastern pincer
+      {label:'E INFANTRY', color:'rgba(200,70,70,0.45)',
+       path:[{col:7,row:0.5},{col:6.5,row:2},{col:6,row:4.5}]},
+      // IAF Hawker Hunter airstrike axis at dawn (round 5 event)
+      {label:'IAF STRIKE — DAWN', color:'rgba(100,180,255,0.6)',
+       path:[{col:9.5,row:3},{col:7,row:2},{col:5,row:1.5}]},
+    ],
+  },
   winCondition:  {type:'rounds',n:10},
   defensiveAI:   false,
   enemyLabels:   {pla:'Pakistani Infantry', pla_cdr:'Pakistani Officer', pla_tank:'M47 Patton Tank'},

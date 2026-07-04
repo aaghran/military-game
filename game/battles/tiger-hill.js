@@ -73,6 +73,25 @@ export default {
       body:  'The Bofors FH77B howitzer proved decisive at Kargil. Its ability to fire at high angles allowed it to hit enemy positions at 5,000+ metres. Tiger Hill fell with Bofors support.',
     },
   },
+  introMap: {
+    // 3-4 July 1999 — 8 Sikh Regiment; three assault columns, night/fog, Bofors artillery support
+    features: [
+      {col:5,   row:0.5, label:'TIGER HILL 5062 m'},
+      {col:5,   row:3.2, label:'HELMET FEATURE'},
+      {col:4.8, row:5.5, label:'SNOW SLOPE'},
+    ],
+    phases: [
+      // Left column — western approach, clearing W Approach Sangar
+      {label:'LEFT — 8 SIKH', color:'rgba(190,165,90,0.62)',
+       path:[{col:2.5,row:9},{col:3,row:6.5},{col:3,row:4},{col:3,row:3}]},
+      // Centre — main assault straight up the ridge spine
+      {label:'CENTRE RIDGE', color:'rgba(220,200,130,0.88)',
+       path:[{col:5,row:9},{col:5,row:6.5},{col:5,row:4},{col:5,row:2},{col:5,row:0}]},
+      // Right column — eastern approach, clearing E Approach Sangar
+      {label:'RIGHT FLANK', color:'rgba(190,165,90,0.62)',
+       path:[{col:7.5,row:9},{col:7,row:6.5},{col:7,row:4},{col:7,row:3}]},
+    ],
+  },
   winCondition:  {type:'waves'},
   defensiveAI:   false,
   autoPlayForceWin: true,

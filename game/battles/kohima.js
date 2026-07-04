@@ -66,6 +66,29 @@ export default {
       body:  '"When you go home, tell them of us and say — for your tomorrow, we gave our today." The Kohima Epitaph, inscribed at the war cemetery, is among the most recognised in the world. Kohima is called the "Stalingrad of the East." The Japanese 31st Division was destroyed.',
     },
   },
+  introMap: {
+    // Apr-Jun 1944 — Kohima Garrison; the "Stalingrad of the East"; tennis court changed hands 7 times
+    // Japanese 31st Division attacked from south, trying to break through to Imphal
+    features: [
+      {col:5,   row:4.5, label:'THE TENNIS COURT'},
+      {col:5,   row:2.5, label:'GARRISON HILL'},
+      {col:5,   row:7.5, label:'JAPANESE APPROACH'},
+    ],
+    phases: [
+      // Japanese 31st Division frontal assault from south through the jungle
+      {label:'JPN FRONTAL', color:'rgba(200,70,70,0.58)',
+       path:[{col:5,row:9.5},{col:5,row:7.5},{col:5,row:6},{col:5,row:5}]},
+      // Japanese western column — tried to flank via the western ridge
+      {label:'JPN W FLANK', color:'rgba(200,70,70,0.42)',
+       path:[{col:2,row:9},{col:2.5,row:7},{col:3,row:5.5}]},
+      // Japanese eastern column
+      {label:'JPN E FLANK', color:'rgba(200,70,70,0.42)',
+       path:[{col:8,row:9},{col:7.5,row:7},{col:7,row:5.5}]},
+      // British 2nd Division relief column broke the siege from the north
+      {label:'2ND DIV RELIEF', color:'rgba(100,180,255,0.58)',
+       path:[{col:5,row:0.5},{col:5,row:2},{col:5,row:3.5}]},
+    ],
+  },
   winCondition:  {type:'rounds', n:7},
   defensiveAI:   false,
   autoPlayForceWin: true,

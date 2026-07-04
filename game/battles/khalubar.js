@@ -69,6 +69,25 @@ export default {
       body:  'The khukri — the curved knife of the Gorkha Regiment — is carried into battle as both weapon and symbol. The 1/11 Gorkha Rifles captured and held Khalubar against counterattacks through the night.',
     },
   },
+  introMap: {
+    // 3-4 July 1999 — 1/11 Gorkha Rifles; Capt Manoj Pandey cleared 4 bunkers single-handedly
+    features: [
+      {col:5,   row:0.5, label:'KHALUBAR 4812 m'},
+      {col:5,   row:2,   label:'BUNKER LINE 2'},
+      {col:4.8, row:4.5, label:'APPROACH LEDGE'},
+    ],
+    phases: [
+      // Left — Lt Balwan Singh, western column
+      {label:'LEFT — BALWAN', color:'rgba(190,165,90,0.62)',
+       path:[{col:3,row:9},{col:3.2,row:6},{col:3.5,row:4},{col:4,row:2}]},
+      // Centre — Capt Manoj Pandey's solo charge through all five bunker lines
+      {label:'PANDEY — SOLO ADVANCE', color:'rgba(220,200,130,0.88)',
+       path:[{col:5,row:8},{col:5,row:5.5},{col:5,row:3},{col:5,row:1},{col:5,row:0}]},
+      // Right — Nb Sub Kulbahadur Pun, held captured positions against counterattack
+      {label:'RIGHT — KULBAHADUR', color:'rgba(190,165,90,0.62)',
+       path:[{col:7,row:9},{col:6.8,row:6},{col:6.5,row:4},{col:6,row:2}]},
+    ],
+  },
   winCondition:  {type:'waves'},
   defensiveAI:   false,
   autoPlayForceWin: true,
