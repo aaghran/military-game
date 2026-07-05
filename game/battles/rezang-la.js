@@ -73,13 +73,14 @@ export default {
       body:  'When ammunition was exhausted, Khem Chand led his section in hand-to-hand combat with bayonets. He continued fighting after being wounded, refusing to leave his position. His platoon held the line to the last man.',
     },
   },
+  paintHints: { biome:'alpine' },
   introMap: {
     // 18 Nov 1962 — C Company 13 Kumaon; 114 soldiers vs Chinese 3rd Infantry Division at 16,000 ft
     // Three platoons held a semicircular perimeter; Chinese attacked from three directions
     features: [
       {col:5,   row:0.5, label:'REZANG LA PASS'},
       {col:5,   row:7,   label:'INDIAN PERIMETER'},
-      {col:5,   row:2.5, label:'CHUSHUL APPROACHES'},
+      {col:8.3, row:8.8, label:'TO CHUSHUL'},
     ],
     phases: [
       // PLA frontal assault from north, through the pass

@@ -69,6 +69,12 @@ export default {
       body:  'Pakistan\'s 1st Armoured Division — equipped with the M48 Patton, called "the best tank in Asia" — drove into a carefully prepared killing ground at Asal Uttar. The waterlogged paddy trapped the tanks. 97 Pakistani Pattons were destroyed or captured. The field is still called "Patton Nagar."',
     },
   },
+  paintHints: {
+    tracks: [
+      // Grand Trunk Road along the southern bund
+      {path:[{col:-0.5,row:8.5},{col:4,row:8.4},{col:11.5,row:8.6}]},
+    ],
+  },
   introMap: {
     // 10 Sep 1965 — Asal Uttar; Centurion tanks vs Pakistani 1st Armoured Division Pattons
     // Pakistani M48 Pattons advanced from north through sugarcane onto soft paddy ground — trapped
@@ -88,7 +94,7 @@ export default {
       {label:'PAK E COLUMN', color:'rgba(200,70,70,0.45)',
        path:[{col:7,row:0.5},{col:7,row:3},{col:7,row:5}]},
       // CQMH Abdul Hamid — jeep RCL stalking the Patton column from the sugarcane
-      {label:'HAMID — RCL JEEP', color:'rgba(220,200,130,0.75)',
+      {label:'HAMID — RCL JEEP', labelAt:0, color:'rgba(220,200,130,0.75)',
        path:[{col:3,row:3.5},{col:4,row:2.5},{col:5.5,row:1.5}]},
     ],
   },

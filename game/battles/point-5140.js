@@ -66,6 +66,7 @@ export default {
       body:  'Hav Sanjay Kumar cleared the first bunker on the Flat Top feature single-handed, absorbing multiple bullet wounds. He is one of only two living Param Vir Chakra recipients from Kargil.',
     },
   },
+  paintHints: { biome:'alpine' },
   introMap: {
     // 19-20 June 1999 — three-pronged night assault up the ice face
     features: [
@@ -74,7 +75,7 @@ export default {
     ],
     phases: [
       // Left wing — Hav Sanjay Kumar, cleared W Bunker single-handedly
-      {label:'LEFT — SANJAY KUMAR', color:'rgba(190,165,90,0.62)',
+      {label:'LEFT — SANJAY KUMAR', labelAt:0, color:'rgba(190,165,90,0.62)',
        path:[{col:3,row:7.5},{col:3.5,row:5.5},{col:3.8,row:3},{col:4,row:1}]},
       // Centre — Capt Vikram Batra, straight up the ice couloir to summit
       {label:'CENTRE — BATRA', color:'rgba(220,200,130,0.85)',

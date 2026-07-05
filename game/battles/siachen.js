@@ -70,6 +70,7 @@ export default {
       body:  'India launched Operation Meghdoot when intelligence revealed Pakistan was planning to occupy the Siachen Glacier. The Indian Army\'s rapid heliborne insertion secured all three Saltoro passes before Pakistani forces arrived. The glacier has been under Indian control ever since — though at enormous cost in lives and logistics.',
     },
   },
+  paintHints: { biome:'alpine' },
   introMap: {
     // June 1987 — 19 JAK RIF; Bana Singh led 3-man team up a 70° ice wall at 21,153 ft
     // The approach: glacier (rows 7-9) → 457m ice wall (rows 3-6) → summit bunkers (rows 0-2)
@@ -86,7 +87,7 @@ export default {
       {label:'ICE WALL — BANA SINGH', color:'rgba(220,200,130,0.88)',
        path:[{col:5,row:7.5},{col:5,row:5.5},{col:5,row:3.5}]},
       // Solo summit charge — Bana Singh alone cleared the bunkers
-      {label:'SUMMIT CHARGE', color:'rgba(220,200,130,0.95)',
+      {label:'SUMMIT CHARGE', labelAt:1, color:'rgba(220,200,130,0.95)',
        path:[{col:5,row:3.5},{col:5,row:1.5},{col:5,row:0}]},
     ],
   },

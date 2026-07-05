@@ -517,6 +517,24 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
 }
 #take-control-btn:hover{ color:#e2d4b0; }
 
+/* ── Intro screen: desktop — centre the briefing as a column ── */
+@media (min-width: 900px){
+  .intro-sheet{
+    max-width:760px;
+    margin-left:auto;
+    margin-right:auto;
+    border-radius:20px 20px 0 0;
+  }
+  .intro-cta-bar{
+    left:50%;
+    right:auto;
+    transform:translateX(-50%);
+    width:760px;
+    max-width:calc(100vw - 40px);
+  }
+  #intro-title{ font-size:36px; }
+}
+
 /* ── Debrief screen ──────────────────────────────────────────── */
 #screen-debrief { overflow-y: auto; justify-content: flex-start; padding: 40px 20px 32px; }
 .debrief-shell { width: min(100%, 720px); display: flex; flex-direction: column; align-items: center; }
@@ -856,9 +874,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
     max-width: none;
   }
   body.mobile-battle #hist-card {
-    top: max(48px, calc(env(safe-area-inset-top) + 40px));
+    top: auto;
     bottom: calc(var(--battle-panel-collapsed-h) + 8px);
-    max-height: none;
+    max-height: 42vh;
+    overflow-y: auto;
     border-radius: 12px;
     transform: translateY(110%);
   }
@@ -927,9 +946,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
     bottom: calc(var(--battle-panel-collapsed-h) + 4px);
   }
   body.mobile-battle #hist-card {
-    top: max(48px, calc(env(safe-area-inset-top) + 40px));
+    top: auto;
     bottom: calc(var(--battle-panel-collapsed-h) + 8px) !important;
-    max-height: none;
+    max-height: 42vh;
+    overflow-y: auto;
     border-radius: 12px;
     transform: translateY(110%);
   }
@@ -2071,6 +2091,7 @@ import * as THREE from 'three';
 import { BATTLE_DATA, BATTLES } from './battles/index.js';
 import { DEBRIEF_DATA } from './battles/debrief-data.js';
 import { CAMPAIGN_BRIDGE_COPY } from './kargil-map.js';
+import { paintTerrain } from './terrain-paint.js';
 
 // Settings — persisted to localStorage
 const gameSettings = { musicOn:true, musicVol:35, animSpeed:1.0, showDmg:true, theme:'dark', autoPlay:false };
@@ -2257,7 +2278,7 @@ const camera = new THREE.OrthographicCamera(-FRUSTUM_BASE*aspect, FRUSTUM_BASE*a
 
 const cameraTarget = new THREE.Vector3(9.5, 1, 6.75);
 const CAMERA_DEFAULT = { x: 9.5, z: 6.75, angle: Math.PI / 4, zoom: 1.0 };
-const CAMERA_LIMITS = { minX: 4.5, maxX: 14.5, minZ: 3.5, maxZ: 10.5 };
+const CAMERA_LIMITS = { minX: 2.5, maxX: 16, minZ: 0.5, maxZ: 13 };
 const CAM_RADIUS = 12 * Math.SQRT2;
 const CAM_Y = 13;
 let cameraAngle = CAMERA_DEFAULT.angle;
@@ -2273,18 +2294,69 @@ function updateCameraProjection(){
   camera.bottom = -f;
   camera.updateProjectionMatrix();
 }
+let cameraMinZoom = 0.7;
 function setCameraZoom(z){
-  cameraZoom = Math.max(0.7, Math.min(1.75, z));
+  cameraZoom = Math.max(cameraMinZoom, Math.min(1.75, z));
   updateCameraProjection();
 }
+/* Fit the whole board in the viewport for the current orientation.
+   Portrait phones need to zoom OUT (board is wider than the screen),
+   so the zoom floor is lowered to whatever the fit requires. */
+const BOARD_MAX_X = SQ3 * (MC - 0.5);
+const BOARD_MAX_Z = 1.5 * (MR - 1);
+function fitCameraToBoard(){
+  cameraTarget.set(BOARD_MAX_X / 2, 1, BOARD_MAX_Z / 2);
+  // Portrait: face the board head-on (enemy row at top, matching the briefing
+  // map) — the attack axis runs down the tall screen dimension and the board
+  // fits ~25% tighter than the 45° diagonal. Landscape keeps the classic iso angle.
+  cameraAngle = (aspect < 1) ? Math.PI / 2 : CAMERA_DEFAULT.angle;
+  updateCameraPosition();
+  camera.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(camera.matrixWorld).invert();
+  const m = 1.2, v = new THREE.Vector3();
+  let needX = 0, needY = 0;
+  [[-m,-m],[BOARD_MAX_X+m,-m],[-m,BOARD_MAX_Z+m],[BOARD_MAX_X+m,BOARD_MAX_Z+m]].forEach(([x,z])=>{
+    v.set(x, 0, z).applyMatrix4(inv);
+    needX = Math.max(needX, Math.abs(v.x));
+    needY = Math.max(needY, Math.abs(v.y));
+  });
+  const f = Math.max(needY, needX / aspect);
+  const fitZoom = FRUSTUM_BASE / f;
+  cameraMinZoom = Math.min(0.7, fitZoom);        // pinch-out still reaches full overview
+  cameraZoom = Math.min(1.75, fitZoom * 1.22);   // start comfortably closer than full fit
+  updateCameraProjection();
+  updateCompass();
+}
 function resetCameraView(){
+  if(isMobileView()){ fitCameraToBoard(); return; }
   cameraTarget.set(CAMERA_DEFAULT.x, 1, CAMERA_DEFAULT.z);
   cameraAngle = CAMERA_DEFAULT.angle;
-  cameraZoom = (isMobileView() && document.body.classList.contains('mobile-battle'))
-    ? 1.48 : CAMERA_DEFAULT.zoom;
+  cameraMinZoom = 0.7;
+  cameraZoom = CAMERA_DEFAULT.zoom;
   updateCameraPosition();
   updateCameraProjection();
   updateCompass();
+}
+/* Auto-frame: tween the camera to a tile if it's off-screen (enemy spawns,
+   enemy actions). No-op when the action is already visible. */
+function isTileVisible(col, row){
+  const v = hexWorldPos(col, row).project(camera);
+  return Math.abs(v.x) < 0.72 && Math.abs(v.y) < 0.72;
+}
+function focusCameraOn(col, row){
+  if(isTileVisible(col, row)) return;
+  const p  = hexWorldPos(col, row);
+  const tx = Math.max(CAMERA_LIMITS.minX, Math.min(CAMERA_LIMITS.maxX, p.x));
+  const tz = Math.max(CAMERA_LIMITS.minZ, Math.min(CAMERA_LIMITS.maxZ, p.z));
+  const sx = cameraTarget.x, sz = cameraTarget.z, t0 = performance.now(), dur = 420;
+  _activeEffects.push(()=>{
+    const k = Math.min(1, (performance.now() - t0) / dur);
+    const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;
+    cameraTarget.x = sx + (tx - sx) * e;
+    cameraTarget.z = sz + (tz - sz) * e;
+    updateCameraPosition();
+    return k < 1;
+  });
 }
 function setMobileBattleMode(on){
   const active = on && isMobileView();
@@ -3782,6 +3854,11 @@ function spawnWave(wi){
     g.position.set(fp.x,fp.y+5,fp.z); scene.add(g); unitGroups.push(g); unitGroupMap.set(unit,g);
     spawns.push({g,fp});
   });
+  // frame the incoming wave if it lands off-screen
+  if(spawns.length){
+    const mid = PLA_WAVES[wi][Math.floor(PLA_WAVES[wi].length/2)];
+    focusCameraOn(mid.col ?? 5, mid.row ?? 1);
+  }
   spawns.forEach(({g,fp},i)=>setTimeout(()=>{
     const sy=g.position.y,t0=performance.now();
     function drop(){const el=performance.now()-t0,t=Math.min(1,el/ad(380)),e=1-Math.pow(1-t,3);g.position.y=sy+(fp.y-sy)*e;if(t<1)requestAnimationFrame(drop);else g.position.y=fp.y;}
@@ -3796,6 +3873,7 @@ function enemyTurn(){
   function next(){
     if(idx>=pla.length){nextRound();return;}
     const p=pla[idx++]; if(!p.alive){next();return;}
+    focusCameraOn(p.col,p.row);   // keep enemy actions on screen
     // Pinned check — low morale unit may freeze
     if(p.morale!=null&&p.morale<40&&Math.random()<0.30){
       showNarrative(`${formatUnitLabel(p)} is pinned — low morale!`);
@@ -3835,6 +3913,7 @@ function autoPlayIndianTurn(){
   function next(){
     if(!gameState.autoPlaying||i>=units.length){ doEndTurn(); return; }
     const u=units[i++]; if(!u.alive){next();return;}
+    focusCameraOn(u.col,u.row);   // keep story-mode actions on screen
     if(u.morale!=null&&u.morale<40&&Math.random()<0.30){
       showNarrative(formatUnitLabel(u)+' is pinned — low morale!');
       setTimeout(next,ad(600)); return;
@@ -4220,6 +4299,7 @@ window.addEventListener('resize',()=>{
   if(gameState.screen==='battle'){
     setMobileBattleMode(true);
     if(!document.body.classList.contains('mobile-battle')) setMapControlsVisible(isMobileView());
+    if(isMobileView()) fitCameraToBoard();   // re-fit on rotation / viewport change
   }
 });
 
@@ -5148,7 +5228,9 @@ function populateIntroScreen(battle) {
   _currentBattleName = battle.name;
   const bd=BATTLE_DATA[battle.name]||BATTLE_DATA['Rezang La'];
   document.getElementById('intro-title').textContent=battle.name.toUpperCase();
-  document.getElementById('intro-meta').textContent=`${battle.year} · ${bd.introMeta}`;
+  const introMetaStr = String(bd.introMeta||'').trim();
+  document.getElementById('intro-meta').textContent =
+    introMetaStr.startsWith(String(battle.year)) ? introMetaStr : `${battle.year} · ${introMetaStr}`;
   const parsed = plainIntroLines(bd.introText || '');
   const storyEl = document.getElementById('intro-story');
   const howEl = document.getElementById('intro-howto');
@@ -5242,10 +5324,20 @@ const TERRAIN_PATTERNS = {
   'P':'pat-peak','R':'pat-ridge','g':'pat-glacier','d':'pat-dune'
 };
 
+let _introMapBd = null, _introResizeT = null;
+window.addEventListener('resize', () => {
+  if(!_introMapBd) return;
+  const el = document.getElementById('intro-map-grid');
+  if(!el || !el.offsetParent) return;   // intro screen not visible
+  clearTimeout(_introResizeT);
+  _introResizeT = setTimeout(() => renderIntroMap(_introMapBd), 150);
+});
+
 function renderIntroMap(bd){
   const mapEl  = document.getElementById('intro-map-grid');
   const legEl  = document.getElementById('intro-map-legend');
   if(!mapEl) return;
+  _introMapBd = bd;
 
   const map        = bd?.map || [];
   const structures = bd?.structures || {};
@@ -5261,49 +5353,43 @@ function renderIntroMap(bd){
   const W  = cols * TW, H = rows * TH;
   const usedTerrain = new Map();
 
-  /* ── terrain tiles ── */
-  const tiles = [];
-  map.forEach((row, ri) => row.forEach((key, ci) => {
-    const t   = terrainDef[key];
-    const hex = t ? `#${t.color.toString(16).padStart(6,'0')}` : '#333344';
-    usedTerrain.set(key, hex);
-    tiles.push(`<rect x="${ci*TW}" y="${ri*TH}" width="${TW}" height="${TH}" fill="${hex}"/>`);
-    const pat = TERRAIN_PATTERNS[key];
-    if(pat) tiles.push(`<rect x="${ci*TW}" y="${ri*TH}" width="${TW}" height="${TH}" fill="url(#${pat})"/>`);
+  /* ── painted aerial basemap ── */
+  map.forEach(row => row.forEach(k => {
+    const t = terrainDef[k];
+    if(t) usedTerrain.set(k, `#${t.color.toString(16).padStart(6,'0')}`);
   }));
-
-  /* ── topographic contour lines ── */
-  const contourEls = [];
-  for(let ri=1; ri<rows; ri+=2){
-    const y = ri * TH;
-    const pts = [];
-    for(let xi=0; xi<=cols*4; xi++){
-      const cx2 = xi * TW * 0.25;
-      const wave = Math.sin(xi * 0.55 + ri * 1.1) * 0.6;
-      pts.push(`${xi===0?'M':'L'}${cx2.toFixed(1)},${(y+wave).toFixed(2)}`);
-    }
-    contourEls.push(`<path d="${pts.join(' ')}" fill="none" stroke="rgba(255,255,255,0.055)" stroke-width="0.35"/>`);
+  let baseImg = '', paintDataUrl = '';
+  try {
+    const paint = paintTerrain(bd);
+    paintDataUrl = paint.dataUrl;
+    baseImg = `<image x="0" y="0" width="${W}" height="${H}" href="${paintDataUrl}" preserveAspectRatio="none"/>`;
+  } catch(e) { console.warn('terrain paint failed, using flat tiles', e); }
+  const tiles = [];
+  if(!baseImg){
+    map.forEach((row, ri) => row.forEach((key, ci) => {
+      tiles.push(`<rect x="${ci*TW}" y="${ri*TH}" width="${TW}" height="${TH}" fill="${usedTerrain.get(key)||'#333344'}"/>`);
+    }));
   }
 
-  /* ── elevation gradient overlay ── */
-  const allH = map.flat().map(k=>(terrainDef[k]?.height||1));
-  const heightRange = Math.max(...allH) - Math.min(...allH);
-  const gradEls = [];
-  if(heightRange > 1.5){
-    gradEls.push(`<linearGradient id="elvGrd" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="rgba(0,0,14,0.22)"/>
-      <stop offset="0.5" stop-color="rgba(0,0,10,0.06)"/>
-      <stop offset="1" stop-color="rgba(0,0,0,0)"/>
-    </linearGradient>`);
-    tiles.push(`<rect x="0" y="0" width="${W}" height="${H}" fill="url(#elvGrd)"/>`);
-  }
-
-  /* ── tile grid (subtle borders between tiles) ── */
+  /* ── graticule + grid references + map furniture ── */
   const gridEls = [];
   for(let ci=1; ci<cols; ci++)
-    gridEls.push(`<line x1="${ci*TW}" y1="0" x2="${ci*TW}" y2="${H}" stroke="rgba(0,0,0,0.18)" stroke-width="0.4"/>`);
+    gridEls.push(`<line x1="${ci*TW}" y1="0" x2="${ci*TW}" y2="${H}" stroke="rgba(255,255,255,0.05)" stroke-width="0.25"/>`);
   for(let ri=1; ri<rows; ri++)
-    gridEls.push(`<line x1="0" y1="${ri*TH}" x2="${W}" y2="${ri*TH}" stroke="rgba(0,0,0,0.18)" stroke-width="0.4"/>`);
+    gridEls.push(`<line x1="0" y1="${ri*TH}" x2="${W}" y2="${ri*TH}" stroke="rgba(255,255,255,0.05)" stroke-width="0.25"/>`);
+  for(let ci=0; ci<cols; ci++)
+    gridEls.push(`<text x="${(ci+0.5)*TW}" y="3" text-anchor="middle" font-size="2.6" fill="rgba(255,255,255,0.32)" font-family="monospace">${String.fromCharCode(65+ci)}</text>`);
+  for(let ri=0; ri<rows; ri++)
+    gridEls.push(`<text x="1.4" y="${(ri+0.5)*TH+1}" font-size="2.6" fill="rgba(255,255,255,0.32)" font-family="monospace">${ri+1}</text>`);
+  gridEls.push(`<rect x="0.3" y="0.3" width="${W-0.6}" height="${H-0.6}" fill="none" stroke="rgba(216,200,136,0.26)" stroke-width="0.5"/>`);
+  gridEls.push(`<g transform="translate(${W-6},9)"><path d="M0,-4 L2,2 L0,0.8 L-2,2 Z" fill="rgba(216,200,136,0.8)"/><text x="0" y="6.5" text-anchor="middle" font-size="3" fill="rgba(216,200,136,0.8)" font-family="monospace">N</text></g>`);
+
+  /* ── plated label helper (dark plate + gold text) ── */
+  const plate = (x, y, txt, col='#d8c888', fs=3.4) => {
+    const w = txt.length * fs * 0.64 + 4.5;
+    x = Math.max(w/2 + 1.5, Math.min(W - w/2 - 1.5, x));   // keep plate inside map
+    return `<g><rect x="${(x-w/2).toFixed(1)}" y="${(y-fs-1.4).toFixed(1)}" width="${w.toFixed(1)}" height="${(fs+2.8).toFixed(1)}" rx="0.9" fill="rgba(8,10,18,0.82)" stroke="${col}" stroke-opacity="0.45" stroke-width="0.3"/><text x="${x.toFixed(1)}" y="${y}" text-anchor="middle" font-size="${fs}" fill="${col}" font-family="monospace" font-weight="bold" letter-spacing="0.5">${txt}</text></g>`;
+  };
 
   /* ── phase arrows (from introMap or auto) ── */
   const arrowEls = [], markerDefs = [];
@@ -5313,16 +5399,22 @@ function renderIntroMap(bd){
 
   if(mapPhases && mapPhases.length){
     mapPhases.forEach((ph, i) => {
-      const c   = ph.color || 'rgba(216,200,136,0.68)';
-      const mkId= `mkph${i}`;
-      markerDefs.push(mkDef(mkId, c));
+      const c    = ph.color || 'rgba(216,200,136,0.68)';
+      const solid= c.replace(/,\s*[\d.]+\)\s*$/, ',1)');
+      const mkId = `mkph${i}`;
+      markerDefs.push(mkDef(mkId, solid));
       const pts = ph.path.map(p=>`${((p.col)+0.5)*TW},${((p.row)+0.5)*TH}`).join(' ');
-      arrowEls.push(`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="3.0" stroke-linejoin="round" stroke-linecap="round" filter="url(#f-glow)" marker-end="url(#${mkId})"/>`);
+      arrowEls.push(`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="4.4" stroke-opacity="0.3" stroke-linejoin="round" stroke-linecap="round" filter="url(#f-glow)"/>`);
+      arrowEls.push(`<polyline points="${pts}" fill="none" stroke="${solid}" stroke-opacity="0.85" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#${mkId})"/>`);
       const opacity = parseFloat((c.match(/[\d.]+\)$/) || ['1'])[0]) || 1;
-      if(ph.label && ph.path.length >= 3 && opacity >= 0.65){
-        const mid = ph.path[Math.floor(ph.path.length/2)];
-        const lx = (mid.col+1.2)*TW, ly = (mid.row+0.5)*TH-2;
-        arrowEls.push(`<text x="${lx}" y="${ly}" font-size="3.8" fill="${c}" font-family="monospace" font-weight="bold" paint-order="stroke" stroke="rgba(5,5,15,0.92)" stroke-width="2.2" stroke-linejoin="round">${ph.label}</text>`);
+      if(ph.label && ph.path.length >= 3 && opacity >= 0.55){
+        // spread labels along their paths so parallel axes don't stack;
+        // ph.labelAt (path index) overrides per battle
+        const mid = Math.floor(ph.path.length/2);
+        const li  = ph.labelAt !== undefined ? ph.labelAt
+                  : Math.max(0, Math.min(ph.path.length-1, mid + ((i%3)-1)));
+        const lp  = ph.path[li];
+        arrowEls.push(plate((lp.col+0.5)*TW, (lp.row+0.5)*TH - 3.4, ph.label, solid, 3.1));
       }
     });
   } else {
@@ -5349,71 +5441,94 @@ function renderIntroMap(bd){
     }
   }
 
-  /* ── terrain feature labels ── */
+  /* ── terrain feature labels — plated with tick line to spot ── */
   const featureEls = mapFeatures.map(f => {
     const x=(f.col+0.5)*TW, y=(f.row+0.5)*TH;
-    return `<text x="${x}" y="${y}" text-anchor="middle" font-size="4.2" fill="rgba(255,255,255,0.82)" font-family="monospace" font-style="italic" font-weight="bold" paint-order="stroke" stroke="rgba(5,5,15,0.88)" stroke-width="2.5" stroke-linejoin="round">${f.label}</text>`;
+    return `<line x1="${x}" y1="${y}" x2="${x}" y2="${y-3.2}" stroke="rgba(216,200,136,0.55)" stroke-width="0.35"/>`+
+           `<circle cx="${x}" cy="${y}" r="0.7" fill="rgba(232,220,174,0.85)"/>`+
+           plate(x, y-4.4, f.label, '#e8dcae', 3.2);
   }).join('');
 
-  /* ── structure icons — map pin style (circle + downward spike) ── */
+  /* ── structure markers — NATO-style frames on stems ── */
   const strIcons = [];
-  const PR = 5.5, SH = 4; // pin radius, offset above tile centre
   Object.entries(structures).forEach(([pos,s]) => {
     const [sc,sr]=pos.split(',').map(Number);
     const cx=(sc+0.5)*TW, cy=(sr+0.5)*TH;
-    const fill=s.type==='lmg'?'#c83030':s.type==='mortar'?'#df5810':'#c8a030';
-    const icon=s.type==='lmg'?'⊕':s.type==='mortar'?'◎':'★';
-    const cy_c = cy - SH;
-    const sx1 = cx - 2, sx2 = cx + 2, sy_base = cy_c + PR * 0.72;
-    strIcons.push(`<circle cx="${cx}" cy="${cy_c}" r="${PR}" fill="${fill}" fill-opacity="0.95" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>`);
-    strIcons.push(`<path d="M${sx1},${sy_base} L${cx},${cy+2} L${sx2},${sy_base} Z" fill="${fill}" fill-opacity="0.95"/>`);
-    strIcons.push(`<text x="${cx}" y="${cy_c+2}" text-anchor="middle" dominant-baseline="middle" font-size="7" fill="white">${icon}</text>`);
+    const col = s.type==='lmg' ? '#e05540' : s.type==='mortar' ? '#e08030' : '#d8b048';
+    const fw=7.6, fh=5, fy=cy-9;
+    strIcons.push(`<line x1="${cx}" y1="${cy}" x2="${cx}" y2="${fy+fh}" stroke="${col}" stroke-width="0.4" stroke-opacity="0.8"/>`);
+    strIcons.push(`<circle cx="${cx}" cy="${cy}" r="0.8" fill="${col}"/>`);
+    strIcons.push(`<rect x="${cx-fw/2}" y="${fy}" width="${fw}" height="${fh}" rx="0.5" fill="rgba(10,12,20,0.88)" stroke="${col}" stroke-width="0.6"/>`);
+    const icy=fy+fh/2;
+    if(s.type==='lmg'){          // weapon platform — armour lens
+      strIcons.push(`<ellipse cx="${cx}" cy="${icy}" rx="2.4" ry="1.3" fill="none" stroke="${col}" stroke-width="0.55"/>`);
+    } else if(s.type==='mortar'){ // indirect fire — up arrow
+      strIcons.push(`<path d="M${cx},${icy+1.5} L${cx},${icy-1.2} M${cx-1.2},${icy-0.1} L${cx},${icy-1.5} L${cx+1.2},${icy-0.1}" fill="none" stroke="${col}" stroke-width="0.55" stroke-linecap="round"/>`);
+    } else {                      // fortified position — triangle
+      strIcons.push(`<path d="M${cx-2},${icy+1.4} L${cx},${icy-1.4} L${cx+2},${icy+1.4} Z" fill="none" stroke="${col}" stroke-width="0.55"/>`);
+    }
   });
 
-  /* ── unit dots ── */
+  /* ── friendly unit markers — frames for leaders, dots for riflemen ── */
   const unitDots = unitStarts.map(u=>{
     const cx=(u.col+0.5)*TW, cy=(u.row+0.5)*TH, hero=u.type==='hero';
-    return (hero?`<circle cx="${cx}" cy="${cy}" r="10" fill="none" stroke="rgba(216,200,136,0.18)" stroke-width="1.2"/><circle cx="${cx}" cy="${cy}" r="7.5" fill="none" stroke="rgba(216,200,136,0.30)" stroke-width="0.9"/>`:'') +
-      `<circle cx="${cx}" cy="${cy}" r="${hero?5.5:3.8}" fill="${hero?'#d8c888':'rgba(216,200,136,0.75)'}" stroke="rgba(255,255,255,0.50)" stroke-width="1"/>`;
+    const leader = hero || u.type==='section_cdr';
+    const col = hero ? '#ffd870' : '#d8c888';
+    if(!leader)
+      return `<circle cx="${cx}" cy="${cy}" r="1.5" fill="rgba(216,200,136,0.85)" stroke="rgba(10,12,20,0.8)" stroke-width="0.4"/>`;
+    const fw = hero?7.4:5.4, fh = hero?4.8:3.6, fy = cy+2.6;
+    let g = `<circle cx="${cx}" cy="${cy}" r="0.7" fill="${col}"/>`;
+    g += `<line x1="${cx}" y1="${cy}" x2="${cx}" y2="${fy}" stroke="${col}" stroke-width="0.35" stroke-opacity="0.75"/>`;
+    g += `<rect x="${cx-fw/2}" y="${fy}" width="${fw}" height="${fh}" rx="0.5" fill="rgba(10,12,20,0.88)" stroke="${col}" stroke-width="${hero?0.75:0.5}"/>`;
+    g += `<line x1="${cx-fw/2}" y1="${fy}" x2="${cx+fw/2}" y2="${fy+fh}" stroke="${col}" stroke-width="0.45"/>`;
+    g += `<line x1="${cx+fw/2}" y1="${fy}" x2="${cx-fw/2}" y2="${fy+fh}" stroke="${col}" stroke-width="0.45"/>`;
+    if(hero) g += `<text x="${cx+fw/2+0.8}" y="${fy+2.6}" font-size="3" fill="${col}">★</text>`;
+    return g;
   }).join('');
 
-  /* ── zone labels ── */
-  const zoneTxt = (txt, x, y, col) =>
-    `<text x="${x}" y="${y}" font-size="4.8" fill="${col}" font-family="monospace" font-weight="bold" letter-spacing="0.8" paint-order="stroke" stroke="rgba(0,0,5,0.85)" stroke-width="2.5" stroke-linejoin="round">${txt}</text>`;
-  const zoneLabels = isDefensive
-    ? [zoneTxt('ENEMY',   3, 11,     'rgba(210,70,70,0.95)'),
-       zoneTxt('DEFENCE', 3, H-5,    'rgba(216,200,136,0.95)')]
-    : [zoneTxt('OBJECTIVE',3, 11,    'rgba(210,70,70,0.95)'),
-       zoneTxt('ASSAULT',  3, H-5,   'rgba(216,200,136,0.95)')];
+  /* ── enemy entry markers — hostile frames at wave-1 entry points ── */
+  const enemyMarks = (bd?.plaWaves?.[0]||[]).map(e=>{
+    const cx=((e.col||0)+0.5)*TW, ey=(e.row||0)*TH+5.5;   // waves may omit row (spawn row 0)
+    const armour=/tank/.test(e.type||''), fw=6, fh=4;
+    let g = `<rect x="${cx-fw/2}" y="${ey}" width="${fw}" height="${fh}" rx="0.5" fill="rgba(34,8,8,0.82)" stroke="#e05545" stroke-width="0.55"/>`;
+    g += armour
+      ? `<ellipse cx="${cx}" cy="${ey+fh/2}" rx="2" ry="1.1" fill="none" stroke="#e05545" stroke-width="0.5"/>`
+      : `<line x1="${cx-fw/2}" y1="${ey}" x2="${cx+fw/2}" y2="${ey+fh}" stroke="#e05545" stroke-width="0.4"/><line x1="${cx+fw/2}" y1="${ey}" x2="${cx-fw/2}" y2="${ey+fh}" stroke="#e05545" stroke-width="0.4"/>`;
+    return g;
+  }).join('');
 
-  /* ── SVG — explicit px dims bypass CSS % resolution issues ── */
-  const heroW = window.innerWidth;
-  const heroH = Math.max(300, Math.round(window.innerHeight * 0.80));
-  const natH  = Math.round(heroW * H / W);
-  const par   = natH <= heroH ? 'xMidYMin meet' : 'xMidYMin slice';
-  mapEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${heroW}" height="${heroH}" preserveAspectRatio="${par}" style="display:block;position:absolute;inset:0">
+  /* ── zone labels — plated ── */
+  const zoneLabels = isDefensive
+    ? [plate(15, 13, 'ENEMY AXIS', '#e05545', 3.3),
+       plate(16, H-5.5, 'DEFENCE LINE', '#d8c888', 3.3)]
+    : [plate(15, 13, 'OBJECTIVE', '#e05545', 3.3),
+       plate(16, H-5.5, 'ASSAULT LINE', '#d8c888', 3.3)];
+
+  /* ── sizing — fit map inside hero below the title overlay, centred;
+     blurred map fills the letterbox. Explicit px dims bypass CSS % issues */
+  const heroW    = window.innerWidth;
+  const heroH    = Math.max(300, Math.round(window.innerHeight * 0.80));
+  const headroom = 104;                       // title + regiment tag overlay
+  const availH   = Math.max(200, heroH - headroom - 26);
+  const fitW     = Math.round(Math.min(heroW - 16, availH * W / H));
+  const fitH     = Math.round(fitW * H / W);
+  const topPx    = headroom + Math.max(0, Math.round((availH - fitH) / 2));
+  const backdrop = paintDataUrl
+    ? `<img src="${paintDataUrl}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px) brightness(0.32) saturate(0.75);transform:scale(1.08)">`
+    : '';
+  mapEl.innerHTML = backdrop + `<svg viewBox="0 0 ${W} ${H}" width="${fitW}" height="${fitH}" preserveAspectRatio="xMidYMid meet" style="display:block;position:absolute;left:50%;top:${topPx}px;transform:translateX(-50%);filter:drop-shadow(0 0 26px rgba(0,0,0,0.65))">
   <defs>
-    ${gradEls.join('')}
     ${markerDefs.join('')}
-    <filter id="f-terrain" x="-10%" y="-10%" width="120%" height="120%">
-      <feColorMatrix type="saturate" values="0.55"/>
-      <feGaussianBlur stdDeviation="6.5"/>
-    </filter>
     <filter id="f-glow"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <pattern id="pat-ice"    x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse"><line x1="0" y1="5" x2="5" y2="0" stroke="rgba(255,255,255,0.22)" stroke-width="0.9"/></pattern>
-    <pattern id="pat-snow"   x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.55" fill="rgba(255,255,255,0.28)"/></pattern>
-    <pattern id="pat-rock"   x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="0" y1="4" x2="4" y2="0" stroke="rgba(0,0,0,0.14)" stroke-width="0.7"/></pattern>
-    <pattern id="pat-peak"   x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><line x1="0" y1="4" x2="4" y2="0" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/><line x1="0" y1="0" x2="4" y2="4" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/></pattern>
-    <pattern id="pat-ridge"  x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse"><line x1="0" y1="5" x2="5" y2="0" stroke="rgba(0,0,0,0.15)" stroke-width="0.8"/><line x1="0" y1="0" x2="5" y2="5" stroke="rgba(0,0,0,0.07)" stroke-width="0.5"/></pattern>
-    <pattern id="pat-glacier" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse"><line x1="0" y1="6" x2="6" y2="0" stroke="rgba(200,230,255,0.2)" stroke-width="1"/><line x1="0" y1="3" x2="3" y2="0" stroke="rgba(200,230,255,0.12)" stroke-width="0.5"/></pattern>
-    <pattern id="pat-dune"   x="0" y="0" width="6" height="4" patternUnits="userSpaceOnUse"><path d="M0 4 Q3 1 6 4" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="0.6"/></pattern>
   </defs>
-  <g filter="url(#f-terrain)">${tiles.join('')}</g>
-  ${contourEls.join('')}
-  ${featureEls}
+  ${baseImg}
+  ${tiles.join('')}
+  ${gridEls.join('')}
   ${arrowEls.join('')}
+  ${enemyMarks}
   ${strIcons.join('')}
   ${unitDots}
+  ${featureEls}
   ${zoneLabels.join('')}
 </svg>`;
 

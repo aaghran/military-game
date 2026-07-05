@@ -66,13 +66,20 @@ export default {
       body:  '"When you go home, tell them of us and say — for your tomorrow, we gave our today." The Kohima Epitaph, inscribed at the war cemetery, is among the most recognised in the world. Kohima is called the "Stalingrad of the East." The Japanese 31st Division was destroyed.',
     },
   },
+  paintHints: {
+    biome: 'jungle',
+    tracks: [
+      // the Imphal road over Garrison Hill
+      {path:[{col:5,row:-0.5},{col:4.8,row:3},{col:5.2,row:6},{col:5,row:10.5}]},
+    ],
+  },
   introMap: {
     // Apr-Jun 1944 — Kohima Garrison; the "Stalingrad of the East"; tennis court changed hands 7 times
     // Japanese 31st Division attacked from south, trying to break through to Imphal
     features: [
-      {col:5,   row:4.5, label:'THE TENNIS COURT'},
+      {col:5,   row:5.9, label:'THE TENNIS COURT'},
       {col:5,   row:2.5, label:'GARRISON HILL'},
-      {col:5,   row:7.5, label:'JAPANESE APPROACH'},
+      {col:8.3, row:9.3, label:'JAPANESE APPROACH'},
     ],
     phases: [
       // Japanese 31st Division frontal assault from south through the jungle

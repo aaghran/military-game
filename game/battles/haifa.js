@@ -60,12 +60,19 @@ export default {
       body:  'Major Dalpat Singh led the decisive charge at Haifa and was killed in action. He was posthumously awarded the Indian Order of Merit, the highest gallantry award an Indian could receive at the time. A road in Tel Aviv is named after the Jodhpur Lancers to this day.',
     },
   },
+  paintHints: {
+    biome: 'desert',
+    tracks: [
+      // coastal road — the cavalry charge axis into Haifa
+      {path:[{col:5,row:-0.5},{col:5,row:3},{col:5.2,row:5.5},{col:5,row:8},{col:5,row:10.5}]},
+    ],
+  },
   introMap: {
     // 23 Sep 1918 — Mysore & Jodhpur Lancers; cavalry charge against Ottoman fortress at Haifa
     // Units approached from the north, charged down through wadi and open plain onto the Ottoman walls
     features: [
-      {col:5,   row:7.5, label:'HAIFA FORTRESS'},
-      {col:5,   row:4.5, label:'WADI / DRY RIVERBED'},
+      {col:5,   row:8.8, label:'HAIFA FORTRESS'},
+      {col:1.8, row:4.5, label:'WADI'},
       {col:5,   row:1,   label:'CAVALRY START LINE'},
     ],
     phases: [

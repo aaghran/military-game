@@ -70,13 +70,22 @@ export default {
       body:  'Pakistan lost ~200 soldiers, 36 tanks, and 100+ vehicles. India lost 2 soldiers. General Sam Manekshaw called it "a perfect example of army-air force cooperation." The battle was dramatized in the film Border (1997). The post at Longewala still stands.',
     },
   },
+  paintHints: {
+    biome: 'desert',
+    tracks: [
+      // NW approach track — the axis the Patton column used
+      {path:[{col:5,row:-0.5},{col:5.1,row:2.2},{col:4.8,row:3.8},{col:5,row:5.5}]},
+      // lateral border track through the post
+      {path:[{col:-0.5,row:6.6},{col:3,row:6.1},{col:5,row:5.5},{col:8,row:6.2},{col:11.5,row:7}]},
+    ],
+  },
   introMap: {
     // 5-6 Dec 1971 — 23 Punjab; 120 soldiers vs ~2,000 Pakistani troops and 45 Patton tanks
     // Flat Thar Desert; Pakistani column approached from west/northwest; IAF struck at dawn
     features: [
-      {col:5,   row:5.5, label:'LONGEWALA POST'},
-      {col:5,   row:1.5, label:'PAKISTANI STAGING'},
-      {col:5,   row:3.5, label:'DUNE BELT'},
+      {col:5,   row:7.6, label:'LONGEWALA POST'},
+      {col:5,   row:1.3, label:'PAKISTANI STAGING'},
+      {col:1.8, row:3.6, label:'DUNE BELT'},
     ],
     phases: [
       // Pakistani infantry first wave — probing attack

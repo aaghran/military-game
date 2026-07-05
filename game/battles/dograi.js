@@ -61,11 +61,17 @@ export default {
       body:  'The capture of Dograi by 3 Jat Regiment is considered one of the finest infantry actions of the 1965 war. The regiment attacked at night, breached compound walls, and fought room to room. The battle is taught at military academies as a model night assault. The regiment\'s battle honour: DOGRAI.',
     },
   },
+  paintHints: {
+    tracks: [
+      // GT Road through Dograi village
+      {path:[{col:5,row:-0.5},{col:5,row:4},{col:5.2,row:10.5}]},
+    ],
+  },
   introMap: {
     // 21-22 Sep 1965 — 3 Jat Regiment; night assault on Dograi village in the 1965 war
     // Village held by Pakistan; 3 Jat pushed in two columns through irrigation channels
     features: [
-      {col:5,   row:4.5, label:'DOGRAI VILLAGE CORE'},
+      {col:5,   row:6.2, label:'DOGRAI VILLAGE CORE'},
       {col:5,   row:7.5, label:'START LINE'},
       {col:2.5, row:4,   label:'ICHHOGIL CANAL'},
     ],

@@ -72,6 +72,7 @@ export default {
       body:  'The last man standing. He operated the heliograph throughout, keeping Fort Lockhart informed in real-time. His final heliograph message: "I am now about to fight the enemy. Give my salaams to all." He then picked up his rifle.',
     },
   },
+  paintHints: { biome:'desert' },
   introMap: {
     // 12 Sep 1897 — 21 Sikhs of 36th Sikh Infantry; 7-hour defensive stand
     // Map: rows 0-1 = open ground outside, row 2 = north wall, rows 3-7 = fort interior, row 8 = south wall

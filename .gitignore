@@ -8,3 +8,5 @@
 !game/
 !game/**
 .vercel
+.gstack/
+game/_map-test.html

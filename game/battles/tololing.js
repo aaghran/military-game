@@ -64,15 +64,16 @@ export default {
       body:  'India recaptured all Kargil peaks by July 26 1999, now celebrated as Kargil Vijay Diwas. Over 527 Indian soldiers died. Tololing was the first major peak retaken on June 13 1999, proving night-assault tactics viable on near-vertical terrain. Pakistan has never officially acknowledged their regulars were involved.',
     },
   },
+  paintHints: { biome:'alpine' },
   introMap: {
     // 13 June 1999 — 2 Rajputana Rifles; multiple failed attempts before successful night assault
     features: [
-      {col:5,   row:4.5, label:'TOLOLING SHOULDER'},
+      {col:1.9, row:6.5, label:'TOLOLING SHOULDER'},
       {col:5,   row:0.5, label:'SUMMIT 4590 m'},
     ],
     phases: [
       // Left — Lt Balwan Singh up the western rocky spur
-      {label:'W SPUR — BALWAN', color:'rgba(190,165,90,0.62)',
+      {label:'W SPUR — BALWAN', labelAt:0, color:'rgba(190,165,90,0.62)',
        path:[{col:4,row:9},{col:4,row:6.5},{col:4.2,row:4.5},{col:4,row:1}]},
       // Centre — Maj Vivek Gupta, direct ridge assault, first to reach summit
       {label:'CENTRE — GUPTA', color:'rgba(220,200,130,0.85)',
