@@ -863,9 +863,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
   body.mobile-battle #panel:not(.panel-collapsed) { max-height: var(--battle-panel-h); }
   body.mobile-battle #panel:not(.panel-collapsed) .mobile-dock-summary { display: none; }
   body.mobile-battle #narrative {
-    top: max(8px, env(safe-area-inset-top));
+    top: max(58px, calc(env(safe-area-inset-top) + 50px));
     bottom: auto;
-    left: 52px; right: 52px;
+    left: 12px; right: 12px;
     transform: none;
     font-size: 10px; line-height: 1.45;
     padding: 7px 12px;
@@ -928,9 +928,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:#040410; }
     bottom: calc(var(--battle-panel-collapsed-h) + 8px);
   }
   body.mobile-battle #narrative {
-    top: max(8px, env(safe-area-inset-top));
+    top: max(58px, calc(env(safe-area-inset-top) + 50px));
     bottom: auto !important;
-    left: 52px; right: 52px;
+    left: 12px; right: 12px;
     font-size: 10px; line-height: 1.45;
     padding: 7px 12px;
   }
@@ -1716,7 +1716,28 @@ body.light .campaign-footer { border-top-color: #d8d0c0; }
 /* ── Mobile additional fixes ─────────────────────────────────── */
 @media (max-width: 600px) {
   #hist-card { width: calc(100vw - 32px) !important; max-width: none !important; padding: 20px 16px !important; }
+  #hist-card.hist-peek { padding: 12px 14px !important; }
 }
+
+/* ── hist-card peek (chip) mode ──────────────────────────────── */
+#hc-peek-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; cursor: pointer; user-select: none;
+}
+#hist-card:not(.hist-peek) #hc-peek-row { display: none; }
+#hist-card.hist-peek .hc-full-body { display: none; }
+#hist-card.hist-peek { padding: 12px 18px; }
+.hc-peek-name {
+  font-size: 12px; font-weight: bold; color: #d8c888;
+  line-height: 1.3; margin-top: 3px;
+}
+.hc-peek-expand {
+  font-size: 8px; letter-spacing: 2px; color: #7a9a7a;
+  white-space: nowrap; flex-shrink: 0; padding: 4px 8px;
+  border: 1px solid rgba(90,150,90,0.3); border-radius: 3px;
+}
+body.light .hc-peek-name { color: #1a1505; }
+body.light .hc-peek-expand { color: #4a6a30; border-color: rgba(74,106,48,0.4); }
 </style>
 </head>
 <body>
@@ -1986,13 +2007,22 @@ body.light .campaign-footer { border-top-color: #d8d0c0; }
 <div id="narrative"></div>
 
 <div id="hist-card" class="hidden">
-  <div class="hist-card-eyebrow">HISTORICAL MOMENT</div>
-  <div class="hc-tag">✦ HISTORICAL RECORD</div>
-  <div class="hc-name" id="hc-name"></div>
-  <div class="hc-rank" id="hc-rank"></div>
-  <div class="hc-body" id="hc-body"></div>
-  <div class="hc-medal" id="hc-medal"></div>
-  <button class="hc-close" id="hc-close">DISMISS ×</button>
+  <div id="hc-peek-row">
+    <div>
+      <div class="hist-card-eyebrow">HISTORICAL MOMENT</div>
+      <div class="hc-peek-name" id="hc-peek-name"></div>
+    </div>
+    <span class="hc-peek-expand">READ ›</span>
+  </div>
+  <div class="hc-full-body">
+    <div class="hist-card-eyebrow">HISTORICAL MOMENT</div>
+    <div class="hc-tag">✦ HISTORICAL RECORD</div>
+    <div class="hc-name" id="hc-name"></div>
+    <div class="hc-rank" id="hc-rank"></div>
+    <div class="hc-body" id="hc-body"></div>
+    <div class="hc-medal" id="hc-medal"></div>
+    <button class="hc-close" id="hc-close">DISMISS ×</button>
+  </div>
 </div>
 
 <div id="cam-compass">
@@ -2324,6 +2354,9 @@ function fitCameraToBoard(){
   const fitZoom = FRUSTUM_BASE / f;
   cameraMinZoom = Math.min(0.7, fitZoom);        // pinch-out still reaches full overview
   cameraZoom = Math.min(1.75, fitZoom * 1.22);   // start comfortably closer than full fit
+  // Portrait: bias visual center toward enemy rows so active fight zone sits
+  // in the clear screen area above the collapsed dock panel
+  if (aspect < 1) cameraTarget.z -= BOARD_MAX_Z * 0.11;
   updateCameraProjection();
   updateCompass();
 }
@@ -4511,19 +4544,32 @@ let _hcTimer=null;
 function showHistCard(data){
   const hc=document.getElementById('hist-card');
   document.getElementById('hc-name').textContent=data.name;
-  document.getElementById('hc-rank').textContent=data.rank;
+  document.getElementById('hc-rank').textContent=data.rank||'';
   document.getElementById('hc-body').textContent=data.body;
+  document.getElementById('hc-peek-name').textContent=data.name;
   const m=document.getElementById('hc-medal'); m.textContent=data.medal?`✦ ${data.medal}`:'';
-  hc.classList.remove('hidden'); requestAnimationFrame(()=>hc.classList.add('visible'));
+  hc.classList.remove('hidden'); hc.classList.add('hist-peek');
+  requestAnimationFrame(()=>hc.classList.add('visible'));
+  if(_hcTimer)clearTimeout(_hcTimer); _hcTimer=setTimeout(closeHistCard,5500);
+}
+function expandHistCard(){
+  const hc=document.getElementById('hist-card');
+  if(!hc.classList.contains('hist-peek')) return;
+  hc.classList.remove('hist-peek');
   if(_hcTimer)clearTimeout(_hcTimer); _hcTimer=setTimeout(closeHistCard,9000);
 }
 function closeHistCard(){
   const hc=document.getElementById('hist-card'); hc.classList.remove('visible');
-  setTimeout(()=>hc.classList.add('hidden'),450);
+  setTimeout(()=>{hc.classList.add('hidden'); hc.classList.remove('hist-peek');},450);
 }
-document.addEventListener('DOMContentLoaded',()=>{ document.getElementById('hc-close')?.addEventListener('click',closeHistCard); });
-// hc-close wired after DOM ready
-setTimeout(()=>document.getElementById('hc-close').addEventListener('click',closeHistCard),0);
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('hc-close')?.addEventListener('click',closeHistCard);
+  document.getElementById('hc-peek-row')?.addEventListener('click',expandHistCard);
+});
+setTimeout(()=>{
+  document.getElementById('hc-close').addEventListener('click',closeHistCard);
+  document.getElementById('hc-peek-row').addEventListener('click',expandHistCard);
+},0);
 
 // Snow
 const _sg=new THREE.BufferGeometry();
